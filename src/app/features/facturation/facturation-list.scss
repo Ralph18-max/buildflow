@@ -1,0 +1,422 @@
+// =============================================
+// FACTURATION LIST — SCSS redesigné
+// =============================================
+
+.facturation-page {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+// ── En-tête ──────────────────────────────────
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h1 {
+    font-family: 'Sora', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 4px;
+  }
+
+  p {
+    font-size: 13px;
+    color: var(--gray-mid);
+    margin: 0;
+  }
+}
+
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--orange);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  .material-icons { font-size: 18px; }
+  &:hover { opacity: 0.9; transform: translateY(-1px); }
+}
+
+// ── KPI Cards ────────────────────────────────
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.kpi-card {
+  background: white;
+  border-radius: 14px;
+  border: 1px solid var(--gray-light);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &.alert { border-color: rgba(229,62,62,0.3); background: rgba(229,62,62,0.02); }
+}
+
+.kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--gray-mid);
+  }
+
+  .kpi-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .material-icons { font-size: 18px; }
+
+    &.green  { background: rgba(72,187,120,0.1);  .material-icons { color: #48bb78; } }
+    &.orange { background: rgba(232,82,10,0.1);   .material-icons { color: var(--orange); } }
+    &.red    { background: rgba(229,62,62,0.1);   .material-icons { color: #e53e3e; } }
+    &.blue   { background: rgba(66,153,225,0.1);  .material-icons { color: #4299e1; } }
+  }
+}
+
+.kpi-value {
+  font-family: 'Sora', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--dark);
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.green  { color: #48bb78; }
+  &.orange { color: var(--orange); }
+  &.red    { color: #e53e3e; }
+}
+
+.kpi-sub {
+  font-size: 11px;
+  color: var(--gray-mid);
+}
+
+// ── Filtres ───────────────────────────────────
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 4px;
+  background: white;
+  border-radius: 10px;
+  padding: 4px;
+  border: 1px solid var(--gray-light);
+
+  button {
+    padding: 7px 14px;
+    border-radius: 7px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--gray-mid);
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+    white-space: nowrap;
+
+    &:hover { color: var(--dark); }
+    &.active { background: var(--orange); color: white; font-weight: 500; }
+  }
+}
+
+.search-bar {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  border: 1.5px solid var(--gray-light);
+  border-radius: 10px;
+  padding: 9px 14px;
+  transition: border-color 0.2s;
+
+  &:focus-within { border-color: var(--orange); }
+
+  .material-icons { font-size: 18px; color: var(--gray-mid); flex-shrink: 0; }
+
+  input {
+    border: none;
+    outline: none;
+    flex: 1;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    color: var(--dark);
+    &::placeholder { color: #C0BDB8; }
+  }
+}
+
+// ── Tableau ───────────────────────────────────
+.table-container {
+  background: white;
+  border-radius: 14px;
+  border: 1px solid var(--gray-light);
+  // overflow-x:auto fonctionne de façon autonome
+  // uniquement si le conteneur a une dimension définie
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.factures-table {
+  width: max-content;  // ← clé : la table prend sa largeur naturelle
+  min-width: 100%;     // mais pas moins que le conteneur
+  border-collapse: collapse;
+}
+
+.factures-table thead th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--gray-mid);
+  background: #FAFAF8;
+  border-bottom: 1px solid var(--gray-light);
+  white-space: nowrap;
+  // min-width garantit que chaque colonne a assez de place
+  &:nth-child(1) { min-width: 120px; }
+  &:nth-child(2) { min-width: 170px; }
+  &:nth-child(3) { min-width: 110px; }
+  &:nth-child(4) { min-width: 140px; }
+  &:nth-child(5) { min-width: 130px; }
+  &:nth-child(6) { min-width: 110px; }
+  &:nth-child(7) { min-width: 100px; }
+  &:nth-child(8) { min-width: 50px; text-align: center; }
+}
+
+// Lignes
+.factures-table tbody tr {
+  border-bottom: 1px solid var(--gray-light);
+  transition: background 0.15s;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: #FAFAF8; }
+  &.row-retard { background: rgba(229,62,62,0.02); }
+  &.row-retard:hover { background: rgba(229,62,62,0.04); }
+}
+
+.factures-table tbody td {
+  padding: 14px 14px;
+  vertical-align: middle;
+  // PAS de max-width:0 ni overflow:hidden ici — on laisse le contenu respirer
+}
+
+// Cellule Numéro — white-space:nowrap pour tenir sur 1 ligne
+.cell-numero {
+  .numero {
+    font-family: 'Sora', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--dark);
+    display: block;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sit-ref {
+    font-size: 10px;
+    color: var(--gray-mid);
+    white-space: nowrap;
+  }
+}
+
+// Cellule Client / Chantier
+.cell-client {
+  .client-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dark);
+    display: block;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .chantier-name {
+    font-size: 11px;
+    color: var(--gray-mid);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+  }
+}
+
+// Cellule Type — badge compact
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+
+  &.situation { background: rgba(66,153,225,0.1); color: #4299e1; }
+  &.finale    { background: rgba(72,187,120,0.1); color: #48bb78; }
+  &.acompte   { background: rgba(159,122,234,0.1); color: #9f7aea; }
+}
+
+// Cellule Montant — taille réduite pour tenir sur 1 ligne
+.cell-montant {
+  .montant-val {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--dark);
+    display: block;
+    margin-bottom: 1px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .montant-unit {
+    font-size: 10px;
+    color: var(--gray-mid);
+    white-space: nowrap;
+  }
+}
+
+// Cellule Encaissé
+.cell-encaisse {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.full { color: #48bb78; }
+  &.zero { color: #e53e3e; }
+  &.partial { color: var(--orange); }
+
+  .encaisse-unit {
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--gray-mid);
+    display: block;
+  }
+}
+
+// Cellule Date
+.cell-date {
+  font-size: 13px;
+  color: var(--dark);
+  font-variant-numeric: tabular-nums;
+
+  &.overdue { color: #e53e3e; font-weight: 500; }
+}
+
+// Badge statut
+.statut-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &.payee    { background: rgba(72,187,120,0.1); color: #48bb78; &::before { background: #48bb78; } }
+  &.en_retard{ background: rgba(229,62,62,0.1);  color: #e53e3e; &::before { background: #e53e3e; } }
+  &.emise    { background: rgba(66,153,225,0.1); color: #4299e1; &::before { background: #4299e1; } }
+  &.en_attente { background: rgba(232,82,10,0.1); color: var(--orange); &::before { background: var(--orange); } }
+}
+
+// Cellule Actions
+.cell-actions {
+  text-align: center;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--gray-light);
+  background: none;
+  cursor: pointer;
+  color: var(--gray-mid);
+  transition: all 0.2s;
+
+  .material-icons { font-size: 16px; }
+
+  &:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: rgba(232,82,10,0.04);
+  }
+}
+
+// État vide
+.empty-state {
+  padding: 56px 24px;
+  text-align: center;
+  color: var(--gray-mid);
+
+  .material-icons { font-size: 40px; display: block; margin-bottom: 10px; opacity: 0.4; }
+  p { font-size: 14px; }
+}
+
+// ── Responsive ────────────────────────────────
+@media (max-width: 1200px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .factures-table { display: block; overflow-x: auto; }
+}
+
+@media (max-width: 768px) {
+  .facturation-page { padding: 16px; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .filter-row { flex-direction: column; align-items: stretch; }
+}

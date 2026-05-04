@@ -1,0 +1,292 @@
+<div class="detail-page" *ngIf="chantier; else notFound">
+
+  <!-- HEADER -->
+  <div class="detail-header">
+    <div class="header-left">
+      <button class="btn-retour" (click)="retour()">
+        <span class="material-icons">arrow_back</span>
+      </button>
+      <div>
+        <div class="breadcrumb">
+          <span (click)="retour()" class="breadcrumb-link">Chantiers</span>
+          <span class="material-icons">chevron_right</span>
+          <span>{{ chantier.nom }}</span>
+        </div>
+        <h1>{{ chantier.nom }}</h1>
+        <div class="header-meta">
+          <span class="material-icons">location_on</span>
+          <span>{{ chantier.localisation }}</span>
+          <span class="sep">·</span>
+          <span class="material-icons">description</span>
+          <span>{{ chantier.numero_marche }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="statut-badge" [ngClass]="chantier.statut">
+        {{ getStatutLabel(chantier.statut) }}
+      </span>
+      <button class="btn-edit">
+        <span class="material-icons">edit</span>
+        Modifier
+      </button>
+    </div>
+  </div>
+  <button class="btn-edit" (click)="voirDocuments()">
+     <span class="material-icons">folder</span>
+      Documents
+  </button>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <span class="material-icons kpi-icon orange">trending_up</span>
+      <div>
+        <p class="kpi-label">Avancement global</p>
+        <p class="kpi-value">{{ getAvancementGlobal() }}%</p>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <span class="material-icons kpi-icon green">payments</span>
+      <div>
+        <p class="kpi-label">Budget marché</p>
+        <p class="kpi-value">{{ chantier.budget }} FCFA</p>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <span class="material-icons kpi-icon blue">engineering</span>
+      <div>
+        <p class="kpi-label">Chef de chantier</p>
+        <p class="kpi-value">{{ chantier.chef_chantier }}</p>
+      </div>
+    </div>
+    <div class="kpi-card" [class.alert]="chantier.retard > 0">
+      <span class="material-icons kpi-icon" [class.red]="chantier.retard > 0" [class.green]="chantier.retard === 0">schedule</span>
+      <div>
+        <p class="kpi-label">Retard</p>
+        <p class="kpi-value">{{ chantier.retard > 0 ? chantier.retard + ' jours' : 'Dans les délais' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab === 'resume'" (click)="activeTab='resume'">
+      <span class="material-icons">dashboard</span> Résumé
+    </button>
+    <button class="tab" [class.active]="activeTab === 'corps'" (click)="activeTab='corps'">
+      <span class="material-icons">layers</span> Corps d'état
+    </button>
+    <button class="tab" [class.active]="activeTab === 'planning'" (click)="activeTab='planning'">
+      <span class="material-icons">calendar_month</span> Planning Gantt
+    </button>
+    <button class="tab" [class.active]="activeTab === 'intervenants'" (click)="activeTab='intervenants'">
+      <span class="material-icons">groups</span> Intervenants
+    </button>
+    <button
+  class="tab-btn"
+  [ngClass]="{'active': activeTab === 'budget'}"
+  (click)="activeTab = 'budget'"
+>
+  <span class="material-icons">account_balance_wallet</span>
+  Budget S0
+</button>
+  </div>
+  
+
+  <!-- ===== ONGLET RÉSUMÉ ===== -->
+  <div class="tab-content" *ngIf="activeTab === 'resume'">
+    <div class="resume-grid">
+
+      <div class="card">
+        <h3 class="card-title">
+          <span class="material-icons">info</span>
+          Informations générales
+        </h3>
+        <div class="info-list">
+          <div class="info-row">
+            <span class="info-label">Client</span>
+            <span class="info-val">{{ chantier.client }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">N° Marché</span>
+            <span class="info-val">{{ chantier.numero_marche }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Localisation</span>
+            <span class="info-val">{{ chantier.localisation }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Démarrage</span>
+            <span class="info-val">{{ chantier.date_demarrage }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Livraison</span>
+            <span class="info-val">{{ chantier.date_livraison }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Description</span>
+            <span class="info-val">{{ chantier.description }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">
+          <span class="material-icons">trending_up</span>
+          Avancement par corps d'état
+        </h3>
+        <div class="ce-summary" *ngFor="let ce of corpsEtatList">
+          <div class="ce-summary-header">
+            <span class="ce-nom">{{ ce.nom }}</span>
+            <span class="ce-pct">{{ ce.avancement }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill"
+              [style.width.%]="ce.avancement"
+              [style.background]="getAvancementColor(ce.avancement)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== ONGLET CORPS D'ÉTAT ===== -->
+  <div class="tab-content" *ngIf="activeTab === 'corps'">
+    <div class="section-header">
+      <h2>Corps d'état ({{ corpsEtatList.length }})</h2>
+      <p class="section-sub">La somme des parts doit toujours faire 100%</p>
+    </div>
+    <div class="corps-grid">
+      <div class="corps-card" *ngFor="let ce of corpsEtatList">
+        <div class="corps-header">
+          <div class="corps-icon">
+            <span class="material-icons">layers</span>
+          </div>
+          <div class="corps-info">
+            <h4>{{ ce.nom }}</h4>
+            <span class="statut-badge small" [ngClass]="ce.statut">
+              {{ getStatutLabel(ce.statut) }}
+            </span>
+          </div>
+          <div class="corps-part">{{ ce.part }}%</div>
+        </div>
+        <div class="corps-avancement">
+          <div class="avancement-header">
+            <span>Avancement</span>
+            <span class="avancement-pct">{{ ce.avancement }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill"
+              [style.width.%]="ce.avancement"
+              [style.background]="getAvancementColor(ce.avancement)">
+            </div>
+          </div>
+        </div>
+        <div class="corps-footer">
+          <div class="corps-meta">
+            <span class="material-icons">person</span>
+            {{ ce.responsable }}
+          </div>
+          <div class="corps-meta">
+            <span class="material-icons">payments</span>
+            {{ ce.budget }} FCFA
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ONGLET PLANNING GANTT ===== -->
+  <div class="tab-content" *ngIf="activeTab === 'planning'">
+    <div class="section-header">
+      <h2>Planning Gantt</h2>
+      <div class="gantt-legende">
+        <span class="legende-item"><span class="dot green"></span> Terminé</span>
+        <span class="legende-item"><span class="dot orange"></span> En cours</span>
+        <span class="legende-item"><span class="dot red"></span> En retard</span>
+      </div>
+    </div>
+
+    <div class="gantt-container">
+      <!-- En-têtes mois -->
+      <div class="gantt-header">
+        <div class="gantt-label-col"></div>
+        <div class="gantt-months">
+          <span *ngFor="let m of ['Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc', 'Jan', 'Fév']">{{ m }}</span>
+        </div>
+      </div>
+
+      <!-- Lignes jalons -->
+      <div class="gantt-row" *ngFor="let j of jalons">
+        <div class="gantt-label">
+          <span class="gantt-nom">{{ j.nom }}</span>
+          <span class="gantt-dates">{{ j.date_debut }} → {{ j.date_fin }}</span>
+        </div>
+        <div class="gantt-track">
+          <div class="gantt-bar"
+            [style.left.%]="j.offset"
+            [style.width.%]="j.duree"
+            [style.background]="j.couleur">
+            <div class="gantt-bar-fill"
+              [style.width.%]="j.avancement"
+              [style.background]="'rgba(255,255,255,0.25)'">
+            </div>
+            <span class="gantt-bar-label">{{ j.avancement }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ligne aujourd'hui -->
+      <div class="gantt-today" [style.left.%]="42"></div>
+    </div>
+  </div>
+
+  <!-- ===== ONGLET INTERVENANTS ===== -->
+  <div class="tab-content" *ngIf="activeTab === 'intervenants'">
+    <div class="section-header">
+      <h2>Intervenants ({{ intervenants.length }})</h2>
+      <button class="btn-add">
+        <span class="material-icons">add</span>
+        Ajouter
+      </button>
+    </div>
+    <div class="intervenants-grid">
+      <div class="intervenant-card" *ngFor="let i of intervenants">
+        <div class="intervenant-avatar">{{ i.nom.charAt(0) }}</div>
+        <div class="intervenant-info">
+          <h4>{{ i.nom }}</h4>
+          <p class="intervenant-role">{{ i.role }}</p>
+          <p class="intervenant-entreprise">
+            <span class="material-icons">business</span>
+            {{ i.entreprise }}
+          </p>
+          <p class="intervenant-tel">
+            <span class="material-icons">phone</span>
+            {{ i.telephone }}
+          </p>
+        </div>
+        <span class="statut-dot" [class.actif]="i.statut === 'actif'"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ONGLET BUDGET S0 ===== -->
+  <div *ngIf="activeTab === 'budget'">
+    <app-budget-s0
+      [chantier_id]="chantier ? chantier.id : 0"
+      [montant_marche]="montant_marche_contrat">
+    </app-budget-s0>
+  </div>
+
+</div>
+
+<ng-template #notFound>
+  <div class="not-found">
+    <span class="material-icons">search_off</span>
+    <p>Chantier introuvable</p>
+    <button (click)="retour()">Retour à la liste</button>
+  </div>
+</ng-template>

@@ -1,0 +1,319 @@
+// =============================================
+// DASHBOARD — SCSS corrigé
+// =============================================
+
+.dashboard-page {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+// ── En-tête ──────────────────────────────────
+.page-header {
+  h1 {
+    font-family: 'Sora', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 4px;
+  }
+  p {
+    font-size: 14px;
+    color: var(--gray-mid);
+    margin: 0;
+  }
+}
+
+// ── KPI Grid ─────────────────────────────────
+// 4 colonnes fixes, égales, pas de débordement
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.kpi-card {
+  background: white;
+  border-radius: 14px;
+  border: 1px solid var(--gray-light);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  // Hauteur uniforme
+  min-height: 130px;
+
+  &.alert {
+    border-color: rgba(229,62,62,0.25);
+    background: rgba(229,62,62,0.015);
+  }
+}
+
+.kpi-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--gray-mid);
+    // Permet le retour à la ligne si besoin
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .kpi-icon {
+    width: 36px;
+    height: 36px;
+    min-width: 36px; // empêche la compression
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .material-icons { font-size: 19px; }
+
+    &.orange { background: rgba(232,82,10,0.1);   .material-icons { color: var(--orange); } }
+    &.blue   { background: rgba(66,153,225,0.1);  .material-icons { color: #4299e1; } }
+    &.red    { background: rgba(229,62,62,0.1);   .material-icons { color: #e53e3e; } }
+    &.green  { background: rgba(72,187,120,0.1);  .material-icons { color: #48bb78; } }
+  }
+}
+
+.kpi-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kpi-value {
+  font-family: 'Sora', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--dark);
+  line-height: 1;
+  // Empêche le débordement sur les grands nombres
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &.red    { color: #e53e3e; }
+  &.green  { color: #48bb78; }
+  &.orange { color: var(--orange); }
+}
+
+.kpi-unit {
+  font-size: 12px;
+  color: var(--gray-mid);
+  font-weight: 400;
+}
+
+.kpi-sub {
+  font-size: 12px;
+  color: var(--gray-mid);
+  margin-top: 2px;
+}
+
+// ── Section chantiers actifs ───────────────────
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+
+  h2 {
+    font-family: 'Sora', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0;
+  }
+
+  a, .voir-tout {
+    font-size: 13px;
+    color: var(--orange);
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover { text-decoration: underline; }
+  }
+}
+
+// ── Tableau chantiers actifs ──────────────────
+.chantiers-table-container {
+  background: white;
+  border-radius: 14px;
+  border: 1px solid var(--gray-light);
+  overflow-x: auto;                      // ← FIX : scroll si viewport trop étroit
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chantiers-table {
+  width: 100%;
+  min-width: 700px;                      // ← FIX : garantit l'espace pour toutes les colonnes
+  border-collapse: collapse;
+}
+
+.chantiers-table thead th {
+  padding: 11px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--gray-mid);
+  background: #FAFAF8;
+  border-bottom: 1px solid var(--gray-light);
+  white-space: nowrap;
+
+  &:nth-child(1) { min-width: 190px; }  // Chantier / Statut
+  &:nth-child(2) { min-width: 130px; }  // Client
+  &:nth-child(3) { min-width: 110px; }  // Budget
+  &:nth-child(4) { min-width: 150px; }  // Avancement
+  &:nth-child(5) { min-width: 110px; }  // Statut ← FIX : était 90px
+}
+
+.chantiers-table tbody tr {
+  border-bottom: 1px solid var(--gray-light);
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: #FAFAF8; }
+}
+
+.chantiers-table tbody td {
+  padding: 14px 16px;
+  vertical-align: middle;
+}
+
+// Cellule nom + badge retard
+.cell-nom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .chantier-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 8px;
+    background: rgba(232,82,10,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    .material-icons { font-size: 16px; color: var(--orange); }
+  }
+
+  .nom-content {
+    min-width: 0;
+    overflow: hidden;
+
+    .chantier-nom {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--dark);
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+
+    .retard-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #e53e3e;
+      background: rgba(229,62,62,0.1);
+      padding: 2px 8px;
+      border-radius: 100px;
+    }
+  }
+}
+
+// Client
+.cell-client {
+  font-size: 13px;
+  color: var(--dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+// Budget formaté
+.cell-budget {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dark);
+  white-space: nowrap;
+}
+
+// Barre de progression inline
+.cell-avancement {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .progress-bar {
+    flex: 1;
+    height: 7px;
+    background: var(--gray-light);
+    border-radius: 4px;
+    overflow: hidden;
+    min-width: 60px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+
+  .progress-pct {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--dark);
+    white-space: nowrap;
+    min-width: 32px;
+    text-align: right;
+  }
+}
+
+// Badge statut chantier — FIX : white-space + min-width + font-size
+.statut-badge {
+  display: inline-flex;
+  padding: 4px 12px;                     // ← FIX : plus de padding latéral
+  border-radius: 100px;
+  font-size: 12px;                       // ← FIX : était 11px
+  font-weight: 500;
+  white-space: nowrap;                   // ← FIX : jamais de coupure du texte
+
+  &.en_cours  { background: rgba(232,82,10,0.1);  color: var(--orange); }
+  &.termine   { background: rgba(72,187,120,0.1); color: #48bb78; }
+  &.suspendu  { background: rgba(229,62,62,0.1);  color: #e53e3e; }
+}
+
+// ── Responsive ────────────────────────────────
+@media (max-width: 900px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .dashboard-page { padding: 16px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .kpi-value { font-size: 22px; }
+  .chantiers-table { display: block; overflow-x: auto; }
+}

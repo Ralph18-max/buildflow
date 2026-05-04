@@ -1,0 +1,156 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F5F1EA;
+  padding: 24px;
+}
+
+.login-card {
+  background: white;
+  border-radius: 20px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.08);
+}
+
+.login-logo {
+  font-family: 'Sora', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1A1A18;
+  margin-bottom: 6px;
+
+  .accent {
+    color: #E8520A;
+  }
+}
+
+.login-subtitle {
+  font-size: 0.9rem;
+  color: #6B6B67;
+  margin-bottom: 28px;
+}
+
+// ===== GRILLE DES RÔLES =====
+.role-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.role-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 2px solid #E8E4DB;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+
+  &:hover {
+    border-color: #E8520A;
+    background: rgba(232, 82, 10, 0.03);
+  }
+
+  &.selected {
+    border-color: #E8520A;
+    background: rgba(232, 82, 10, 0.06);
+
+    .role-avatar {
+      background: #E8520A;
+    }
+
+    .check-icon {
+      opacity: 1;
+      color: #E8520A;
+    }
+  }
+}
+
+.role-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #1A1A18;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.role-info {
+  flex: 1;
+  min-width: 0;
+
+  .role-label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #1A1A18;
+    margin: 0 0 2px 0;
+  }
+
+  .role-desc {
+    font-size: 0.78rem;
+    color: #6B6B67;
+    line-height: 1.3;
+    margin: 0;
+  }
+}
+
+.check-icon {
+  opacity: 0;
+  transition: opacity 0.2s;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+// ===== BOUTON =====
+.btn-login {
+  width: 100%;
+  padding: 14px;
+  background: #E8520A;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+
+  &:hover:not(:disabled) {
+    background: #c44508;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+// ===== RESPONSIVE =====
+@media (max-width: 480px) {
+  .login-card {
+    padding: 28px 20px;
+  }
+
+  .login-logo {
+    font-size: 1.6rem;
+  }
+}

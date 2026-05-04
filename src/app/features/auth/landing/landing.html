@@ -1,0 +1,105 @@
+<nav class="nav">
+  <div class="logo">Buil<span>D</span>Flow</div>
+  <ul class="nav-links" [class.open]="menuOpen">
+   <li><a (click)="scrollTo('features')" (click)="menuOpen=false">Fonctionnalités</a></li>
+   <li><a (click)="scrollTo('roles')" (click)="menuOpen=false">Pour qui ?</a></li>
+    <li>
+      <a routerLink="/login" class="btn-nav" (click)="menuOpen=false">
+        Se connecter
+      </a>
+    </li>
+  </ul>
+  <button class="hamburger" (click)="menuOpen=!menuOpen">
+    <span [class.open]="menuOpen"></span>
+    <span [class.open]="menuOpen"></span>
+    <span [class.open]="menuOpen"></span>
+  </button>
+</nav>
+
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">Plateforme BTP SaaS</div>
+    <h1>
+      BuilDFlow,<br>
+      la plateforme qui<br>
+      <span class="accent">transforme</span> la<br>
+      gestion de chantier
+    </h1>
+    <p class="hero-sub">
+      Du contrat à la clôture, pilotez chaque chantier
+      en temps réel — sans double saisie, sans perte d'information.
+    </p>
+    <div class="hero-ctas">
+      <a routerLink="/login" class="btn-primary">Connexion</a>
+      <a href="#features" class="btn-secondary">Découvrir →</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-number">16</span>
+        <span class="stat-label">Modules métier</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">4</span>
+        <span class="stat-label">Rôles utilisateur</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">100%</span>
+        <span class="stat-label">Multi-tenant</span>
+      </div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-overlay"></div>
+    <div class="hero-badge">
+      <div class="badge-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="badge-text">
+        <p>Avancement global</p>
+        <p>Calculé automatiquement</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-features" id="features">
+  <div class="section-header">
+    <p class="section-label">Fonctionnalités</p>
+    <h2>Tout ce dont une entreprise de construction a besoin</h2>
+    <p class="section-desc">Un cycle complet en un seul outil.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card" *ngFor="let f of features">
+      <span class="material-icons feature-icon">{{ f.icon }}</span>
+      <div class="feature-title">{{ f.title }}</div>
+      <div class="feature-desc">{{ f.desc }}</div>
+    </div>
+  </div>
+</section>
+
+<section class="section-roles" id="roles">
+  <div class="section-header">
+    <p class="section-label">Pour qui ?</p>
+    <h2>4 rôles, une seule plateforme</h2>
+  </div>
+  <div class="roles-grid">
+    <div class="role-card" *ngFor="let r of roles">
+      <span class="material-icons role-icon">{{ r.icon }}</span>
+      <h3 class="role-title">{{ r.title }}</h3>
+      <p class="role-desc">{{ r.desc }}</p>
+    </div>
+  </div>
+</section>
+
+<section class="section-cta">
+  <h2>Prêt à piloter vos chantiers autrement ?</h2>
+  <p>Rejoignez les entreprises qui ont choisi la clarté en temps réel.</p>
+  <a routerLink="/login" class="btn-white">Connexion →</a>
+</section>
+
+<footer>
+  <div class="footer-logo">Build<span>D</span>Flow</div>
+  <p>© 2026 BuilDFlow · Plateforme SaaS BTP multi-tenant</p>
+</footer>

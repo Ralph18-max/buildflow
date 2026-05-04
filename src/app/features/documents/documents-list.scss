@@ -1,0 +1,407 @@
+// =============================================
+// DOCUMENTS LIST — SCSS corrigé
+// Problème : colonnes CHANTIER, AJOUTÉ PAR, DATE
+// décalées par rapport aux données
+// =============================================
+
+.documents-page {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// ── En-tête ──────────────────────────────────
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h1 {
+    font-family: 'Sora', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 4px;
+  }
+
+  p {
+    font-size: 13px;
+    color: var(--gray-mid);
+    margin: 0;
+  }
+}
+
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--orange);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  .material-icons { font-size: 18px; }
+  &:hover { opacity: 0.9; transform: translateY(-1px); }
+}
+
+// ── Chips de catégories ───────────────────────
+.category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1.5px solid var(--gray-light);
+  background: white;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-mid);
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s;
+
+  .material-icons { font-size: 14px; }
+  .chip-count {
+    font-size: 11px;
+    background: var(--gray-light);
+    border-radius: 100px;
+    padding: 1px 6px;
+    color: var(--gray-mid);
+  }
+
+  &:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+  }
+
+  &.active {
+    border-color: var(--orange);
+    background: rgba(232,82,10,0.08);
+    color: var(--orange);
+
+    .chip-count {
+      background: rgba(232,82,10,0.15);
+      color: var(--orange);
+    }
+  }
+}
+
+// ── Filtres barre ────────────────────────────
+.filter-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.search-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  border: 1.5px solid var(--gray-light);
+  border-radius: 10px;
+  padding: 10px 14px;
+  transition: border-color 0.2s;
+
+  &:focus-within { border-color: var(--orange); }
+
+  .material-icons { font-size: 18px; color: var(--gray-mid); flex-shrink: 0; }
+
+  input {
+    border: none;
+    outline: none;
+    flex: 1;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+    color: var(--dark);
+    &::placeholder { color: #C0BDB8; }
+  }
+}
+
+.filter-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: white;
+  border: 1.5px solid var(--gray-light);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--dark);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s;
+
+  .material-icons { font-size: 17px; color: var(--gray-mid); }
+
+  select {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    color: var(--dark);
+    cursor: pointer;
+    appearance: none;
+    min-width: 120px;
+  }
+
+  &:focus-within { border-color: var(--orange); }
+}
+
+// ── Tableau ───────────────────────────────────
+.table-container {
+  background: white;
+  border-radius: 14px;
+  border: 1px solid var(--gray-light);
+  overflow-x: auto;                      // ← FIX : scroll horizontal si viewport étroit
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+
+.documents-table {
+  width: 100%;
+  min-width: 860px;                      // ← FIX : garantit l'espace pour toutes les colonnes
+  border-collapse: collapse;
+}
+
+.documents-table thead th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--gray-mid);
+  background: #FAFAF8;
+  border-bottom: 1px solid var(--gray-light);
+  white-space: nowrap;
+
+  &:nth-child(1) { min-width: 220px; }  // Document
+  &:nth-child(2) { min-width: 130px; }  // Catégorie
+  &:nth-child(3) { min-width: 180px; }  // Chantier
+  &:nth-child(4) { min-width: 120px; }  // Ajouté par
+  &:nth-child(5) { min-width: 100px; }  // Date
+  &:nth-child(6) { min-width: 70px;  }  // Taille
+  &:nth-child(7) { min-width: 90px; text-align: center; }  // Actions ← FIX : était 80px
+}
+
+// Lignes
+.documents-table tbody tr {
+  border-bottom: 1px solid var(--gray-light);
+  transition: background 0.15s;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: #FAFAF8; }
+}
+
+.documents-table tbody td {
+  padding: 13px 14px;
+  vertical-align: middle;
+}
+
+// ── Cellule Document ──────────────────────────
+.cell-document {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .ext-badge {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: white;
+    flex-shrink: 0;
+
+    &.pdf  { background: #e53e3e; }
+    &.dwg  { background: #4299e1; }
+    &.zip  { background: #ed8936; }
+    &.xlsx { background: #48bb78; }
+    &.docx { background: #4299e1; }
+    &.jpg, &.jpeg, &.png { background: #9f7aea; }
+  }
+
+  .doc-info {
+    min-width: 0;
+    overflow: hidden;
+
+    .doc-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--dark);
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+
+    .doc-type {
+      font-size: 10px;
+      color: var(--gray-mid);
+      display: block;
+    }
+  }
+}
+
+// ── Cellule Catégorie ─────────────────────────
+.cat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;                   // ← FIX : jamais de coupure
+
+  .material-icons { font-size: 13px; }
+
+  &.contrat  { background: rgba(66,153,225,0.1);  color: #4299e1; }
+  &.plan     { background: rgba(159,122,234,0.1); color: #9f7aea; }
+  &.pv       { background: rgba(72,187,120,0.1);  color: #48bb78; }
+  &.facture  { background: rgba(232,82,10,0.1);   color: var(--orange); }
+  &.photo    { background: rgba(237,137,54,0.1);  color: #ed8936; }
+  &.divers   { background: rgba(107,107,103,0.1); color: var(--gray-mid); }
+}
+
+// ── Cellule Chantier ──────────────────────────
+.cell-chantier {
+  font-size: 12px;
+  color: var(--dark);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+// ── Cellule Ajouté par ────────────────────────
+.cell-auteur {
+  font-size: 12px;
+  color: var(--gray-mid);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+// ── Cellule Date ──────────────────────────────
+.cell-date {
+  font-size: 12px;
+  color: var(--gray-mid);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+// ── Cellule Taille ────────────────────────────
+.cell-taille {
+  font-size: 12px;
+  color: var(--gray-mid);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+// ── Cellule Actions ───────────────────────────
+.cell-actions {
+  text-align: center;
+  white-space: nowrap;                   // ← FIX : les boutons restent sur une ligne
+
+  .actions-group {
+    display: inline-flex;
+    gap: 4px;
+  }
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--gray-light);
+  background: none;
+  cursor: pointer;
+  color: var(--gray-mid);
+  transition: all 0.2s;
+
+  .material-icons { font-size: 15px; }
+
+  &:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: rgba(232,82,10,0.04);
+  }
+
+  &.danger:hover {
+    border-color: #e53e3e;
+    color: #e53e3e;
+    background: rgba(229,62,62,0.04);
+  }
+}
+
+// État vide
+.empty-state {
+  padding: 56px 24px;
+  text-align: center;
+  color: var(--gray-mid);
+
+  .material-icons { font-size: 40px; display: block; margin-bottom: 10px; opacity: 0.4; }
+  p { font-size: 14px; }
+}
+
+// ── Zone upload drag & drop ───────────────────
+.upload-zone {
+  border: 2px dashed var(--gray-light);
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+
+  .material-icons { font-size: 36px; color: var(--gray-mid); margin-bottom: 8px; display: block; }
+  p { font-size: 14px; color: var(--gray-mid); margin-bottom: 4px; }
+  small { font-size: 12px; color: #C0BDB8; }
+
+  &:hover, &.dragging {
+    border-color: var(--orange);
+    background: rgba(232,82,10,0.02);
+    .material-icons { color: var(--orange); }
+  }
+}
+
+// ── Responsive ────────────────────────────────
+@media (max-width: 900px) {
+  .documents-table { display: block; overflow-x: auto; }
+}
+
+@media (max-width: 768px) {
+  .documents-page { padding: 16px; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .filter-row { flex-direction: column; }
+}

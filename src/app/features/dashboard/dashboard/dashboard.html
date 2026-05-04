@@ -1,0 +1,152 @@
+<div class="dashboard-page">
+
+  <!-- En-tête -->
+  <div class="page-header">
+    <h1>Tableau de bord</h1>
+    <p>Bonjour {{ user.prenom }}, voici l'état de vos chantiers</p>
+  </div>
+
+  <!-- KPI Grid — 4 cards avec icônes colorées -->
+  <div class="kpi-grid">
+
+    <!-- KPI 1 : Chantiers en cours -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <span class="kpi-label">Chantiers en cours</span>
+        <div class="kpi-icon orange">
+          <span class="material-icons">construction</span>
+        </div>
+      </div>
+      <div class="kpi-bottom">
+        <div class="kpi-value">{{ getChantierEnCours() }}</div>
+        <div class="kpi-sub">+2 ce mois</div>
+      </div>
+    </div>
+
+    <!-- KPI 2 : Budget total engagé -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <span class="kpi-label">Budget total engagé</span>
+        <div class="kpi-icon blue">
+          <span class="material-icons">account_balance_wallet</span>
+        </div>
+      </div>
+      <div class="kpi-bottom">
+        <div class="kpi-value">{{ getBudgetTotal() }}</div>
+        <div class="kpi-sub">FCFA</div>
+      </div>
+    </div>
+
+    <!-- KPI 3 : Alertes dépassement -->
+    <div class="kpi-card alert">
+      <div class="kpi-top">
+        <span class="kpi-label">Alertes dépassement</span>
+        <div class="kpi-icon red">
+          <span class="material-icons">warning_amber</span>
+        </div>
+      </div>
+      <div class="kpi-bottom">
+        <div class="kpi-value red">{{ getAlertes() }}</div>
+        <div class="kpi-sub">Seuil > 5%</div>
+      </div>
+    </div>
+
+    <!-- KPI 4 : Reste à facturer -->
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <span class="kpi-label">Reste à facturer</span>
+        <div class="kpi-icon green">
+          <span class="material-icons">receipt_long</span>
+        </div>
+      </div>
+      <div class="kpi-bottom">
+        <div class="kpi-value">{{ getRAF() }}</div>
+        <div class="kpi-sub">FCFA</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Section Chantiers actifs -->
+  <div>
+    <div class="section-header">
+      <h2>Chantiers actifs</h2>
+      <a routerLink="/chantiers">Voir tout →</a>
+    </div>
+
+    <div class="chantiers-table-container">
+      <table class="chantiers-table">
+        <thead>
+          <tr>
+            <th>Chantier / Statut</th>
+            <th>Client</th>
+            <th>Budget</th>
+            <th>Avancement</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let c of chantiersActifs"
+            (click)="voirChantier(c.id)">
+
+            <!-- Col 1 : Nom + badge retard -->
+            <td>
+              <div class="cell-nom">
+                <span class="chantier-icon">
+                  <span class="material-icons">apartment</span>
+                </span>
+                <div class="nom-content">
+                  <span class="chantier-nom">{{ c.nom }}</span>
+                  <span class="retard-badge" *ngIf="c.retard_jours > 0">
+                    {{ c.retard_jours }}j retard
+                  </span>
+                </div>
+              </div>
+            </td>
+
+            <!-- Col 2 : Client -->
+            <td>
+              <span class="cell-client">{{ c.client }}</span>
+            </td>
+
+            <!-- Col 3 : Budget -->
+            <td>
+              <span class="cell-budget">{{ formatBudget(c.budget) }}</span>
+            </td>
+
+            <!-- Col 4 : Barre de progression -->
+            <td>
+              <div class="cell-avancement">
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    [style.width.%]="c.avancement"
+                    [style.background-color]="getAvancementColor(c.avancement)">
+                  </div>
+                </div>
+                <span class="progress-pct">{{ c.avancement }}%</span>
+              </div>
+            </td>
+
+            <!-- Col 5 : Badge statut -->
+            <td>
+              <span class="statut-badge" [ngClass]="c.statut">
+                {{ getStatutLabel(c.statut) }}
+              </span>
+            </td>
+
+          </tr>
+
+          <!-- État vide -->
+          <tr *ngIf="chantiersActifs.length === 0">
+            <td colspan="5" style="text-align:center; padding: 32px; color: var(--gray-mid); font-size:13px;">
+              Aucun chantier actif
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

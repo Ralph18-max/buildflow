@@ -1,0 +1,439 @@
+<div class="budget-wrapper">
+
+  <!-- ═══════════════════════════════════════════════════════
+       CAS 1 : S0 PAS ENCORE SAISI
+  ════════════════════════════════════════════════════════ -->
+  <div *ngIf="!s0Saisi && !afficherFormulaire" class="empty-state">
+    <div class="empty-icon">
+      <span class="material-icons">account_balance_wallet</span>
+    </div>
+    <h3>Budget S0 non défini</h3>
+    <p>
+      Le budget prévisionnel de référence (S0) n'a pas encore été saisi pour ce chantier.<br>
+      Une fois validé, il sera <strong>figé définitivement</strong> et servira de référence tout au long du chantier.
+    </p>
+
+    <div *ngIf="peutSaisirS0" class="empty-actions">
+      <button class="btn-primary" (click)="ouvrirFormulaire()">
+        <span class="material-icons">add</span>
+        Saisir le budget S0
+      </button>
+    </div>
+
+    <div *ngIf="!peutSaisirS0" class="access-info">
+      <span class="material-icons">lock</span>
+      Seuls l'Administrateur et le Comptable peuvent saisir le budget S0.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       CAS 2 : FORMULAIRE DE SAISIE S0
+  ════════════════════════════════════════════════════════ -->
+  <div *ngIf="afficherFormulaire" class="form-container">
+
+    <div class="form-header">
+      <div class="form-header-left">
+        <span class="material-icons form-header-icon">lock_clock</span>
+        <div>
+          <h3>Saisie du Budget S0</h3>
+          <p>Ce budget sera <strong>figé définitivement</strong> après validation. Aucune modification ne sera possible.</p>
+        </div>
+      </div>
+      <div class="montant-marche-ref">
+        <span class="label-ref">Montant du marché</span>
+        <span class="valeur-ref">{{ montantMarche | number:'1.0-0' }} FCFA</span>
+      </div>
+    </div>
+
+    <form [formGroup]="form" class="s0-form">
+
+      <div class="form-grid">
+
+        <!-- Déboursé sec -->
+        <div class="form-field">
+          <label>
+            Déboursé sec estimé
+            <span class="tooltip-icon" title="Coût direct réel : main d'œuvre + matériaux + matériel. Hors marge et frais généraux.">?</span>
+          </label>
+          <div class="input-with-unit">
+            <input
+              type="number"
+              formControlName="debourse_sec"
+              [class.error]="form.get('debourse_sec')?.invalid && form.get('debourse_sec')?.touched"
+              placeholder="ex : 255000000"
+            />
+            <span class="unit">FCFA</span>
+          </div>
+          <span class="field-hint">MO + matériaux + matériel — hors marge et frais généraux</span>
+          <span *ngIf="form.get('debourse_sec')?.invalid && form.get('debourse_sec')?.touched" class="field-error">
+            Montant requis et supérieur à 0
+          </span>
+        </div>
+
+        <!-- Frais généraux -->
+        <div class="form-field">
+          <label>
+            Frais généraux
+            <span class="tooltip-icon" title="Part des charges fixes de l'entreprise affectée à ce chantier (loyer, salaires admin, véhicules direction…)">?</span>
+          </label>
+          <div class="input-with-unit">
+            <input
+              type="number"
+              formControlName="frais_generaux"
+              [class.error]="form.get('frais_generaux')?.invalid && form.get('frais_generaux')?.touched"
+              placeholder="ex : 25500000"
+            />
+            <span class="unit">FCFA</span>
+          </div>
+          <span class="field-hint">Charges indirectes de l'entreprise sur ce chantier</span>
+        </div>
+
+        <!-- Marge prévue -->
+        <div class="form-field">
+          <label>
+            Marge prévue
+            <span class="tooltip-icon" title="Bénéfice attendu après toutes les dépenses.">?</span>
+          </label>
+          <div class="input-with-unit">
+            <input
+              type="number"
+              formControlName="marge_prevue"
+              [class.error]="form.get('marge_prevue')?.invalid && form.get('marge_prevue')?.touched"
+              placeholder="ex : 38250000"
+            />
+            <span class="unit">FCFA</span>
+          </div>
+          <span class="field-hint">Bénéfice prévu après toutes les dépenses</span>
+        </div>
+
+        <!-- Provision aléas -->
+        <div class="form-field">
+          <label>
+            Provision pour aléas
+            <span class="tooltip-icon" title="Somme réservée pour les imprévus. Recommandé : 5% à 10% du déboursé sec.">?</span>
+          </label>
+          <div class="input-with-unit">
+            <input
+              type="number"
+              formControlName="provision_aleas"
+              [class.error]="form.get('provision_aleas')?.invalid && form.get('provision_aleas')?.touched"
+              placeholder="ex : 12750000"
+            />
+            <span class="unit">FCFA</span>
+          </div>
+          <span class="field-hint">Recommandé : 5% à 10% du déboursé sec</span>
+        </div>
+
+      </div>
+
+      <!-- Récapitulatif dynamique -->
+      <div class="recap-card" [ngClass]="{'recap-ok': ecartAvecMarche >= 0, 'recap-warning': ecartAvecMarche < 0}">
+        <div class="recap-title">Récapitulatif en temps réel</div>
+        <div class="recap-formule">
+          <div class="formule-item">
+            <span class="formule-label">Déboursé sec</span>
+            <span class="formule-valeur">{{ (form.value.debourse_sec || 0) | number:'1.0-0' }}</span>
+          </div>
+          <div class="formule-plus">+</div>
+          <div class="formule-item">
+            <span class="formule-label">Frais généraux</span>
+            <span class="formule-valeur">{{ (form.value.frais_generaux || 0) | number:'1.0-0' }}</span>
+          </div>
+          <div class="formule-plus">+</div>
+          <div class="formule-item">
+            <span class="formule-label">Marge</span>
+            <span class="formule-valeur">{{ (form.value.marge_prevue || 0) | number:'1.0-0' }}</span>
+          </div>
+          <div class="formule-plus">+</div>
+          <div class="formule-item">
+            <span class="formule-label">Aléas</span>
+            <span class="formule-valeur">{{ (form.value.provision_aleas || 0) | number:'1.0-0' }}</span>
+          </div>
+          <div class="formule-egal">=</div>
+          <div class="formule-total">
+            <span class="formule-label">Total S0</span>
+            <span class="formule-valeur-total">{{ totalFormulaire | number:'1.0-0' }} FCFA</span>
+          </div>
+        </div>
+
+        <div class="ecart-marche" [ngClass]="{'ecart-ok': ecartAvecMarche >= 0, 'ecart-danger': ecartAvecMarche < 0}">
+          <span class="material-icons">{{ ecartAvecMarche >= 0 ? 'check_circle' : 'warning' }}</span>
+          <span *ngIf="ecartAvecMarche >= 0">
+            Le total S0 est cohérent avec le montant du marché
+            (écart : +{{ ecartAvecMarche | number:'1.0-0' }} FCFA)
+          </span>
+          <span *ngIf="ecartAvecMarche < 0">
+            Attention : le total S0 dépasse le montant du marché de
+            {{ (ecartAvecMarche * -1) | number:'1.0-0' }} FCFA
+          </span>
+        </div>
+      </div>
+
+      <!-- Avertissement figé -->
+      <div class="avertissement-fige">
+        <span class="material-icons">lock</span>
+        <strong>Attention</strong> — Une fois validé, ce budget S0 sera figé définitivement.
+        Il ne pourra plus être modifié. Il servira de référence absolue pour mesurer les écarts tout au long du chantier.
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="annuler()" [disabled]="loading">
+          Annuler
+        </button>
+        <button
+          type="button"
+          class="btn-danger-confirm"
+          (click)="validerS0()"
+          [disabled]="form.invalid || loading"
+        >
+          <span *ngIf="!loading" class="material-icons">lock</span>
+          <span *ngIf="loading" class="spinner"></span>
+          {{ loading ? 'Enregistrement...' : 'Valider et figer le S0' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       CAS 3 : S0 SAISI — TABLEAU DE BORD FINANCIER
+  ════════════════════════════════════════════════════════ -->
+  <div *ngIf="s0Saisi && !afficherFormulaire && budget" class="dashboard-budget">
+
+    <!-- Banner succès après sauvegarde -->
+    <div *ngIf="sauvegardeOk" class="banner-success">
+      <span class="material-icons">check_circle</span>
+      Budget S0 enregistré et figé avec succès. Il ne peut plus être modifié.
+    </div>
+
+    <!-- Alerte dépassement -->
+    <div *ngIf="alerteDepassement" class="alerte-depassement">
+      <span class="material-icons">warning</span>
+      <div>
+        <strong>Alerte dépassement budgétaire</strong>
+        Le coût réel ({{ budget.cout_reel_a_date | number:'1.0-0' }} FCFA) dépasse le déboursé sec S0 de plus de 5%.
+        Action requise.
+      </div>
+    </div>
+
+    <div *ngIf="alerteProche && !alerteDepassement" class="alerte-proche">
+      <span class="material-icons">info</span>
+      <div>
+        <strong>Attention</strong> — Le coût réel approche du seuil d'alerte (90% du déboursé sec S0).
+      </div>
+    </div>
+
+    <!-- ── KPI Cards ────────────────────────────────── -->
+    <div class="kpi-grid">
+
+      <div class="kpi-card">
+        <div class="kpi-label">Déboursé sec S0</div>
+        <div class="kpi-valeur">{{ formatMontant(budget.debourse_sec_s0) }}</div>
+        <div class="kpi-sublabel">FCFA — référence figée le {{ budget.date_creation_s0 | date:'dd/MM/yyyy':'':'fr' }}</div>
+        <div class="kpi-badge kpi-badge-fige">
+          <span class="material-icons">lock</span> Figé
+        </div>
+      </div>
+
+      <div class="kpi-card" [ngClass]="{'kpi-card-danger': alerteDepassement, 'kpi-card-warning': alerteProche && !alerteDepassement}">
+        <div class="kpi-label">Coût réel à date</div>
+        <div class="kpi-valeur" [ngClass]="{'valeur-danger': alerteDepassement}">
+          {{ formatMontant(budget.cout_reel_a_date) }}
+        </div>
+        <div class="kpi-sublabel">FCFA — {{ tauxConsommation }}% du déboursé sec</div>
+        <div class="kpi-barre">
+          <div
+            class="kpi-barre-fill"
+            [ngClass]="{'barre-danger': alerteDepassement, 'barre-warning': alerteProche && !alerteDepassement}"
+            [style.width.%]="getBarreWidth(budget.cout_reel_a_date, budget.debourse_sec_s0)"
+          ></div>
+        </div>
+      </div>
+
+      <div class="kpi-card" [ngClass]="{'kpi-card-ok': rad > 0}">
+        <div class="kpi-label">RAD — Reste à dépenser</div>
+        <div class="kpi-valeur" [ngClass]="{'valeur-ok': rad > 0, 'valeur-danger': rad < 0}">
+          {{ formatMontant(rad) }}
+        </div>
+        <div class="kpi-sublabel">FCFA — S0 − coût réel à date</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Marge projetée</div>
+        <div class="kpi-valeur" [ngClass]="{'valeur-ok': margeProjetee > 0, 'valeur-danger': margeProjetee < 0}">
+          {{ formatMontant(margeProjetee) }}
+        </div>
+        <div class="kpi-sublabel">FCFA — estimation en cours de chantier</div>
+      </div>
+
+    </div>
+
+    <!-- ── Décomposition S0 ────────────────────────── -->
+    <div *ngIf="peutVoirDetails" class="section-block">
+      <div class="section-title">
+        <span class="material-icons">pie_chart</span>
+        Décomposition du budget S0
+      </div>
+      <div class="decomposition-grid">
+
+        <div class="decomp-item">
+          <div class="decomp-barre-wrap">
+            <div class="decomp-barre" [style.width.%]="getBarreWidth(budget.debourse_sec_s0, budget.montant_total_s0)"></div>
+          </div>
+          <div class="decomp-info">
+            <span class="decomp-label">Déboursé sec</span>
+            <span class="decomp-valeur">{{ budget.debourse_sec_s0 | number:'1.0-0' }} FCFA</span>
+            <span class="decomp-pct">{{ getBarreWidth(budget.debourse_sec_s0, budget.montant_total_s0) }}%</span>
+          </div>
+        </div>
+
+        <div class="decomp-item">
+          <div class="decomp-barre-wrap">
+            <div class="decomp-barre decomp-barre-fg" [style.width.%]="getBarreWidth(budget.frais_generaux_s0, budget.montant_total_s0)"></div>
+          </div>
+          <div class="decomp-info">
+            <span class="decomp-label">Frais généraux</span>
+            <span class="decomp-valeur">{{ budget.frais_generaux_s0 | number:'1.0-0' }} FCFA</span>
+            <span class="decomp-pct">{{ getBarreWidth(budget.frais_generaux_s0, budget.montant_total_s0) }}%</span>
+          </div>
+        </div>
+
+        <div class="decomp-item">
+          <div class="decomp-barre-wrap">
+            <div class="decomp-barre decomp-barre-marge" [style.width.%]="getBarreWidth(budget.marge_prevue_s0, budget.montant_total_s0)"></div>
+          </div>
+          <div class="decomp-info">
+            <span class="decomp-label">Marge prévue</span>
+            <span class="decomp-valeur">{{ budget.marge_prevue_s0 | number:'1.0-0' }} FCFA</span>
+            <span class="decomp-pct">{{ getBarreWidth(budget.marge_prevue_s0, budget.montant_total_s0) }}%</span>
+          </div>
+        </div>
+
+        <div class="decomp-item">
+          <div class="decomp-barre-wrap">
+            <div class="decomp-barre decomp-barre-aleas" [style.width.%]="getBarreWidth(budget.provision_aleas_s0, budget.montant_total_s0)"></div>
+          </div>
+          <div class="decomp-info">
+            <span class="decomp-label">Provision aléas</span>
+            <span class="decomp-valeur">{{ budget.provision_aleas_s0 | number:'1.0-0' }} FCFA</span>
+            <span class="decomp-pct">{{ getBarreWidth(budget.provision_aleas_s0, budget.montant_total_s0) }}%</span>
+          </div>
+        </div>
+
+        <div class="decomp-total">
+          <span class="decomp-total-label">Total S0</span>
+          <span class="decomp-total-valeur">{{ budget.montant_total_s0 | number:'1.0-0' }} FCFA</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Budget par corps d'état ────────────────── -->
+    <div class="section-block">
+      <div class="section-title">
+        <span class="material-icons">table_chart</span>
+        Suivi budgétaire par corps d'état
+      </div>
+
+      <div class="table-budget">
+        <div class="table-header">
+          <div class="col-nom">Corps d'état</div>
+          <div class="col-budget">Budget alloué</div>
+          <div class="col-reel">Coût réel</div>
+          <div class="col-ecart">Écart</div>
+          <div class="col-avancement">Avancement</div>
+          <div class="col-statut">Statut</div>
+        </div>
+
+        <div
+          *ngFor="let ce of corpsEtat; trackBy: trackById"
+          class="table-row"
+          [ngClass]="{
+            'row-danger': getStatutEcart(ce) === 'danger',
+            'row-warning': getStatutEcart(ce) === 'warning',
+            'row-termine': ce.statut === 'termine'
+          }"
+        >
+          <div class="col-nom">
+            <span class="ordre">{{ ce.ordre_execution }}</span>
+            {{ ce.nom }}
+            <span class="part-chantier">{{ ce.part_chantier }}%</span>
+          </div>
+
+          <div class="col-budget">
+            <span *ngIf="ce.budget_alloue > 0">{{ ce.budget_alloue | number:'1.0-0' }}</span>
+            <span *ngIf="ce.budget_alloue === 0" class="no-data">—</span>
+          </div>
+
+          <div class="col-reel">
+            <span *ngIf="ce.cout_reel > 0">{{ ce.cout_reel | number:'1.0-0' }}</span>
+            <span *ngIf="ce.cout_reel === 0" class="no-data">—</span>
+          </div>
+
+          <div class="col-ecart">
+            <ng-container *ngIf="ce.budget_alloue > 0 && ce.cout_reel > 0">
+              <span
+                class="ecart-badge"
+                [ngClass]="{
+                  'ecart-ok': getStatutEcart(ce) === 'ok',
+                  'ecart-warning': getStatutEcart(ce) === 'warning',
+                  'ecart-danger': getStatutEcart(ce) === 'danger'
+                }"
+              >
+                {{ getEcartCorpsEtat(ce) > 0 ? '+' : '' }}{{ getEcartCorpsEtat(ce) | number:'1.0-0' }}
+                <span class="ecart-pct">({{ getEcartPctCorpsEtat(ce) > 0 ? '+' : '' }}{{ getEcartPctCorpsEtat(ce) }}%)</span>
+              </span>
+            </ng-container>
+            <span *ngIf="ce.statut === 'en_attente'" class="no-data">Non démarré</span>
+          </div>
+
+          <div class="col-avancement">
+            <div class="mini-progress">
+              <div class="mini-progress-fill" [style.width.%]="ce.avancement"></div>
+            </div>
+            <span class="avancement-pct">{{ ce.avancement }}%</span>
+          </div>
+
+          <div class="col-statut">
+            <span
+              class="statut-dot"
+              [ngClass]="{
+                'dot-termine': ce.statut === 'termine',
+                'dot-en-cours': ce.statut === 'en_cours',
+                'dot-attente': ce.statut === 'en_attente'
+              }"
+            ></span>
+            <span class="statut-label">
+              {{ ce.statut === 'termine' ? 'Terminé' : ce.statut === 'en_cours' ? 'En cours' : 'En attente' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Ligne totaux -->
+        <div class="table-totaux">
+          <div class="col-nom"><strong>Total</strong></div>
+          <div class="col-budget"><strong>{{ totalBudgetAlloue | number:'1.0-0' }} FCFA</strong></div>
+          <div class="col-reel"><strong>{{ totalCoutReel | number:'1.0-0' }} FCFA</strong></div>
+          <div class="col-ecart">
+            <strong
+              [ngClass]="{'valeur-danger': totalCoutReel > totalBudgetAlloue, 'valeur-ok': totalCoutReel <= totalBudgetAlloue}"
+            >
+              {{ totalCoutReel > totalBudgetAlloue ? '+' : '' }}{{ (totalCoutReel - totalBudgetAlloue) | number:'1.0-0' }} FCFA
+            </strong>
+          </div>
+          <div class="col-avancement"></div>
+          <div class="col-statut"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Note S0 figé -->
+    <div class="note-fige">
+      <span class="material-icons">lock</span>
+      Budget S0 figé le {{ budget.date_creation_s0 | date:'dd MMMM yyyy':'':'fr' }} — Aucune modification possible.
+    </div>
+
+  </div>
+</div>

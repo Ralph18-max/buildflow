@@ -1,0 +1,331 @@
+// =============================================
+// LAYOUT — SCSS corrigé
+// Correction : page-content padding réduit
+// car chaque page gère son propre padding interne
+// =============================================
+
+// ===== LAYOUT GLOBAL =====
+.app-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;   // nécessaire pour que sidebar + main restent en place
+  background: #F5F1EA;
+}
+
+// ===== OVERLAY MOBILE =====
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+
+  &.visible {
+    display: block;
+  }
+}
+
+// ===== SIDEBAR =====
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  height: 100vh;
+  background: #1A1A18;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 100;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  // ---- Logo ----
+  .sidebar-logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: white;
+      text-decoration: none;
+
+      .accent { color: #E8520A; }
+    }
+
+    .close-sidebar {
+      display: none;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.5);
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+
+      .material-icons { font-size: 1.3rem; }
+    }
+  }
+
+  // ---- Navigation ----
+  .sidebar-nav {
+    flex: 1;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .sidebar-section-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.35);
+      padding: 12px 10px 6px;
+      text-transform: uppercase;
+    }
+
+    a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      white-space: nowrap;
+
+      .material-icons {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+      }
+
+      &:hover {
+        background: rgba(255,255,255,0.08);
+        color: white;
+      }
+
+      &.active {
+        background: #E8520A;
+        color: white;
+      }
+    }
+  }
+
+  // ---- Footer ----
+  .sidebar-footer {
+    padding: 12px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+
+    .user-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #E8520A;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+
+    .user-info {
+      flex: 1;
+      min-width: 0;
+
+      .user-name {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: white;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+      }
+
+      .user-role {
+        font-size: 0.72rem;
+        color: rgba(255,255,255,0.45);
+        margin: 0;
+        text-transform: capitalize;
+      }
+    }
+
+    .logout-btn {
+      color: rgba(255,255,255,0.4);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      padding: 4px;
+      border-radius: 4px;
+      transition: color 0.15s;
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      cursor: pointer;
+
+      &:hover { color: white; }
+      .material-icons { font-size: 1.1rem; }
+    }
+  }
+}
+
+// ===== MAIN CONTENT =====
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+// ===== TOPBAR =====
+.top-header {
+  height: 56px;
+  min-height: 56px;
+  background: white;
+  border-bottom: 1px solid #E8E4DB;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  flex-shrink: 0;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    color: #1A1A18;
+    line-height: 1;
+
+    &:hover { background: #E8E4DB; }
+    .material-icons { font-size: 1.4rem; }
+  }
+
+  .icon-btn {
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    color: #1A1A18;
+    line-height: 1;
+
+    &:hover { background: #E8E4DB; }
+    .material-icons { font-size: 1.3rem; }
+  }
+
+  .notif-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: #E8520A;
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 700;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .user-avatar-sm {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #E8520A;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+}
+
+// ===== PAGE CONTENT =====
+// CORRECTION CLEF : padding 0 ici — chaque page (.chantiers-page,
+// .contrats-page, etc.) gère son propre padding interne (24px 28px).
+// Mettre du padding ici + dans la page = double padding visible.
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+  background: #F5F1EA;
+}
+
+// ===== RESPONSIVE =====
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 100;
+
+    &.open {
+      transform: translateX(0);
+    }
+
+    .sidebar-logo .close-sidebar {
+      display: flex;
+    }
+  }
+
+  .sidebar-overlay.visible {
+    display: block;
+  }
+
+  .top-header .menu-btn {
+    display: flex;
+  }
+
+  .page-content {
+    padding: 0; // toujours 0 — les pages gèrent leur padding
+  }
+}

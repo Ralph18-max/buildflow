@@ -1,0 +1,234 @@
+<div class="pointage-page">
+
+  <!-- Header -->
+  <div class="pointage-header">
+    <div class="header-left">
+      <span class="material-icons header-icon">people_alt</span>
+      <div>
+        <h1>Pointage main d'œuvre</h1>
+        <p class="header-sub">Présences et heures travaillées</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="allerRapport()">
+        <span class="material-icons">description</span>
+        Rapport journalier
+      </button>
+    </div>
+  </div>
+
+  <!-- Onglets -->
+  <div class="onglets">
+    <button class="onglet" [class.actif]="ongletActif === 'pointage'" (click)="ongletActif = 'pointage'">
+      <span class="material-icons">edit_note</span>
+      Saisie du jour
+    </button>
+    <button class="onglet" [class.actif]="ongletActif === 'historique'" (click)="ongletActif = 'historique'">
+      <span class="material-icons">history</span>
+      Historique
+      <span class="badge-count">{{ historiquePointages.length }}</span>
+    </button>
+  </div>
+
+  <!-- ===== ONGLET SAISIE ===== -->
+  <div *ngIf="ongletActif === 'pointage'">
+
+    <!-- Succès -->
+    <div class="success-banner" *ngIf="soumis">
+      <span class="material-icons">check_circle</span>
+      Pointage enregistré avec succès !
+    </div>
+
+    <!-- Sélecteurs -->
+    <div class="selectors-row">
+      <div class="selector-group">
+        <label>
+          <span class="material-icons">calendar_today</span>
+          Date
+        </label>
+        <input type="date" [(ngModel)]="dateSelectionnee" class="selector-input" />
+      </div>
+      <div class="selector-group">
+        <label>
+          <span class="material-icons">location_on</span>
+          Chantier
+        </label>
+        <select [(ngModel)]="chantierSelectionne" class="selector-input">
+          <option *ngFor="let c of chantiers" [value]="c.id">{{ c.nom }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- KPI présence -->
+    <div class="kpi-presence">
+      <div class="kpi-card">
+        <span class="kpi-num present">{{ totalPresents }}</span>
+        <span class="kpi-label">Présents</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-num absent">{{ totalAbsents }}</span>
+        <span class="kpi-label">Absents</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-num heures">{{ getTotalHeures() }}h</span>
+        <span class="kpi-label">Total heures</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-num total">{{ intervenantsChantier.length }}</span>
+        <span class="kpi-label">Effectif prévu</span>
+      </div>
+    </div>
+
+    <!-- Table pointage -->
+    <div class="table-section">
+      <div class="table-header">
+        <span class="table-title">Liste des intervenants</span>
+        <button class="btn-tous" (click)="toggleTousPresents()">
+          <span class="material-icons">{{ tousPresents() ? 'remove_done' : 'done_all' }}</span>
+          {{ tousPresents() ? 'Tout décocher' : 'Tous présents' }}
+        </button>
+      </div>
+
+      <div class="pointage-table">
+        <!-- En-tête -->
+        <div class="table-row header-row">
+          <div class="col-presence">Présence</div>
+          <div class="col-nom">Nom / Rôle</div>
+          <div class="col-entreprise">Entreprise</div>
+          <div class="col-heures">Heures</div>
+          <div class="col-obs">Observations</div>
+        </div>
+
+        <!-- Lignes intervenants -->
+        <div *ngFor="let i of intervenantsChantier"
+          class="table-row"
+          [class.absent-row]="!i.present">
+
+          <!-- Toggle présence -->
+          <div class="col-presence">
+            <button class="presence-toggle"
+              [class.present]="i.present"
+              [class.absent]="!i.present"
+              (click)="togglePresence(i)">
+              <span class="material-icons">{{ i.present ? 'check_circle' : 'cancel' }}</span>
+            </button>
+          </div>
+
+          <!-- Nom -->
+          <div class="col-nom">
+            <div class="intervenant-avatar" [class.absent]="!i.present">
+              {{ i.prenom[0] }}{{ i.nom[0] }}
+            </div>
+            <div class="intervenant-info">
+              <span class="intervenant-nom">{{ i.prenom }} {{ i.nom }}</span>
+              <span class="intervenant-role">{{ i.role }}</span>
+            </div>
+          </div>
+
+          <!-- Entreprise -->
+          <div class="col-entreprise">
+            <span class="entreprise-tag">{{ i.entreprise }}</span>
+          </div>
+
+          <!-- Heures — FIX #2 : méthodes propres -->
+          <div class="col-heures">
+            <div class="heures-control" [class.disabled]="!i.present">
+              <button class="heures-btn"
+                (click)="decrementerHeures(i)"
+                [disabled]="!i.present || i.heures === 0">
+                <span class="material-icons">remove</span>
+              </button>
+              <span class="heures-val">{{ i.present ? i.heures + 'h' : '—' }}</span>
+              <button class="heures-btn"
+                (click)="incrementerHeures(i)"
+                [disabled]="!i.present || i.heures >= 12">
+                <span class="material-icons">add</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Observations -->
+          <div class="col-obs">
+            <input type="text"
+              [(ngModel)]="i.observations"
+              [placeholder]="i.present ? 'Remarque…' : 'Motif d\'absence…'"
+              class="obs-input" />
+          </div>
+        </div>
+
+        <div *ngIf="intervenantsChantier.length === 0" class="empty-table">
+          <span class="material-icons">people_outline</span>
+          <p>Aucun intervenant enregistré pour ce chantier</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions — FIX #2 : getTauxPresence() au lieu du calcul inline -->
+    <div class="form-actions">
+      <div class="taux-presence">
+        Taux de présence :
+        <strong>{{ getTauxPresence() }}%</strong>
+      </div>
+      <button class="btn-secondary" routerLink="/terrain">
+        <span class="material-icons">arrow_back</span>
+        Retour
+      </button>
+      <button class="btn-primary" (click)="soumettre()" [disabled]="loading || intervenantsChantier.length === 0">
+        <span class="material-icons" *ngIf="!loading">save</span>
+        <span class="spinner" *ngIf="loading"></span>
+        {{ loading ? 'Enregistrement…' : 'Valider le pointage' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== ONGLET HISTORIQUE ===== -->
+  <div *ngIf="ongletActif === 'historique'" class="historique-section">
+
+    <div *ngFor="let p of historiquePointages" class="historique-card">
+      <div class="histo-card-header">
+        <div class="histo-meta">
+          <span class="histo-chantier">{{ p.chantierNom }}</span>
+          <!-- FIX #3 : date sans locale 'fr' hardcodée — géré par LOCALE_ID global -->
+          <span class="histo-date">{{ p.date | date:'EEEE d MMMM yyyy' }}</span>
+        </div>
+        <div class="histo-kpi">
+          <span class="histo-badge green">
+            <span class="material-icons">check_circle</span>
+            {{ p.totalPresents }} présents
+          </span>
+          <span class="histo-badge orange">
+            <span class="material-icons">schedule</span>
+            {{ p.totalHeures }}h travaillées
+          </span>
+          <span class="histo-badge gray">
+            <span class="material-icons">verified</span>
+            Soumis
+          </span>
+        </div>
+      </div>
+
+      <div class="histo-intervenants">
+        <div *ngFor="let iv of p.intervenants" class="histo-intervenant" [class.absent]="!iv.present">
+          <div class="histo-avatar" [class.absent]="!iv.present">
+            {{ iv.prenom[0] }}{{ iv.nom[0] }}
+          </div>
+          <div class="histo-iv-info">
+            <span class="histo-iv-nom">{{ iv.prenom }} {{ iv.nom }}</span>
+            <span class="histo-iv-role">{{ iv.role }}</span>
+          </div>
+          <div class="histo-iv-heures">
+            <span *ngIf="iv.present" class="heures-ok">{{ iv.heures }}h</span>
+            <span *ngIf="!iv.present" class="heures-absent">Absent</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="historiquePointages.length === 0" class="empty-state">
+      <span class="material-icons">people_outline</span>
+      <p>Aucun pointage enregistré</p>
+    </div>
+
+  </div>
+
+</div>

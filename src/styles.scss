@@ -1,1 +1,42 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+$buildflow-primary: mat.m2-define-palette(mat.$m2-deep-orange-palette);
+$buildflow-accent: mat.m2-define-palette(mat.$m2-cyan-palette);
+
+$buildflow-theme: mat.m2-define-light-theme((
+  color: (
+    primary: $buildflow-primary,
+    accent: $buildflow-accent,
+  )
+));
+
+@include mat.all-component-themes($buildflow-theme);
+
+:root {
+  --cream: #F5F1EA;
+  --dark: #1A1A18;
+  --orange: #E8520A;
+  --gray-mid: #6B6B67;
+  --gray-light: #E8E4DB;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--dark);
+}
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--cream);
+  color: var(--dark);
+}
+
+h1, h2, h3, .logo, .stat-number {
+  font-family: 'Syne', sans-serif;
+}
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 60px; // compense la navbar fixe
+}

@@ -1,0 +1,271 @@
+<div class="terrain-page">
+
+  <!-- Header -->
+  <div class="terrain-header">
+    <div class="header-left">
+      <span class="material-icons header-icon">construction</span>
+      <div>
+        <h1>Terrain</h1>
+        <p class="header-sub">
+          {{ isChef ? 'Module chef de chantier' : 'Consultation des rapports' }}
+        </p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <!-- Pointage MO : uniquement pour le chef de chantier -->
+      <button class="btn-secondary" *ngIf="isChef" (click)="allerPointage()">
+        <span class="material-icons">people</span>
+        Pointage MO
+      </button>
+    </div>
+  </div>
+
+  <!-- Onglets -->
+  <div class="onglets">
+
+    <!-- "Nouveau rapport" : uniquement pour le chef de chantier -->
+    <button
+      *ngIf="peutCreerRapport"
+      class="onglet"
+      [class.actif]="ongletActif === 'nouveau'"
+      (click)="setOnglet('nouveau')">
+      <span class="material-icons">add_circle_outline</span>
+      Nouveau rapport
+    </button>
+
+    <!-- "Historique" : visible pour tous les rôles -->
+    <button
+      class="onglet"
+      [class.actif]="ongletActif === 'historique'"
+      (click)="setOnglet('historique')">
+      <span class="material-icons">history</span>
+      Historique
+      <span class="badge-count">{{ rapportsSoumis.length }}</span>
+    </button>
+
+  </div>
+
+  <!-- ===== ONGLET NOUVEAU RAPPORT — chef de chantier uniquement ===== -->
+  <div *ngIf="ongletActif === 'nouveau' && peutCreerRapport">
+
+    <div class="success-banner" *ngIf="soumis">
+      <span class="material-icons">check_circle</span>
+      Rapport soumis avec succès ! Redirection vers l'historique…
+    </div>
+
+    <form [formGroup]="rapportForm" (ngSubmit)="soumettre()" class="rapport-form">
+
+      <!-- Section 1 — Infos générales -->
+      <div class="form-section">
+        <div class="section-title">
+          <span class="material-icons">info_outline</span>
+          Informations générales
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Chantier <span class="required">*</span></label>
+            <!-- Seuls les chantiers assignés au chef apparaissent -->
+            <select formControlName="chantierId" [class.error]="rapportForm.get('chantierId')?.invalid && rapportForm.get('chantierId')?.touched">
+              <option value="">— Sélectionner un chantier —</option>
+              <option *ngFor="let c of chantiers" [value]="c.id">{{ c.nom }}</option>
+            </select>
+            <span class="error-msg" *ngIf="rapportForm.get('chantierId')?.invalid && rapportForm.get('chantierId')?.touched">Chantier requis</span>
+          </div>
+          <div class="form-group">
+            <label>Date du rapport <span class="required">*</span></label>
+            <input type="date" formControlName="date" [class.error]="rapportForm.get('date')?.invalid && rapportForm.get('date')?.touched" />
+          </div>
+          <div class="form-group">
+            <label>Rédigé par <span class="required">*</span></label>
+            <input type="text" formControlName="redacteur" placeholder="Votre nom" />
+          </div>
+          <div class="form-group">
+            <label>Effectif présent <span class="required">*</span></label>
+            <div class="effectif-input">
+              <span class="material-icons">people</span>
+              <input type="number" formControlName="effectif" min="0" placeholder="0" />
+              <span class="effectif-unit">personnes</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2 — Météo -->
+      <div class="form-section">
+        <div class="section-title">
+          <span class="material-icons">wb_cloudy</span>
+          Météo du jour
+        </div>
+        <div class="meteo-grid">
+          <button type="button"
+            *ngFor="let m of meteoOptions"
+            class="meteo-btn"
+            [class.selected]="meteoSelectionnee === m.valeur"
+            (click)="selectionnerMeteo(m.valeur)">
+            <span class="material-icons">{{ m.icone }}</span>
+            <span>{{ m.label }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Section 3 — Corps d'état travaillés -->
+      <div class="form-section">
+        <div class="section-title">
+          <span class="material-icons">build</span>
+          Corps d'état travaillés aujourd'hui
+        </div>
+        <div class="corps-etat-grid">
+          <div *ngFor="let c of corpsEtatDisponibles"
+            class="corps-card"
+            [class.selected]="c.selected"
+            (click)="toggleCorpsEtat(c)">
+            <div class="corps-check">
+              <span class="material-icons">{{ c.selected ? 'check_box' : 'check_box_outline_blank' }}</span>
+            </div>
+            <div class="corps-info">
+              <span class="corps-nom">{{ c.nom }}</span>
+              <span class="corps-avancement">Avancement global : {{ c.avancement }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="getCorpsEtatSelectionnes().length > 0" class="avancement-section">
+          <p class="avancement-title">Avancement réalisé aujourd'hui (%) :</p>
+          <div *ngFor="let c of getCorpsEtatSelectionnes()" class="avancement-row">
+            <span class="avancement-label">{{ c.nom }}</span>
+            <div class="avancement-control">
+              <input type="range" [(ngModel)]="c.avancementJour" [ngModelOptions]="{standalone: true}" min="0" max="100" step="5" />
+              <span class="avancement-value">{{ c.avancementJour }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4 — Observations -->
+      <div class="form-section">
+        <div class="section-title">
+          <span class="material-icons">notes</span>
+          Observations du jour
+        </div>
+        <div class="form-group">
+          <label>Travaux effectués, remarques générales <span class="required">*</span></label>
+          <textarea formControlName="observations" rows="4"
+            placeholder="Décrivez les travaux réalisés aujourd'hui, l'avancement constaté, les équipes présentes…"
+            [class.error]="rapportForm.get('observations')?.invalid && rapportForm.get('observations')?.touched">
+          </textarea>
+          <span class="error-msg" *ngIf="rapportForm.get('observations')?.invalid && rapportForm.get('observations')?.touched">
+            Observations requises
+          </span>
+        </div>
+      </div>
+
+      <!-- Section 5 — Incidents -->
+      <div class="form-section incidents-section">
+        <div class="section-title">
+          <span class="material-icons">warning_amber</span>
+          Incidents / Signalements
+          <span class="optional-tag">Optionnel</span>
+        </div>
+        <div class="form-group">
+          <textarea formControlName="incidents" rows="3"
+            placeholder="Pannes, accidents, blocages, retards, problèmes matériaux… Laissez vide si aucun incident.">
+          </textarea>
+        </div>
+        <div class="incident-hint">
+          <span class="material-icons">info</span>
+          Un incident sera signalé en alerte rouge sur le tableau de bord de l'Admin.
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="rapportForm.reset()">
+          <span class="material-icons">refresh</span>
+          Réinitialiser
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="loading">
+          <span class="material-icons" *ngIf="!loading">send</span>
+          <span class="spinner" *ngIf="loading"></span>
+          {{ loading ? 'Envoi en cours…' : 'Soumettre le rapport' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ===== ONGLET HISTORIQUE — visible pour tous ===== -->
+  <div *ngIf="ongletActif === 'historique'" class="historique-section">
+
+    <div class="historique-header">
+      <div class="historique-stats">
+        <div class="stat-mini">
+          <span class="stat-mini-num">{{ rapportsSoumis.length }}</span>
+          <span class="stat-mini-label">Rapports soumis</span>
+        </div>
+        <div class="stat-mini">
+          <span class="stat-mini-num">{{ rapportsSoumis[0]?.date | date:'dd/MM' }}</span>
+          <span class="stat-mini-label">Dernier rapport</span>
+        </div>
+      </div>
+      <div class="form-group filtre-chantier">
+        <!-- Select filtré selon les chantiers accessibles au rôle connecté -->
+        <select [(ngModel)]="filtreChantierHistorique">
+          <option [value]="0">Tous les chantiers</option>
+          <option *ngFor="let c of chantiers" [value]="c.id">{{ c.nom }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngFor="let r of rapportsFiltres" class="rapport-card" [class.has-incident]="r.incidents">
+      <div class="rapport-card-header">
+        <div class="rapport-meta">
+          <span class="rapport-chantier">{{ r.chantier }}</span>
+          <span class="rapport-date">{{ r.date | date:'EEEE d MMMM yyyy' : '' : 'fr' }}</span>
+        </div>
+        <div class="rapport-badges">
+          <span class="badge-meteo">
+            <span class="material-icons">{{ getMeteoIcone(r.meteo) }}</span>
+            {{ getMeteoLabel(r.meteo) }}
+          </span>
+          <span class="badge-effectif">
+            <span class="material-icons">people</span>
+            {{ r.effectif }} pers.
+          </span>
+          <span class="badge-incident" *ngIf="r.incidents">
+            <span class="material-icons">warning</span>
+            Incident
+          </span>
+        </div>
+      </div>
+
+      <div class="rapport-card-body">
+        <div class="rapport-corps-etat" *ngIf="r.corpsEtatTravailles.length > 0">
+          <span *ngFor="let ce of r.corpsEtatTravailles" class="tag-corps">{{ ce }}</span>
+        </div>
+        <p class="rapport-obs">{{ r.observations }}</p>
+        <div class="rapport-incident" *ngIf="r.incidents">
+          <span class="material-icons">warning_amber</span>
+          {{ r.incidents }}
+        </div>
+      </div>
+
+      <div class="rapport-card-footer">
+        <span class="rapport-redacteur">
+          <span class="material-icons">person</span>
+          {{ r.redacteur }}
+        </span>
+        <span class="rapport-statut">
+          <span class="material-icons">check_circle</span>
+          Soumis
+        </span>
+      </div>
+    </div>
+
+    <div *ngIf="rapportsFiltres.length === 0" class="empty-state">
+      <span class="material-icons">description</span>
+      <p>Aucun rapport pour ce chantier</p>
+    </div>
+
+  </div>
+
+</div>

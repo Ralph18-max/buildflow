@@ -1,0 +1,101 @@
+<div class="app-layout">
+
+  <div
+    class="sidebar-overlay"
+    [class.visible]="sidebarOpen"
+    (click)="closeSidebar()">
+  </div>
+
+  <aside class="sidebar" [class.open]="sidebarOpen">
+    <div class="sidebar-logo">
+      <div class="logo-row">
+        <a routerLink="/dashboard" class="logo">
+          Buil<span class="accent">D</span>Flow
+        </a>
+        <button class="close-sidebar" (click)="closeSidebar()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">PRINCIPAL</div>
+
+      <a *ngIf="isAdmin()" routerLink="/dashboard" routerLinkActive="active">
+        <span class="material-icons">dashboard</span> Tableau de bord
+      </a>
+
+      <a *ngIf="isAdminOrConducteur()" routerLink="/clients" routerLinkActive="active">
+        <span class="material-icons">people</span> Clients
+      </a>
+
+      <a *ngIf="isAdminOrConducteur()" routerLink="/contrats" routerLinkActive="active">
+        <span class="material-icons">description</span> Contrats
+      </a>
+
+      <a routerLink="/chantiers" routerLinkActive="active">
+        <span class="material-icons">construction</span> Chantiers
+      </a>
+
+      <a *ngIf="isTerrain()" routerLink="/terrain" routerLinkActive="active">
+        <span class="material-icons">engineering</span> Terrain
+      </a>
+
+      <div class="sidebar-section-label">GESTION</div>
+
+      <a *ngIf="isAdminOrConducteur()" routerLink="/facturation" routerLinkActive="active">
+  <span class="material-icons">receipt_long</span> Facturation
+</a>
+<a *ngIf="isComptable() || isAdmin()" routerLink="/comptabilite" routerLinkActive="active">
+  <span class="material-icons">account_balance</span> Comptabilité
+</a>
+
+<a *ngIf="isComptable()" routerLink="/facturation" routerLinkActive="active">
+  <span class="material-icons">account_balance</span> Finances
+</a>
+
+      <a routerLink="/documents" routerLinkActive="active">
+        <span class="material-icons">folder</span> Documents
+      </a>
+
+      <a *ngIf="isAdmin()" routerLink="/users" routerLinkActive="active">
+        <span class="material-icons">manage_accounts</span> Utilisateurs
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar">{{ user.initiales }}</div>
+        <div class="user-info">
+          <p class="user-name">{{ user.nom }}</p>
+          <p class="user-role">{{ user.role }}</p>
+        </div>
+        <a routerLink="/login" class="logout-btn" title="Se déconnecter">
+          <span class="material-icons">logout</span>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-header">
+      <div class="header-left">
+        <button class="menu-btn" (click)="toggleSidebar()">
+          <span class="material-icons">menu</span>
+        </button>
+      </div>
+      <div class="header-right">
+        <button class="icon-btn">
+          <span class="material-icons">notifications_none</span>
+          <span class="notif-badge">3</span>
+        </button>
+        <div class="user-avatar-sm">{{ user.initiales }}</div>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+
+</div>

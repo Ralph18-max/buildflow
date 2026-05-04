@@ -1,0 +1,139 @@
+<div class="documents-page">
+
+  <!-- En-tête -->
+  <div class="page-header">
+    <div>
+      <h1>Documents</h1>
+      <p>{{ filteredDocuments.length }} document(s) trouvé(s)</p>
+    </div>
+    <button class="btn-primary" (click)="openUpload()">
+      <span class="material-icons">upload_file</span>
+      Ajouter un document
+    </button>
+  </div>
+
+  <!-- Chips catégories — ce sont des FILTRES, pas des colonnes -->
+  <div class="category-chips">
+    <button
+      class="chip"
+      [class.active]="activeCategory === 'tous'"
+      (click)="activeCategory = 'tous'">
+      <span class="material-icons">folder_open</span>
+      Tous
+      <span class="chip-count">{{ getCountByCategorie('tous') }}</span>
+    </button>
+    <button
+      *ngFor="let cat of categories"
+      class="chip"
+      [class.active]="activeCategory === cat.key"
+      (click)="activeCategory = cat.key">
+      <span class="material-icons">{{ cat.icon }}</span>
+      {{ cat.label }}
+      <span class="chip-count">{{ getCountByCategorie(cat.key) }}</span>
+    </button>
+  </div>
+
+  <!-- Filtres : recherche + sélecteur chantier -->
+  <div class="filter-row">
+    <div class="search-bar">
+      <span class="material-icons">search</span>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        placeholder="Rechercher un document..."
+      />
+    </div>
+    <div class="filter-select">
+      <span class="material-icons">construction</span>
+      <select [(ngModel)]="filtreChantier">
+        <option value="">Tous les chantiers</option>
+        <option *ngFor="let c of chantiers" [value]="c.id">{{ c.nom }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Tableau — 7 colonnes, thead et tbody parfaitement alignés -->
+  <div class="table-container">
+    <table class="documents-table">
+      <thead>
+        <tr>
+          <th>Document</th>
+          <th>Catégorie</th>
+          <th>Chantier</th>
+          <th>Ajouté par</th>
+          <th>Date</th>
+          <th>Taille</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let doc of filteredDocuments">
+
+          <!-- Col 1 : Document = badge extension + nom -->
+          <td>
+            <div class="cell-document">
+              <div class="ext-badge" [ngClass]="doc.extension.toLowerCase()">
+                {{ doc.extension.toUpperCase() }}
+              </div>
+              <div class="doc-info">
+                <span class="doc-name" [title]="doc.nom">{{ doc.nom }}</span>
+                <span class="doc-type">{{ doc.extension.toUpperCase() }}</span>
+              </div>
+            </div>
+          </td>
+
+          <!-- Col 2 : Catégorie = badge coloré -->
+          <td>
+            <span class="cat-badge" [ngClass]="doc.categorie">
+              <span class="material-icons">{{ getCategorieIcon(doc.categorie) }}</span>
+              {{ getCategorieName(doc.categorie) }}
+            </span>
+          </td>
+
+          <!-- Col 3 : Chantier -->
+          <td>
+            <span class="cell-chantier" [title]="doc.chantier">{{ doc.chantier }}</span>
+          </td>
+
+          <!-- Col 4 : Ajouté par -->
+          <td>
+            <span class="cell-auteur">{{ doc.ajoute_par }}</span>
+          </td>
+
+          <!-- Col 5 : Date -->
+          <td>
+            <span class="cell-date">{{ doc.date }}</span>
+          </td>
+
+          <!-- Col 6 : Taille -->
+          <td>
+            <span class="cell-taille">{{ doc.taille }}</span>
+          </td>
+
+          <!-- Col 7 : Actions -->
+          <td class="cell-actions" (click)="$event.stopPropagation()">
+            <div class="actions-group">
+              <button class="btn-action" title="Télécharger" (click)="telecharger(doc)">
+                <span class="material-icons">download</span>
+              </button>
+              <button class="btn-action danger" title="Supprimer" (click)="supprimer(doc)">
+                <span class="material-icons">delete_outline</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <!-- État vide -->
+        <tr *ngIf="filteredDocuments.length === 0">
+          <td colspan="7">
+            <div class="empty-state">
+              <span class="material-icons">folder_open</span>
+              <p>Aucun document trouvé</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

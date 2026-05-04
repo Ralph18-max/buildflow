@@ -1,0 +1,234 @@
+<div class="users-page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1>Gestion des utilisateurs</h1>
+      <p>Seul l'Administrateur peut créer et gérer les comptes</p>
+    </div>
+    <button class="btn-create" (click)="openModal()">
+      <span class="material-icons">person_add</span>
+      Créer un compte
+    </button>
+  </div>
+
+  <!-- STATS -->
+  <!-- STATS -->
+<div class="users-stats">
+  <div class="stat-card">
+    <span class="material-icons">group</span>
+    <div>
+      <p class="stat-val">{{ users.length }}</p>
+      <p class="stat-lbl">Utilisateurs total</p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <span class="material-icons">check_circle</span>
+    <div>
+      <p class="stat-val">{{ getActifCount() }}</p>
+      <p class="stat-lbl">Comptes actifs</p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <span class="material-icons">engineering</span>
+    <div>
+      <p class="stat-val">{{ getRoleCount('conducteur') }}</p>
+      <p class="stat-lbl">Conducteurs</p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <span class="material-icons">construction</span>
+    <div>
+      <p class="stat-val">{{ getRoleCount('chef_chantier') }}</p>
+      <p class="stat-lbl">Chefs de chantier</p>
+    </div>
+  </div>
+</div>
+
+  <!-- TABLE -->
+  <div class="users-card">
+    <div class="users-table">
+      <div class="table-header">
+        <span>Utilisateur</span>
+        <span>Email</span>
+        <span>Rôle</span>
+        <span>Statut</span>
+        <span>Actions</span>
+      </div>
+
+      <ng-container *ngFor="let u of users">
+        <div class="table-row">
+          <div class="user-info">
+            <div class="user-avatar" [ngClass]="'role-' + u.role">
+              {{ u.initiales }}
+            </div>
+            <div>
+              <p class="user-nom">{{ u.nom }}</p>
+              <p class="user-role-sub">{{ getRoleLabel(u.role) }}</p>
+            </div>
+          </div>
+          <div class="user-email">{{ u.email }}</div>
+          <div class="user-role-badge">
+            <span class="role-badge" [ngClass]="u.role">
+              {{ getRoleLabel(u.role) }}
+            </span>
+          </div>
+          <div class="user-statut">
+            <span class="statut-dot" [ngClass]="u.actif ? 'actif' : 'inactif'"></span>
+            <span>{{ u.actif ? 'Actif' : 'Inactif' }}</span>
+          </div>
+          <div class="user-actions">
+            <button class="action-btn" title="Modifier">
+              <span class="material-icons">edit</span>
+            </button>
+            <button
+              class="action-btn"
+              [title]="u.actif ? 'Désactiver' : 'Activer'"
+              (click)="toggleActif(u)"
+            >
+              <span class="material-icons">
+                {{ u.actif ? 'block' : 'check_circle' }}
+              </span>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+    </div>
+  </div>
+
+  <!-- MODAL CRÉER COMPTE -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <div>
+          <h2>Créer un compte collaborateur</h2>
+          <p>Un email avec le mot de passe temporaire sera envoyé automatiquement</p>
+        </div>
+        <button class="modal-close" (click)="closeModal()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="success-banner" *ngIf="successMessage">
+        <span class="material-icons">mark_email_read</span>
+        {{ successMessage }}
+      </div>
+
+      <!-- FORM -->
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()" *ngIf="!successMessage">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nom</label>
+            <div class="input-wrapper">
+              <span class="material-icons input-icon">person_outline</span>
+              <input
+                type="text"
+                formControlName="nom"
+                placeholder="Konan"
+                [class.error]="nom?.invalid && nom?.touched"
+              />
+            </div>
+            <span class="error-msg" *ngIf="nom?.invalid && nom?.touched">
+              Nom requis
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label>Prénom</label>
+            <div class="input-wrapper">
+              <span class="material-icons input-icon">person_outline</span>
+              <input
+                type="text"
+                formControlName="prenom"
+                placeholder="Yves"
+                [class.error]="prenom?.invalid && prenom?.touched"
+              />
+            </div>
+            <span class="error-msg" *ngIf="prenom?.invalid && prenom?.touched">
+              Prénom requis
+            </span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Adresse email professionnelle</label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon">mail_outline</span>
+            <input
+              type="email"
+              formControlName="email"
+              placeholder="collaborateur@entreprise.com"
+              [class.error]="email?.invalid && email?.touched"
+            />
+          </div>
+          <span class="error-msg" *ngIf="email?.invalid && email?.touched">
+            Email invalide
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label>Rôle</label>
+          <div class="roles-grid">
+            <ng-container *ngFor="let r of roles">
+              <label
+                class="role-option"
+                [class.selected]="role?.value === r.value"
+              >
+                <input
+                  type="radio"
+                  formControlName="role"
+                  [value]="r.value"
+                  hidden
+                />
+                <span class="material-icons">{{ r.icon }}</span>
+                <span>{{ r.label }}</span>
+              </label>
+            </ng-container>
+          </div>
+          <span class="error-msg" *ngIf="role?.invalid && role?.touched">
+            Sélectionnez un rôle
+          </span>
+        </div>
+
+        <div class="modal-info">
+          <span class="material-icons">info_outline</span>
+          <p>Le collaborateur recevra un email avec son mot de passe temporaire. Il devra le changer à sa première connexion.</p>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeModal()">
+            Annuler
+          </button>
+          <button
+            type="submit"
+            class="btn-submit"
+            [disabled]="userForm.invalid || isLoading"
+          >
+            <span *ngIf="!isLoading">
+              <span class="material-icons">send</span>
+              Créer et envoyer l'invitation
+            </span>
+            <span *ngIf="isLoading" class="loading">
+              <span class="material-icons spinning">autorenew</span>
+              Création en cours...
+            </span>
+          </button>
+        </div>
+
+      </form>
+
+      <!-- AFTER SUCCESS -->
+      <div *ngIf="successMessage" class="modal-footer">
+        <button class="btn-submit" (click)="closeModal()">
+          Fermer
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

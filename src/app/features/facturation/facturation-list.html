@@ -1,0 +1,165 @@
+<div class="facturation-page">
+
+  <!-- En-tête -->
+  <div class="page-header">
+    <div>
+      <h1>Facturation</h1>
+      <p>{{ factures.length }} facture(s) enregistrée(s)</p>
+    </div>
+    <button *ngIf="'facturation:create' | can" class="btn-primary" (click)="openModal()">
+      <span class="material-icons">add</span>
+      Nouvelle facture
+    </button>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <span class="kpi-label">Total encaissé</span>
+        <div class="kpi-icon green"><span class="material-icons">payments</span></div>
+      </div>
+      <div class="kpi-value green">{{ formatMontant(getTotalEncaisse()) }}</div>
+      <div class="kpi-sub">FCFA encaissés</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <span class="kpi-label">En attente</span>
+        <div class="kpi-icon orange"><span class="material-icons">schedule</span></div>
+      </div>
+      <div class="kpi-value orange">{{ formatMontant(getTotalEnAttente()) }}</div>
+      <div class="kpi-sub">FCFA à encaisser</div>
+    </div>
+
+    <div class="kpi-card alert">
+      <div class="kpi-top">
+        <span class="kpi-label">En retard</span>
+        <div class="kpi-icon red"><span class="material-icons">warning_amber</span></div>
+      </div>
+      <div class="kpi-value red">{{ getCountRetard() }}</div>
+      <div class="kpi-sub">facture(s) échues</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <span class="kpi-label">Factures émises</span>
+        <div class="kpi-icon blue"><span class="material-icons">receipt_long</span></div>
+      </div>
+      <div class="kpi-value">{{ factures.length }}</div>
+      <div class="kpi-sub">au total</div>
+    </div>
+  </div>
+
+  <!-- Filtres + Recherche -->
+  <div class="filter-row">
+    <div class="filter-tabs">
+      <button [class.active]="activeTab === 'tous'"      (click)="activeTab = 'tous'">Toutes</button>
+      <button [class.active]="activeTab === 'payee'"     (click)="activeTab = 'payee'">Payées</button>
+      <button [class.active]="activeTab === 'emise'"     (click)="activeTab = 'emise'">Émises</button>
+      <button [class.active]="activeTab === 'en_retard'" (click)="activeTab = 'en_retard'">En retard</button>
+      <button [class.active]="activeTab === 'en_attente'"(click)="activeTab = 'en_attente'">En attente</button>
+    </div>
+    <div class="search-bar">
+      <span class="material-icons">search</span>
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Rechercher par numéro, client..." />
+    </div>
+  </div>
+
+  <!-- Tableau -->
+  <div class="table-container">
+    <table class="factures-table">
+      <thead>
+        <tr>
+          <th>Numéro</th>
+          <th>Client / Chantier</th>
+          <th>Type</th>
+          <th>Montant TTC</th>
+          <th>Encaissé</th>
+          <th>Échéance</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let f of filteredFactures"
+          [ngClass]="{ 'row-retard': f.statut === 'en_retard' }"
+          (click)="voirFacture(f.id)"
+          style="cursor: pointer;">
+
+          <!-- Numéro -->
+          <td>
+            <div class="cell-numero">
+              <span class="numero">{{ f.numero }}</span>
+              <span class="sit-ref" *ngIf="f.sit_ref">{{ f.sit_ref }}</span>
+            </div>
+          </td>
+
+          <!-- Client / Chantier -->
+          <td>
+            <div class="cell-client">
+              <span class="client-name">{{ f.client }}</span>
+              <span class="chantier-name">{{ f.chantier }}</span>
+            </div>
+          </td>
+
+          <!-- Type -->
+          <td>
+            <span class="type-badge" [ngClass]="f.type">
+              {{ getTypeLabel(f.type) }}
+            </span>
+          </td>
+
+          <!-- Montant TTC -->
+          <td>
+            <div class="cell-montant">
+              <span class="montant-val">{{ f.montant_ttc }}</span>
+              <span class="montant-unit">FCFA TTC</span>
+            </div>
+          </td>
+
+          <!-- Encaissé -->
+          <td>
+            <div class="cell-encaisse" [ngClass]="getEncaisseClass(f)">
+              {{ f.encaisse }}
+              <span class="encaisse-unit">FCFA</span>
+            </div>
+          </td>
+
+          <!-- Échéance -->
+          <td>
+            <span class="cell-date" [ngClass]="{ 'overdue': f.statut === 'en_retard' }">
+              {{ f.date_echeance }}
+            </span>
+          </td>
+
+          <!-- Statut -->
+          <td>
+            <span class="statut-badge" [ngClass]="f.statut">
+              {{ getStatutLabel(f.statut) }}
+            </span>
+          </td>
+
+          <!-- Actions -->
+          <td class="cell-actions" (click)="$event.stopPropagation()">
+            <button class="btn-action" (click)="voirFacture(f.id)" title="Voir">
+              <span class="material-icons">visibility</span>
+            </button>
+          </td>
+        </tr>
+
+        <!-- État vide -->
+        <tr *ngIf="filteredFactures.length === 0">
+          <td colspan="8">
+            <div class="empty-state">
+              <span class="material-icons">receipt_long</span>
+              <p>Aucune facture trouvée</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

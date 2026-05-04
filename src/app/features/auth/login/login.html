@@ -1,0 +1,34 @@
+<div class="login-page">
+  <div class="login-card">
+
+    <div class="login-logo">
+      Buil<span class="accent">D</span>Flow
+    </div>
+    <p class="login-subtitle">Choisissez un profil pour tester l'application</p>
+
+    <div class="role-grid">
+      @for (r of roles; track r.value) {
+        <div
+          class="role-card"
+          [class.selected]="selectedRole === r.value"
+          (click)="selectRole(r.value)">
+          <div class="role-avatar">{{ r.initiales }}</div>
+          <div class="role-info">
+            <p class="role-label">{{ r.label }}</p>
+            <p class="role-desc">{{ r.description }}</p>
+          </div>
+          <span class="material-icons check-icon">check_circle</span>
+        </div>
+      }
+    </div>
+
+    <button class="btn-login" (click)="login()" [disabled]="loading">
+      @if (!loading) {
+        <span>Se connecter</span>
+      } @else {
+        <span class="loading-dots">Connexion en cours...</span>
+      }
+    </button>
+
+  </div>
+</div>

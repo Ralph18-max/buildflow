@@ -1,0 +1,480 @@
+<div class="comptabilite-page">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">
+        <span class="material-icons">account_balance</span>
+        Comptabilité
+      </h1>
+      <p class="page-subtitle">Suivi financier · Encaissements · Factures sous-traitants</p>
+    </div>
+  </div>
+
+  <!-- ── Succès banner ───────────────────────────────────────────────────── -->
+  <div class="success-banner" *ngIf="successMessage" (click)="fermerSuccess()">
+    <span class="material-icons">check_circle</span>
+    {{ successMessage }}
+  </div>
+
+  <!-- ── Tabs ────────────────────────────────────────────────────────────── -->
+  <div class="tabs-bar">
+    <button class="tab-btn" [class.active]="activeTab === 'dashboard'"     (click)="setTab('dashboard')">
+      <span class="material-icons">dashboard</span> Tableau de bord
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'encaissements'" (click)="setTab('encaissements')">
+      <span class="material-icons">payments</span> Encaissements
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'factures_st'"   (click)="setTab('factures_st')">
+      <span class="material-icons">receipt</span> Factures ST
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'bilan'"         (click)="setTab('bilan')">
+      <span class="material-icons">bar_chart</span> Bilan &amp; Clôture
+    </button>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       ONGLET 1 — TABLEAU DE BORD
+  ═════════════════════════════════════════════════════════════════════════ -->
+  <div class="tab-content" *ngIf="activeTab === 'dashboard'">
+
+    <!-- KPI cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card" [ngClass]="card.couleur" *ngFor="let card of kpiCards">
+        <div class="kpi-icon">
+          <span class="material-icons">{{ card.icone }}</span>
+        </div>
+        <div class="kpi-body">
+          <p class="kpi-label">{{ card.label }}</p>
+          <p class="kpi-value">{{ formatMontant(card.valeur) }} <span class="kpi-unit">{{ card.unite }}</span></p>
+          <p class="kpi-detail" *ngIf="card.detail">{{ card.detail }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ligne RAF + Marge globale -->
+    <div class="summary-row">
+      <div class="summary-card">
+        <span class="material-icons">trending_up</span>
+        <div>
+          <p class="summary-label">RAF Global (Reste À Facturer)</p>
+          <p class="summary-value">{{ formatMontant(rafGlobal) }} FCFA</p>
+        </div>
+      </div>
+      <div class="summary-card" [ngClass]="margeGlobale >= 0 ? 'positive' : 'negative'">
+        <span class="material-icons">{{ margeGlobale >= 0 ? 'thumb_up' : 'thumb_down' }}</span>
+        <div>
+          <p class="summary-label">Marge cumulée (tous chantiers)</p>
+          <p class="summary-value">{{ formatMontant(margeGlobale) }} FCFA</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tableau récap situations -->
+    <div class="section-block">
+      <div class="section-header">
+        <h2>Situations de travaux — Vue d'ensemble</h2>
+        <button class="btn-link" (click)="setTab('encaissements')">Voir tout →</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>N° Situation</th>
+              <th>Chantier</th>
+              <th>Client</th>
+              <th>Montant TTC</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of situations" [class.row-retard]="s.statut === 'en_retard'">
+              <td class="mono">{{ s.numero }}</td>
+              <td>{{ s.chantier }}</td>
+              <td class="text-muted">{{ s.client }}</td>
+              <td class="montant">{{ formatMontant(s.montantTTC) }} FCFA</td>
+              <td>
+                <span class="badge" [ngClass]="'badge-' + s.statut">
+                  {{ getStatutLabel(s.statut) }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       ONGLET 2 — ENCAISSEMENTS
+  ═════════════════════════════════════════════════════════════════════════ -->
+  <div class="tab-content" *ngIf="activeTab === 'encaissements'">
+
+    <div class="toolbar">
+      <div class="search-box">
+        <span class="material-icons">search</span>
+        <input type="text" [(ngModel)]="rechercheEncaissement" placeholder="Rechercher situation, chantier, client…" />
+      </div>
+      <div class="filter-tabs">
+        <button [class.active]="filtreStatutSituation === 'tous'"       (click)="filtreStatutSituation = 'tous'">Tous</button>
+        <button [class.active]="filtreStatutSituation === 'emise'"      (click)="filtreStatutSituation = 'emise'">Émises</button>
+        <button [class.active]="filtreStatutSituation === 'en_attente'" (click)="filtreStatutSituation = 'en_attente'">En attente</button>
+        <button [class.active]="filtreStatutSituation === 'en_retard'"  (click)="filtreStatutSituation = 'en_retard'">En retard</button>
+        <button [class.active]="filtreStatutSituation === 'payee'"      (click)="filtreStatutSituation = 'payee'">Payées</button>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>N° Situation</th>
+            <th>Chantier</th>
+            <th>Client</th>
+            <th>Date émission</th>
+            <th>Échéance</th>
+            <th>Avancement</th>
+            <th>Montant TTC</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of situationsFiltrees" [class.row-retard]="s.statut === 'en_retard'">
+            <td class="mono">{{ s.numero }}</td>
+            <td>
+              <a class="link-chantier" (click)="voirChantier(s.chantierId)">{{ s.chantier }}</a>
+            </td>
+            <td class="text-muted">{{ s.client }}</td>
+            <td>{{ s.dateEmission | date:'dd/MM/yyyy' }}</td>
+            <td [class.date-retard]="s.statut === 'en_retard'">{{ s.dateEcheance | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <div class="progress-inline">
+                <div class="progress-bar-sm">
+                  <div class="progress-fill" [style.width.%]="s.avancement"></div>
+                </div>
+                <span>{{ s.avancement }}%</span>
+              </div>
+            </td>
+            <td class="montant">{{ formatMontant(s.montantTTC) }}</td>
+            <td>
+              <span class="badge" [ngClass]="'badge-' + s.statut">
+                {{ getStatutLabel(s.statut) }}
+              </span>
+            </td>
+            <td>
+              <button
+                *ngIf="s.statut !== 'payee'"
+                class="btn-encaisser"
+                (click)="ouvrirModalEncaissement(s)">
+                <span class="material-icons">payments</span>
+                Encaisser
+              </button>
+              <span *ngIf="s.statut === 'payee'" class="ref-virement">
+                <span class="material-icons">check_circle</span>
+                {{ s.referenceVirement }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="empty-state" *ngIf="situationsFiltrees.length === 0">
+        <span class="material-icons">inbox</span>
+        <p>Aucune situation trouvée pour ces critères</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       ONGLET 3 — FACTURES SOUS-TRAITANTS
+  ═════════════════════════════════════════════════════════════════════════ -->
+  <div class="tab-content" *ngIf="activeTab === 'factures_st'">
+
+    <div class="toolbar">
+      <div class="search-box">
+        <span class="material-icons">search</span>
+        <input type="text" [(ngModel)]="rechercheFactureST" placeholder="Rechercher facture, chantier, intervenant…" />
+      </div>
+      <div class="filter-tabs">
+        <button [class.active]="filtreStatutFactureST === 'tous'"       (click)="filtreStatutFactureST = 'tous'">Toutes</button>
+        <button [class.active]="filtreStatutFactureST === 'en_attente'" (click)="filtreStatutFactureST = 'en_attente'">En attente</button>
+        <button [class.active]="filtreStatutFactureST === 'validee'"    (click)="filtreStatutFactureST = 'validee'">Validées</button>
+        <button [class.active]="filtreStatutFactureST === 'contestee'"  (click)="filtreStatutFactureST = 'contestee'">Contestées</button>
+      </div>
+      <button class="btn-primary" (click)="ouvrirModalFactureST()">
+        <span class="material-icons">add</span>
+        Nouvelle facture ST
+      </button>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>N° Facture</th>
+            <th>Chantier</th>
+            <th>Intervenant</th>
+            <th>Corps d'état</th>
+            <th>Date facture</th>
+            <th>Montant HT</th>
+            <th>TVA</th>
+            <th>Montant TTC</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let f of facturesST_filtrees" [class.row-contestee]="f.statut === 'contestee'">
+            <td class="mono">{{ f.numero }}</td>
+            <td>
+              <a class="link-chantier" (click)="voirChantier(f.chantierId)">{{ f.chantier }}</a>
+            </td>
+            <td>{{ f.intervenant }}</td>
+            <td class="text-muted">{{ f.corps_etat }}</td>
+            <td>{{ f.dateFacture | date:'dd/MM/yyyy' }}</td>
+            <td class="montant">{{ formatMontant(f.montantHT) }}</td>
+            <td class="montant text-muted">{{ formatMontant(f.montantTVA) }}</td>
+            <td class="montant bold">{{ formatMontant(f.montantTTC) }}</td>
+            <td>
+              <span class="badge" [ngClass]="'badge-fst-' + f.statut">
+                {{ getStatutLabel(f.statut) }}
+              </span>
+            </td>
+            <td>
+              <button
+                *ngIf="f.statut === 'en_attente'"
+                class="btn-valider"
+                (click)="validerFactureST(f)">
+                <span class="material-icons">check</span>
+                Valider
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="empty-state" *ngIf="facturesST_filtrees.length === 0">
+        <span class="material-icons">receipt_long</span>
+        <p>Aucune facture sous-traitant pour ces critères</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       ONGLET 4 — BILAN & CLÔTURE
+  ═════════════════════════════════════════════════════════════════════════ -->
+  <div class="tab-content" *ngIf="activeTab === 'bilan'">
+
+    <div class="bilan-info-banner">
+      <span class="material-icons">info</span>
+      <p>La clôture d'un chantier est <strong>irréversible</strong>. Le Comptable valide le bilan en premier, puis l'Administrateur procède à la clôture officielle.</p>
+    </div>
+
+    <div class="bilan-grid">
+      <div class="bilan-card" *ngFor="let b of bilans" [class.depassement]="b.depassement">
+
+        <div class="bilan-card-header">
+          <div class="bilan-infos">
+            <h3>{{ b.nom }}</h3>
+            <p class="bilan-client">{{ b.client }}</p>
+          </div>
+          <div class="bilan-badges">
+            <span class="badge" [ngClass]="'badge-chantier-' + b.statut">
+              {{ getStatutLabel(b.statut) }}
+            </span>
+            <span class="badge badge-bilan" [ngClass]="'badge-bilan-' + b.statut_bilan">
+              {{ getStatutLabel(b.statut_bilan) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="bilan-alerte" *ngIf="b.depassement">
+          <span class="material-icons">warning</span>
+          Dépassement budgétaire détecté — coût réel &gt; S0 × 1,05
+        </div>
+
+        <!-- Avancement -->
+        <div class="bilan-avancement">
+          <span>Avancement physique</span>
+          <div class="progress-bar-lg">
+            <div class="progress-fill" [style.width.%]="b.avancement"
+              [ngClass]="b.avancement === 100 ? 'done' : 'active'"></div>
+          </div>
+          <span class="pct">{{ b.avancement }}%</span>
+        </div>
+
+        <!-- Indicateurs financiers -->
+        <div class="bilan-financiers">
+          <div class="bilan-ligne">
+            <span class="bilan-ligne-label">Montant marché</span>
+            <span class="bilan-ligne-value">{{ formatMontant(b.montantMarche) }} FCFA</span>
+          </div>
+          <div class="bilan-ligne">
+            <span class="bilan-ligne-label">Total encaissé</span>
+            <span class="bilan-ligne-value green">{{ formatMontant(b.totalEncaisse) }} FCFA</span>
+          </div>
+          <div class="bilan-ligne">
+            <span class="bilan-ligne-label">Coût réel</span>
+            <span class="bilan-ligne-value" [class.red]="b.depassement">{{ formatMontant(b.coutReel) }} FCFA</span>
+          </div>
+          <div class="bilan-ligne">
+            <span class="bilan-ligne-label">RAF</span>
+            <span class="bilan-ligne-value orange">{{ formatMontant(b.raf) }} FCFA</span>
+          </div>
+          <div class="bilan-ligne separator">
+            <span class="bilan-ligne-label bold">Marge</span>
+            <span class="bilan-ligne-value bold" [class.green]="b.marge >= 0" [class.red]="b.marge < 0">
+              {{ formatMontant(b.marge) }} FCFA
+              ({{ getMargePourcent(b) | number:'1.1-1' }}%)
+            </span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="bilan-actions">
+          <button class="btn-outline" (click)="voirChantier(b.id)">
+            <span class="material-icons">open_in_new</span>
+            Voir le chantier
+          </button>
+
+          <button
+            *ngIf="peutValiderBilan && b.statut_bilan === 'en_cours'"
+            class="btn-valider-bilan"
+            (click)="validerBilan(b)">
+            <span class="material-icons">verified</span>
+            Valider le bilan
+          </button>
+
+          <span *ngIf="b.statut_bilan === 'bilan_valide'" class="bilan-valide-label">
+            <span class="material-icons">check_circle</span>
+            Bilan validé — En attente de clôture Admin
+          </span>
+
+          <span *ngIf="b.statut_bilan === 'cloture'" class="bilan-cloture-label">
+            <span class="material-icons">lock</span>
+            Chantier clôturé
+          </span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     MODAL — Encaissement
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="modalEncaissement.visible" (click)="fermerModalEncaissement()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><span class="material-icons">payments</span> Enregistrer un encaissement</h3>
+      <button class="modal-close" (click)="fermerModalEncaissement()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="getSituationParId(modalEncaissement.situationId) as sit">
+      <div class="modal-recap">
+        <p><strong>Situation :</strong> {{ sit.numero }}</p>
+        <p><strong>Chantier :</strong> {{ sit.chantier }}</p>
+        <p><strong>Client :</strong> {{ sit.client }}</p>
+        <p><strong>Montant TTC :</strong> {{ formatMontant(sit.montantTTC) }} FCFA</p>
+      </div>
+
+      <div class="form-group">
+        <label>Montant encaissé (FCFA)</label>
+        <input type="number" [(ngModel)]="modalEncaissement.montant" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Date de réception</label>
+        <input type="date" [(ngModel)]="modalEncaissement.date" />
+      </div>
+      <div class="form-group">
+        <label>Référence virement / paiement</label>
+        <input type="text" [(ngModel)]="modalEncaissement.reference" placeholder="Ex : VIR-2025-0045" />
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-outline" (click)="fermerModalEncaissement()">Annuler</button>
+      <button class="btn-primary" (click)="validerEncaissement()">
+        <span class="material-icons">check</span>
+        Confirmer l'encaissement
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     MODAL — Nouvelle facture ST
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="modalFactureST.visible" (click)="fermerModalFactureST()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><span class="material-icons">receipt</span> Nouvelle facture sous-traitant</h3>
+      <button class="modal-close" (click)="fermerModalFactureST()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Chantier <span class="required">*</span></label>
+        <select [(ngModel)]="modalFactureST.chantierId">
+          <option [ngValue]="null" disabled>Sélectionner un chantier</option>
+          <option *ngFor="let c of chantiers" [ngValue]="c.id">{{ c.nom }}</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Intervenant / Sous-traitant <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="modalFactureST.intervenant" placeholder="Nom entreprise ou personne" />
+        </div>
+        <div class="form-group">
+          <label>Corps d'état</label>
+          <select [(ngModel)]="modalFactureST.corps_etat">
+            <option value="">Sélectionner</option>
+            <option *ngFor="let c of corpsEtat" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date facture</label>
+          <input type="date" [(ngModel)]="modalFactureST.dateFacture" />
+        </div>
+        <div class="form-group">
+          <label>Taux TVA (%)</label>
+          <select [(ngModel)]="modalFactureST.tauxTVA">
+            <option [ngValue]="0">0% (exonéré)</option>
+            <option [ngValue]="18">18% (standard)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Montant HT (FCFA) <span class="required">*</span></label>
+        <input type="number" [(ngModel)]="modalFactureST.montantHT" min="0" placeholder="0" />
+      </div>
+
+      <!-- Récap HT/TVA/TTC -->
+      <div class="recap-montants" *ngIf="modalFactureST.montantHT">
+        <div class="recap-ligne"><span>Montant HT</span><span>{{ formatMontant(modalFactureST.montantHT!) }} FCFA</span></div>
+        <div class="recap-ligne"><span>TVA ({{ modalFactureST.tauxTVA }}%)</span><span>{{ formatMontant(getMontantTVA()) }} FCFA</span></div>
+        <div class="recap-ligne total"><span>Total TTC</span><span>{{ formatMontant(getMontantTTCModal()) }} FCFA</span></div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-outline" (click)="fermerModalFactureST()">Annuler</button>
+      <button class="btn-primary"
+        [disabled]="!modalFactureST.chantierId || !modalFactureST.montantHT || !modalFactureST.intervenant"
+        (click)="enregistrerFactureST()">
+        <span class="material-icons">save</span>
+        Enregistrer
+      </button>
+    </div>
+  </div>
+</div>
