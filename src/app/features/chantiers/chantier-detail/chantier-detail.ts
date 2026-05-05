@@ -1,29 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgFor, NgIf, NgClass } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { BudgetS0Component } from '../../budget/budget';
+import { ChantierService } from '../../../core/services/chantier.service';
+import { Chantier, CorpsEtat, Intervenant } from '../../../core/models';
 
-
-interface CorpsEtat {
-  id: number;
-  nom: string;
-  part: number;
-  avancement: number;
-  budget: string;
-  responsable: string;
-  statut: 'en_cours' | 'termine' | 'non_demarre';
-}
-
-interface Intervenant {
-  id: number;
-  nom: string;
-  role: string;
-  entreprise: string;
-  telephone: string;
-  statut: 'actif' | 'inactif';
-}
-
-interface Jalon {
+// Interface locale pour le Gantt — pas dans models car c'est purement visuel
+interface JalonGantt {
   id: number;
   nom: string;
   date_debut: string;
@@ -34,23 +18,6 @@ interface Jalon {
   duree: number;
 }
 
-interface Chantier {
-  id: number;
-  nom: string;
-  localisation: string;
-  client: string;
-  numero_marche: string;
-  chef_chantier: string;
-  date_demarrage: string;
-  date_livraison: string;
-  avancement: number;
-  statut: string;
-  budget: string;
-  retard: number;
-  corps_etat: number;
-  description: string;
-}
-
 @Component({
   selector: 'app-chantier-detail',
   standalone: true,
@@ -58,128 +25,117 @@ interface Chantier {
   templateUrl: './chantier-detail.html',
   styleUrl: './chantier-detail.scss'
 })
-export class ChantierDetail implements OnInit {
+export class ChantierDetail implements OnInit, OnDestroy {
 
   activeTab = 'resume';
   chantier: Chantier | null = null;
+  corpsEtatList: CorpsEtat[] = [];
+  intervenants: Intervenant[] = [];
 
-  chantiers: Chantier[] = [
-    {
-      id: 1,
-      nom: 'Résidence Les Palmiers',
-      localisation: 'Cocody, Abidjan',
-      client: 'SCI Les Palmiers',
-      numero_marche: 'MRC-2024-001',
-      chef_chantier: 'Traoré Awa',
-      date_demarrage: '01/03/2024',
-      date_livraison: '28/02/2026',
-      avancement: 72,
-      statut: 'en_cours',
-      budget: '820 000 000',
-      retard: 5,
-      corps_etat: 6,
-      description: 'Résidence de 24 appartements sur 4 niveaux avec parking souterrain.'
-    },
-    {
-      id: 2,
-      nom: 'Villa Duplex Riviera',
-      localisation: 'Riviera 3, Abidjan',
-      client: 'Konan Yves',
-      numero_marche: 'MRC-2024-002',
-      chef_chantier: 'Diabaté Moussa',
-      date_demarrage: '15/04/2024',
-      date_livraison: '14/04/2025',
-      avancement: 100,
-      statut: 'termine',
-      budget: '180 000 000',
-      retard: 0,
-      corps_etat: 5,
-      description: 'Villa duplex avec piscine, 5 chambres, double garage.'
-    },
-    {
-      id: 3,
-      nom: 'Complexe Commercial Marcory',
-      localisation: 'Marcory, Abidjan',
-      client: 'Groupe Immobilier du Sud',
-      numero_marche: 'MRC-2025-001',
-      chef_chantier: 'Koné Ibrahim',
-      date_demarrage: '01/03/2025',
-      date_livraison: '28/02/2027',
-      avancement: 18,
-      statut: 'en_cours',
-      budget: '1 200 000 000',
-      retard: 12,
-      corps_etat: 8,
-      description: 'Complexe commercial R+3 avec galerie marchande et bureaux.'
-    },
-    {
-      id: 4,
-      nom: 'Maison Individuelle Yopougon',
-      localisation: 'Yopougon, Abidjan',
-      client: 'Diabaté Moussa',
-      numero_marche: 'MRC-2025-002',
-      chef_chantier: 'Non assigné',
-      date_demarrage: '01/08/2025',
-      date_livraison: '31/07/2026',
-      avancement: 5,
-      statut: 'en_cours',
-      budget: '95 000 000',
-      retard: 0,
-      corps_etat: 4,
-      description: 'Maison individuelle 4 pièces sur terrain de 400m².'
-    },
-  ];
+  private subs = new Subscription();
 
-  corpsEtatList: CorpsEtat[] = [
-    { id: 1, nom: 'Gros œuvre', part: 35, avancement: 100, budget: '287 000 000', responsable: 'Koné Ibrahim', statut: 'termine' },
-    { id: 2, nom: 'Charpente / Couverture', part: 10, avancement: 90, budget: '82 000 000', responsable: 'Bamba Seydou', statut: 'en_cours' },
-    { id: 3, nom: 'Plomberie / Sanitaire', part: 12, avancement: 75, budget: '98 400 000', responsable: 'Touré Mamadou', statut: 'en_cours' },
-    { id: 4, nom: 'Électricité', part: 15, avancement: 60, budget: '123 000 000', responsable: 'Yao Kouassi', statut: 'en_cours' },
-    { id: 5, nom: 'Menuiserie / Alu', part: 18, avancement: 40, budget: '147 600 000', responsable: 'Soro Drissa', statut: 'en_cours' },
-    { id: 6, nom: 'Peinture / Finitions', part: 10, avancement: 5, budget: '82 000 000', responsable: 'Non assigné', statut: 'non_demarre' },
-  ];
+  // Gantt — données visuelles calculées depuis les corps d'état
+  jalons: JalonGantt[] = [];
 
-  intervenants: Intervenant[] = [
-    { id: 1, nom: 'Traoré Awa', role: 'Chef de chantier', entreprise: 'BuildDFlow SA', telephone: '+225 07 12 34 56', statut: 'actif' },
-    { id: 2, nom: 'Koné Ibrahim', role: 'Conducteur gros œuvre', entreprise: 'GCO Abidjan', telephone: '+225 05 98 76 54', statut: 'actif' },
-    { id: 3, nom: 'Bamba Seydou', role: 'Charpentier', entreprise: 'Toiture Plus CI', telephone: '+225 01 23 45 67', statut: 'actif' },
-    { id: 4, nom: 'Touré Mamadou', role: 'Plombier', entreprise: 'Hydro Services', telephone: '+225 07 65 43 21', statut: 'actif' },
-    { id: 5, nom: 'Yao Kouassi', role: 'Électricien', entreprise: 'Élec Pro CI', telephone: '+225 05 11 22 33', statut: 'actif' },
-    { id: 6, nom: 'Soro Drissa', role: 'Menuisier alu', entreprise: 'Alu Design', telephone: '+225 01 44 55 66', statut: 'inactif' },
-  ];
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private chantierService: ChantierService
+  ) {}
 
-  jalons: Jalon[] = [
-    { id: 1, nom: 'Gros œuvre', date_debut: 'Mar 2024', date_fin: 'Sep 2024', avancement: 100, couleur: '#48bb78', offset: 0, duree: 25 },
-    { id: 2, nom: 'Charpente', date_debut: 'Sep 2024', date_fin: 'Nov 2024', avancement: 90, couleur: '#E8520A', offset: 25, duree: 10 },
-    { id: 3, nom: 'Plomberie', date_debut: 'Oct 2024', date_fin: 'Jan 2025', avancement: 75, couleur: '#E8520A', offset: 28, duree: 14 },
-    { id: 4, nom: 'Électricité', date_debut: 'Nov 2024', date_fin: 'Mar 2025', avancement: 60, couleur: '#E8520A', offset: 33, duree: 17 },
-    { id: 5, nom: 'Menuiserie', date_debut: 'Jan 2025', date_fin: 'Mai 2025', avancement: 40, couleur: '#e53e3e', offset: 42, duree: 17 },
-    { id: 6, nom: 'Peinture', date_debut: 'Avr 2025', date_fin: 'Fév 2026', avancement: 5, couleur: '#e53e3e', offset: 55, duree: 45 },
-  ];
-
-  constructor(private route: ActivatedRoute, private router: Router) {}
-
-  ngOnInit() {
+  ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.chantier = this.chantiers.find(c => c.id === id) || null;
+
+    this.subs.add(
+      this.chantierService.getById(id).subscribe(chantier => {
+        if (!chantier) {
+          this.chantier = null;
+          return;
+        }
+        this.chantier = chantier;
+        this.corpsEtatList = chantier.corps_etat || [];
+        this.intervenants = chantier.intervenants || [];
+        this.jalons = this.buildJalonsGantt(chantier.corps_etat || []);
+      })
+    );
   }
 
-  // ─── CORRECTION : getter pour montant_marche_contrat ───
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+  }
+
+  // ── Gantt — construit les barres visuelles depuis les corps d'état ──────
+  private buildJalonsGantt(corps: CorpsEtat[]): JalonGantt[] {
+    if (!corps.length) return [];
+
+    // Trouver la plage de dates globale
+    const dates = corps
+      .filter(ce => ce.date_debut_prevue)
+      .map(ce => new Date(ce.date_debut_prevue).getTime());
+    const fins = corps
+      .filter(ce => ce.date_fin_prevue)
+      .map(ce => new Date(ce.date_fin_prevue).getTime());
+
+    if (!dates.length || !fins.length) return [];
+
+    const debut_global = Math.min(...dates);
+    const fin_globale = Math.max(...fins);
+    const duree_totale = fin_globale - debut_global;
+
+    return corps
+      .filter(ce => ce.date_debut_prevue && ce.date_fin_prevue)
+      .map(ce => {
+        const debut = new Date(ce.date_debut_prevue).getTime();
+        const fin = new Date(ce.date_fin_prevue).getTime();
+        const offset = Math.round(((debut - debut_global) / duree_totale) * 100);
+        const duree = Math.max(2, Math.round(((fin - debut) / duree_totale) * 100));
+        const couleur = ce.avancement === 100 ? '#48bb78'
+                      : ce.statut === 'en_cours' ? '#E8520A'
+                      : '#e53e3e';
+
+        return {
+          id: ce.id,
+          nom: ce.nom,
+          date_debut: ce.date_debut_prevue,
+          date_fin: ce.date_fin_prevue,
+          avancement: ce.avancement,
+          couleur,
+          offset,
+          duree
+        };
+      });
+  }
+
+  // ── Getters ──────────────────────────────────────────────────────────────
+
   get montant_marche_contrat(): number {
-    if (!this.chantier) return 0;
-    return parseInt(this.chantier.budget.replace(/\s/g, ''), 10) || 0;
+    return this.chantier?.montant_marche || 0;
   }
 
-  retour() {
-    this.router.navigate(['/chantiers']);
+  getAvancementGlobal(): number {
+    if (!this.corpsEtatList.length) return this.chantier?.avancement_global || 0;
+    return Math.round(
+      this.corpsEtatList.reduce((sum, ce) => sum + (ce.part_chantier * ce.avancement) / 100, 0)
+    );
   }
+
+  getTotalBudgetAlloue(): number {
+    return this.corpsEtatList.reduce((sum, ce) => sum + (ce.budget_alloue || 0), 0);
+  }
+
+  getTotalCoutReel(): number {
+    return this.corpsEtatList.reduce((sum, ce) => sum + (ce.cout_reel || 0), 0);
+  }
+
+  // ── Affichage ────────────────────────────────────────────────────────────
 
   getStatutLabel(statut: string): string {
-    const labels: any = {
+    const labels: Record<string, string> = {
       en_cours: 'En cours',
       termine: 'Terminé',
       suspendu: 'Suspendu',
-      non_demarre: 'Non démarré'
+      cloture: 'Clôturé',
+      en_attente: 'En attente'
     };
     return labels[statut] || statut;
   }
@@ -190,21 +146,28 @@ export class ChantierDetail implements OnInit {
     return '#e53e3e';
   }
 
-  getTotalBudget(): number {
-    return this.corpsEtatList.reduce((sum, ce) => {
-      return sum + parseInt(ce.budget.replace(/\s/g, ''), 10);
-    }, 0);
+  formatMontant(montant: number): string {
+    if (!montant) return '—';
+    return new Intl.NumberFormat('fr-FR').format(montant) + ' FCFA';
   }
 
-  voirDocuments() {
+  getRetardJours(): number {
+    if (!this.chantier?.date_livraison_prevue) return 0;
+    const prevue = new Date(this.chantier.date_livraison_prevue).getTime();
+    const aujourd_hui = Date.now();
+    if (aujourd_hui <= prevue) return 0;
+    return Math.floor((aujourd_hui - prevue) / (1000 * 60 * 60 * 24));
+  }
+
+  // ── Navigation ───────────────────────────────────────────────────────────
+
+  retour(): void {
+    this.router.navigate(['/chantiers']);
+  }
+
+  voirDocuments(): void {
     this.router.navigate(['/documents'], {
       queryParams: { chantier: this.chantier?.id }
     });
-  }
-
-  getAvancementGlobal(): number {
-    return Math.round(
-      this.corpsEtatList.reduce((sum, ce) => sum + (ce.part * ce.avancement) / 100, 0)
-    );
   }
 }

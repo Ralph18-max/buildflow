@@ -10,9 +10,9 @@
         <div class="breadcrumb">
           <span (click)="retour()" class="breadcrumb-link">Chantiers</span>
           <span class="material-icons">chevron_right</span>
-          <span>{{ chantier.nom }}</span>
+          <span>{{ chantier.nom_chantier }}</span>
         </div>
-        <h1>{{ chantier.nom }}</h1>
+        <h1>{{ chantier.nom_chantier }}</h1>
         <div class="header-meta">
           <span class="material-icons">location_on</span>
           <span>{{ chantier.localisation }}</span>
@@ -32,9 +32,10 @@
       </button>
     </div>
   </div>
+
   <button class="btn-edit" (click)="voirDocuments()">
-     <span class="material-icons">folder</span>
-      Documents
+    <span class="material-icons">folder</span>
+    Documents
   </button>
 
   <!-- KPI CARDS -->
@@ -50,7 +51,7 @@
       <span class="material-icons kpi-icon green">payments</span>
       <div>
         <p class="kpi-label">Budget marché</p>
-        <p class="kpi-value">{{ chantier.budget }} FCFA</p>
+        <p class="kpi-value">{{ formatMontant(chantier.montant_marche || 0) }}</p>
       </div>
     </div>
     <div class="kpi-card">
@@ -60,11 +61,13 @@
         <p class="kpi-value">{{ chantier.chef_chantier }}</p>
       </div>
     </div>
-    <div class="kpi-card" [class.alert]="chantier.retard > 0">
-      <span class="material-icons kpi-icon" [class.red]="chantier.retard > 0" [class.green]="chantier.retard === 0">schedule</span>
+    <div class="kpi-card" [class.alert]="getRetardJours() > 0">
+      <span class="material-icons kpi-icon"
+        [class.red]="getRetardJours() > 0"
+        [class.green]="getRetardJours() === 0">schedule</span>
       <div>
         <p class="kpi-label">Retard</p>
-        <p class="kpi-value">{{ chantier.retard > 0 ? chantier.retard + ' jours' : 'Dans les délais' }}</p>
+        <p class="kpi-value">{{ getRetardJours() > 0 ? getRetardJours() + ' jours' : 'Dans les délais' }}</p>
       </div>
     </div>
   </div>
@@ -83,16 +86,10 @@
     <button class="tab" [class.active]="activeTab === 'intervenants'" (click)="activeTab='intervenants'">
       <span class="material-icons">groups</span> Intervenants
     </button>
-    <button
-  class="tab-btn"
-  [ngClass]="{'active': activeTab === 'budget'}"
-  (click)="activeTab = 'budget'"
->
-  <span class="material-icons">account_balance_wallet</span>
-  Budget S0
-</button>
+    <button class="tab" [class.active]="activeTab === 'budget'" (click)="activeTab='budget'">
+      <span class="material-icons">account_balance_wallet</span> Budget S0
+    </button>
   </div>
-  
 
   <!-- ===== ONGLET RÉSUMÉ ===== -->
   <div class="tab-content" *ngIf="activeTab === 'resume'">
@@ -106,11 +103,11 @@
         <div class="info-list">
           <div class="info-row">
             <span class="info-label">Client</span>
-            <span class="info-val">{{ chantier.client }}</span>
+            <span class="info-val">{{ chantier.nom_client || '—' }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">N° Marché</span>
-            <span class="info-val">{{ chantier.numero_marche }}</span>
+            <span class="info-val">{{ chantier.numero_marche || '—' }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">Localisation</span>
@@ -118,15 +115,15 @@
           </div>
           <div class="info-row">
             <span class="info-label">Démarrage</span>
-            <span class="info-val">{{ chantier.date_demarrage }}</span>
+            <span class="info-val">{{ chantier.date_demarrage_reelle || '—' }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">Livraison</span>
-            <span class="info-val">{{ chantier.date_livraison }}</span>
+            <span class="info-label">Livraison prévue</span>
+            <span class="info-val">{{ chantier.date_livraison_prevue }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">Description</span>
-            <span class="info-val">{{ chantier.description }}</span>
+            <span class="info-val">{{ chantier.description || '—' }}</span>
           </div>
         </div>
       </div>
@@ -171,7 +168,7 @@
               {{ getStatutLabel(ce.statut) }}
             </span>
           </div>
-          <div class="corps-part">{{ ce.part }}%</div>
+          <div class="corps-part">{{ ce.part_chantier }}%</div>
         </div>
         <div class="corps-avancement">
           <div class="avancement-header">
@@ -188,11 +185,11 @@
         <div class="corps-footer">
           <div class="corps-meta">
             <span class="material-icons">person</span>
-            {{ ce.responsable }}
+            {{ ce.responsable || '—' }}
           </div>
           <div class="corps-meta">
             <span class="material-icons">payments</span>
-            {{ ce.budget }} FCFA
+            {{ formatMontant(ce.budget_alloue) }}
           </div>
         </div>
       </div>
@@ -211,7 +208,6 @@
     </div>
 
     <div class="gantt-container">
-      <!-- En-têtes mois -->
       <div class="gantt-header">
         <div class="gantt-label-col"></div>
         <div class="gantt-months">
@@ -219,7 +215,6 @@
         </div>
       </div>
 
-      <!-- Lignes jalons -->
       <div class="gantt-row" *ngFor="let j of jalons">
         <div class="gantt-label">
           <span class="gantt-nom">{{ j.nom }}</span>
@@ -239,7 +234,6 @@
         </div>
       </div>
 
-      <!-- Ligne aujourd'hui -->
       <div class="gantt-today" [style.left.%]="42"></div>
     </div>
   </div>
@@ -255,20 +249,22 @@
     </div>
     <div class="intervenants-grid">
       <div class="intervenant-card" *ngFor="let i of intervenants">
-        <div class="intervenant-avatar">{{ i.nom.charAt(0) }}</div>
+        <div class="intervenant-avatar">
+          {{ i.nom_responsable ? i.nom_responsable.charAt(0) : (i.raison_sociale ? i.raison_sociale.charAt(0) : '?') }}
+        </div>
         <div class="intervenant-info">
-          <h4>{{ i.nom }}</h4>
-          <p class="intervenant-role">{{ i.role }}</p>
+          <h4>{{ i.raison_sociale || i.nom_responsable }}</h4>
+          <p class="intervenant-role">{{ i.corps_etat_nom || '—' }}</p>
           <p class="intervenant-entreprise">
             <span class="material-icons">business</span>
-            {{ i.entreprise }}
+            {{ i.raison_sociale || '—' }}
           </p>
           <p class="intervenant-tel">
             <span class="material-icons">phone</span>
             {{ i.telephone }}
           </p>
         </div>
-        <span class="statut-dot" [class.actif]="i.statut === 'actif'"></span>
+        <span class="statut-dot" [class.actif]="i.actif"></span>
       </div>
     </div>
   </div>
@@ -276,7 +272,7 @@
   <!-- ===== ONGLET BUDGET S0 ===== -->
   <div *ngIf="activeTab === 'budget'">
     <app-budget-s0
-      [chantier_id]="chantier ? chantier.id : 0"
+      [chantier_id]="chantier.id"
       [montant_marche]="montant_marche_contrat">
     </app-budget-s0>
   </div>

@@ -1,9 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgFor, NgIf, NgClass } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { PermissionService } from '../../core/services/permission.service';
+import { ContratService } from '../../core/services/contrat.service';
+import { Contrat } from '../../core/models';
 
 @Component({
   selector: 'app-contrats-list',
@@ -12,70 +15,31 @@ import { PermissionService } from '../../core/services/permission.service';
   templateUrl: './contrats-list.html',
   styleUrl: './contrats-list.scss'
 })
-export class ContratsList {
+export class ContratsList implements OnInit, OnDestroy {
 
   showModal = false;
   searchQuery = '';
   isLoading = false;
   successMessage = '';
 
+  contrats: Contrat[] = [];
+  private subs = new Subscription();
+
   contratForm: FormGroup;
 
   clients = [
-    { id: 1, nom: 'Konan Yves' },
-    { id: 2, nom: 'SCI Les Palmiers' },
-    { id: 3, nom: 'Diabaté Moussa' },
-    { id: 4, nom: 'Groupe Immobilier du Sud' },
+    { id: 1, nom: 'SCI Les Palmiers' },
+    { id: 2, nom: 'Konan Yves' },
+    { id: 3, nom: 'Groupe Immobilier du Sud' },
+    { id: 4, nom: 'Diabaté Moussa' },
   ];
 
-  contrats = [
-    {
-      id: 1, numero_marche: 'MRC-2024-001',
-      client: 'SCI Les Palmiers',
-      type_construction: 'Immeuble R+4',
-      montant: '820 000 000',
-      date_signature: '15/01/2024',
-      date_demarrage: '01/03/2024',
-      date_livraison: '28/02/2026',
-      statut: 'en_cours',
-      penalites: '500 000'
-    },
-    {
-      id: 2, numero_marche: 'MRC-2024-002',
-      client: 'Konan Yves',
-      type_construction: 'Villa Duplex',
-      montant: '180 000 000',
-      date_signature: '20/03/2024',
-      date_demarrage: '15/04/2024',
-      date_livraison: '14/04/2025',
-      statut: 'termine',
-      penalites: '200 000'
-    },
-    {
-      id: 3, numero_marche: 'MRC-2025-001',
-      client: 'Groupe Immobilier du Sud',
-      type_construction: 'Complexe commercial',
-      montant: '1 200 000 000',
-      date_signature: '10/01/2025',
-      date_demarrage: '01/03/2025',
-      date_livraison: '28/02/2027',
-      statut: 'en_cours',
-      penalites: '1 000 000'
-    },
-    {
-      id: 4, numero_marche: 'MRC-2025-002',
-      client: 'Diabaté Moussa',
-      type_construction: 'Maison individuelle',
-      montant: '95 000 000',
-      date_signature: '05/06/2025',
-      date_demarrage: '01/08/2025',
-      date_livraison: '31/07/2026',
-      statut: 'signe',
-      penalites: '100 000'
-    },
-  ];
-
-  constructor(private fb: FormBuilder, private router: Router,public perm: PermissionService) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    public perm: PermissionService,
+    private contratService: ContratService
+  ) {
     this.contratForm = this.fb.group({
       id_client: ['', Validators.required],
       type_construction: ['', Validators.required],
@@ -87,69 +51,118 @@ export class ContratsList {
     });
   }
 
-  // ─── NAVIGATION ──────────────────────────────────────
-  voirContrat(id: number) {
-    this.router.navigate(['/contrats', id]);
+  ngOnInit(): void {
+    this.subs.add(
+      this.contratService.getAll().subscribe(contrats => {
+        this.contrats = contrats;
+      })
+    );
   }
 
-  // ─── FILTRES ─────────────────────────────────────────
-  get filteredContrats() {
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+  }
+
+  // ── Filtrage ──────────────────────────────────────────
+
+  get filteredContrats(): Contrat[] {
     if (!this.searchQuery) return this.contrats;
     const q = this.searchQuery.toLowerCase();
     return this.contrats.filter(c =>
       c.numero_marche.toLowerCase().includes(q) ||
-      c.client.toLowerCase().includes(q) ||
+      c.nom_client.toLowerCase().includes(q) ||
       c.type_construction.toLowerCase().includes(q)
     );
   }
 
+  // ── Affichage ─────────────────────────────────────────
+
   getStatutLabel(statut: string): string {
-    const labels: any = {
+    const labels: Record<string, string> = {
       en_negociation: 'En négociation',
       signe: 'Signé',
       en_cours: 'En cours',
       suspendu: 'Suspendu',
       termine: 'Terminé',
-      resilie: 'Résilié'
+      resilie: 'Résilié',
+      cloture: 'Clôturé'
     };
     return labels[statut] || statut;
   }
 
-  // ─── MODAL ───────────────────────────────────────────
-  openModal() {
+  formatMontant(montant: number): string {
+    return new Intl.NumberFormat('fr-FR').format(montant) + ' FCFA';
+  }
+
+  getNbAvenants(contrat: Contrat): number {
+    return contrat.avenants?.length || 0;
+  }
+
+  getNbSituations(contrat: Contrat): number {
+    return contrat.situations?.length || 0;
+  }
+
+  getMontantRevise(contrat: Contrat): number {
+    return contrat.montant_marche_revise || contrat.montant_marche;
+  }
+
+  hasAvenants(contrat: Contrat): boolean {
+    return contrat.montant_marche_revise > contrat.montant_marche;
+  }
+
+  // ── Navigation ────────────────────────────────────────
+
+  voirContrat(id: number): void {
+    this.router.navigate(['/contrats', id]);
+  }
+
+  // ── Modal ─────────────────────────────────────────────
+
+  openModal(): void {
     this.showModal = true;
     this.contratForm.reset();
     this.successMessage = '';
   }
 
-  closeModal() {
+  closeModal(): void {
     this.showModal = false;
     this.successMessage = '';
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.contratForm.invalid) return;
     this.isLoading = true;
 
     setTimeout(() => {
       const v = this.contratForm.value;
       const client = this.clients.find(c => c.id == v.id_client);
-      this.contrats.push({
-        id: this.contrats.length + 1,
-        numero_marche: `MRC-${new Date().getFullYear()}-00${this.contrats.length + 1}`,
-        client: client?.nom || '',
+      const newId = Math.max(...this.contrats.map(c => c.id)) + 1;
+
+      // En Sprint 8 : POST /api/contrats
+      const nouveau: Contrat = {
+        id: newId,
+        numero_marche: `MRC-${new Date().getFullYear()}-00${newId}`,
+        id_client: v.id_client,
+        nom_client: client?.nom || '',
         type_construction: v.type_construction,
-        montant: v.montant_marche,
+        montant_marche: Number(v.montant_marche),
+        montant_marche_revise: Number(v.montant_marche),
         date_signature: v.date_signature,
-        date_demarrage: v.date_demarrage_prevue,
-        date_livraison: v.date_livraison_prevue,
+        date_demarrage_prevue: v.date_demarrage_prevue,
+        date_livraison_prevue: v.date_livraison_prevue,
+        penalites_retard: Number(v.penalites_retard),
         statut: 'en_negociation',
-        penalites: v.penalites_retard
-      });
+        avenants: [],
+        situations: []
+      };
+
+      this.contrats = [...this.contrats, nouveau];
       this.isLoading = false;
-      this.successMessage = `Contrat ${this.contrats[this.contrats.length-1].numero_marche} créé avec succès.`;
+      this.successMessage = `Contrat ${nouveau.numero_marche} créé avec succès.`;
     }, 1000);
   }
+
+  // ── Getters formulaire ────────────────────────────────
 
   get id_client() { return this.contratForm.get('id_client'); }
   get type_construction() { return this.contratForm.get('type_construction'); }

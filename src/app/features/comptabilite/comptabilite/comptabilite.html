@@ -52,7 +52,7 @@
       </div>
     </div>
 
-    <!-- Ligne RAF + Marge globale -->
+    <!-- RAF + Marge globale -->
     <div class="summary-row">
       <div class="summary-card">
         <span class="material-icons">trending_up</span>
@@ -70,13 +70,15 @@
       </div>
     </div>
 
-    <!-- Tableau récap situations -->
+    <!-- ▼ TABLE DASHBOARD — CORRECTIF SCROLL ▼ -->
     <div class="section-block">
       <div class="section-header">
         <h2>Situations de travaux — Vue d'ensemble</h2>
         <button class="btn-link" (click)="setTab('encaissements')">Voir tout →</button>
       </div>
-      <div class="table-wrapper">
+
+      <!-- scroll-container entoure UNIQUEMENT la table -->
+      <div class="scroll-container">
         <table class="data-table">
           <thead>
             <tr>
@@ -102,6 +104,7 @@
           </tbody>
         </table>
       </div>
+      <!-- empty-state EN DEHORS du scroll-container -->
     </div>
 
   </div>
@@ -125,61 +128,65 @@
       </div>
     </div>
 
+    <!-- ▼ TABLE ENCAISSEMENTS — CORRECTIF SCROLL ▼ -->
     <div class="table-wrapper">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>N° Situation</th>
-            <th>Chantier</th>
-            <th>Client</th>
-            <th>Date émission</th>
-            <th>Échéance</th>
-            <th>Avancement</th>
-            <th>Montant TTC</th>
-            <th>Statut</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let s of situationsFiltrees" [class.row-retard]="s.statut === 'en_retard'">
-            <td class="mono">{{ s.numero }}</td>
-            <td>
-              <a class="link-chantier" (click)="voirChantier(s.chantierId)">{{ s.chantier }}</a>
-            </td>
-            <td class="text-muted">{{ s.client }}</td>
-            <td>{{ s.dateEmission | date:'dd/MM/yyyy' }}</td>
-            <td [class.date-retard]="s.statut === 'en_retard'">{{ s.dateEcheance | date:'dd/MM/yyyy' }}</td>
-            <td>
-              <div class="progress-inline">
-                <div class="progress-bar-sm">
-                  <div class="progress-fill" [style.width.%]="s.avancement"></div>
+      <div class="scroll-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>N° Situation</th>
+              <th>Chantier</th>
+              <th>Client</th>
+              <th>Date émission</th>
+              <th>Échéance</th>
+              <th>Avancement</th>
+              <th>Montant TTC</th>
+              <th>Statut</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of situationsFiltrees" [class.row-retard]="s.statut === 'en_retard'">
+              <td class="mono">{{ s.numero }}</td>
+              <td>
+                <a class="link-chantier" (click)="voirChantier(s.chantierId)">{{ s.chantier }}</a>
+              </td>
+              <td class="text-muted">{{ s.client }}</td>
+              <td>{{ s.dateEmission | date:'dd/MM/yyyy':'':'fr' }}</td>
+              <td [class.date-retard]="s.statut === 'en_retard'">{{ s.dateEcheance | date:'dd/MM/yyyy':'':'fr' }}</td>
+              <td>
+                <div class="progress-inline">
+                  <div class="progress-bar-sm">
+                    <div class="progress-fill" [style.width.%]="s.avancement"></div>
+                  </div>
+                  <span>{{ s.avancement }}%</span>
                 </div>
-                <span>{{ s.avancement }}%</span>
-              </div>
-            </td>
-            <td class="montant">{{ formatMontant(s.montantTTC) }}</td>
-            <td>
-              <span class="badge" [ngClass]="'badge-' + s.statut">
-                {{ getStatutLabel(s.statut) }}
-              </span>
-            </td>
-            <td>
-              <button
-                *ngIf="s.statut !== 'payee'"
-                class="btn-encaisser"
-                (click)="ouvrirModalEncaissement(s)">
-                <span class="material-icons">payments</span>
-                Encaisser
-              </button>
-              <span *ngIf="s.statut === 'payee'" class="ref-virement">
-                <span class="material-icons">check_circle</span>
-                {{ s.referenceVirement }}
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              </td>
+              <td class="montant">{{ formatMontant(s.montantTTC) }} FCFA</td>
+              <td>
+                <span class="badge" [ngClass]="'badge-' + s.statut">
+                  {{ getStatutLabel(s.statut) }}
+                </span>
+              </td>
+              <td>
+                <button
+                  *ngIf="s.statut !== 'payee'"
+                  class="btn-encaisser"
+                  (click)="ouvrirModalEncaissement(s)">
+                  <span class="material-icons">payments</span>
+                  Encaisser
+                </button>
+                <span *ngIf="s.statut === 'payee'" class="ref-virement">
+                  <span class="material-icons">check_circle</span>
+                  {{ s.referenceVirement }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
+      <!-- empty-state EN DEHORS du scroll-container -->
       <div class="empty-state" *ngIf="situationsFiltrees.length === 0">
         <span class="material-icons">inbox</span>
         <p>Aucune situation trouvée pour ces critères</p>
@@ -209,52 +216,57 @@
       </button>
     </div>
 
+    <!-- ▼ TABLE FACTURES ST — CORRECTIF SCROLL ▼ -->
     <div class="table-wrapper">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>N° Facture</th>
-            <th>Chantier</th>
-            <th>Intervenant</th>
-            <th>Corps d'état</th>
-            <th>Date facture</th>
-            <th>Montant HT</th>
-            <th>TVA</th>
-            <th>Montant TTC</th>
-            <th>Statut</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let f of facturesST_filtrees" [class.row-contestee]="f.statut === 'contestee'">
-            <td class="mono">{{ f.numero }}</td>
-            <td>
-              <a class="link-chantier" (click)="voirChantier(f.chantierId)">{{ f.chantier }}</a>
-            </td>
-            <td>{{ f.intervenant }}</td>
-            <td class="text-muted">{{ f.corps_etat }}</td>
-            <td>{{ f.dateFacture | date:'dd/MM/yyyy' }}</td>
-            <td class="montant">{{ formatMontant(f.montantHT) }}</td>
-            <td class="montant text-muted">{{ formatMontant(f.montantTVA) }}</td>
-            <td class="montant bold">{{ formatMontant(f.montantTTC) }}</td>
-            <td>
-              <span class="badge" [ngClass]="'badge-fst-' + f.statut">
-                {{ getStatutLabel(f.statut) }}
-              </span>
-            </td>
-            <td>
-              <button
-                *ngIf="f.statut === 'en_attente'"
-                class="btn-valider"
-                (click)="validerFactureST(f)">
-                <span class="material-icons">check</span>
-                Valider
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="scroll-container">
+        <table class="data-table" style="min-width: 980px;">
+          <!-- min-width plus large car cette table a plus de colonnes -->
+          <thead>
+            <tr>
+              <th>N° Facture</th>
+              <th>Chantier</th>
+              <th>Intervenant</th>
+              <th>Corps d'état</th>
+              <th>Date facture</th>
+              <th>Montant HT</th>
+              <th>TVA</th>
+              <th>Montant TTC</th>
+              <th>Statut</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of facturesST_filtrees" [class.row-contestee]="f.statut === 'contestee'">
+              <td class="mono">{{ f.numero }}</td>
+              <td>
+                <a class="link-chantier" (click)="voirChantier(f.chantierId)">{{ f.chantier }}</a>
+              </td>
+              <td>{{ f.intervenant }}</td>
+              <td class="text-muted">{{ f.corps_etat }}</td>
+              <td>{{ f.dateFacture | date:'dd/MM/yyyy':'':'fr' }}</td>
+              <td class="montant">{{ formatMontant(f.montantHT) }}</td>
+              <td class="montant text-muted">{{ formatMontant(f.montantTVA) }}</td>
+              <td class="montant bold">{{ formatMontant(f.montantTTC) }}</td>
+              <td>
+                <span class="badge" [ngClass]="'badge-fst-' + f.statut">
+                  {{ getStatutLabel(f.statut) }}
+                </span>
+              </td>
+              <td>
+                <button
+                  *ngIf="f.statut === 'en_attente'"
+                  class="btn-valider"
+                  (click)="validerFactureST(f)">
+                  <span class="material-icons">check</span>
+                  Valider
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
+      <!-- empty-state EN DEHORS du scroll-container -->
       <div class="empty-state" *ngIf="facturesST_filtrees.length === 0">
         <span class="material-icons">receipt_long</span>
         <p>Aucune facture sous-traitant pour ces critères</p>
@@ -264,6 +276,7 @@
 
   <!-- ════════════════════════════════════════════════════════════════════════
        ONGLET 4 — BILAN & CLÔTURE
+       (pas de table → pas de scroll-container nécessaire)
   ═════════════════════════════════════════════════════════════════════════ -->
   <div class="tab-content" *ngIf="activeTab === 'bilan'">
 
@@ -295,7 +308,6 @@
           Dépassement budgétaire détecté — coût réel &gt; S0 × 1,05
         </div>
 
-        <!-- Avancement -->
         <div class="bilan-avancement">
           <span>Avancement physique</span>
           <div class="progress-bar-lg">
@@ -305,7 +317,6 @@
           <span class="pct">{{ b.avancement }}%</span>
         </div>
 
-        <!-- Indicateurs financiers -->
         <div class="bilan-financiers">
           <div class="bilan-ligne">
             <span class="bilan-ligne-label">Montant marché</span>
@@ -332,7 +343,6 @@
           </div>
         </div>
 
-        <!-- Actions -->
         <div class="bilan-actions">
           <button class="btn-outline" (click)="voirChantier(b.id)">
             <span class="material-icons">open_in_new</span>
@@ -459,7 +469,6 @@
         <input type="number" [(ngModel)]="modalFactureST.montantHT" min="0" placeholder="0" />
       </div>
 
-      <!-- Récap HT/TVA/TTC -->
       <div class="recap-montants" *ngIf="modalFactureST.montantHT">
         <div class="recap-ligne"><span>Montant HT</span><span>{{ formatMontant(modalFactureST.montantHT!) }} FCFA</span></div>
         <div class="recap-ligne"><span>TVA ({{ modalFactureST.tauxTVA }}%)</span><span>{{ formatMontant(getMontantTVA()) }} FCFA</span></div>

@@ -270,4 +270,10 @@ export class ChantierService {
       suspendus: all.filter(c => c.statut === 'suspendu').length,
     });
   }
+  ajouter(data: Omit<Chantier, 'id'>): void {
+  const newId = Math.max(...this.CHANTIERS.map(c => c.id)) + 1;
+  const nouveau: Chantier = { id: newId, ...data };
+  this.CHANTIERS.push(nouveau);
+  this.chantiersSubject.next(this._buildChantiers());
+}
 }

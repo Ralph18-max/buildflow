@@ -7,7 +7,6 @@
       <p class="subtitle">{{ getCount('tous') }} chantier(s) au total</p>
     </div>
     <div class="header-right">
-      <!-- BOUTON masqué si l'utilisateur n'a pas la permission -->
       <button
         *ngIf="'chantiers:create' | can"
         class="btn-primary"
@@ -15,7 +14,6 @@
         <span class="material-icons">add</span>
         Nouveau chantier
       </button>
-      <!-- Message contextuel pour le comptable -->
       <div *ngIf="perm.isComptable" class="role-info">
         <span class="material-icons">info</span>
         Mode lecture — Comptable
@@ -58,7 +56,7 @@
     >
       <div class="card-header">
         <div class="card-title">
-          <h3>{{ chantier.nom }}</h3>
+          <h3>{{ chantier.nom_chantier }}</h3>
           <span class="statut-badge" [ngClass]="'badge-' + chantier.statut">
             {{ getStatutLabel(chantier.statut) }}
           </span>
@@ -72,16 +70,15 @@
       <div class="card-body">
         <div class="info-row">
           <span class="label">Client</span>
-          <span class="value">{{ chantier.client }}</span>
+          <span class="value">{{ chantier.nom_client || '—' }}</span>
         </div>
         <div class="info-row">
           <span class="label">Chef de chantier</span>
           <span class="value">{{ chantier.chef_chantier }}</span>
         </div>
-        <!-- Budget visible seulement si permission budget:read -->
         <div class="info-row" *ngIf="'budget:read' | can">
           <span class="label">Budget</span>
-          <span class="value budget">{{ formatBudget(chantier.budget) }}</span>
+          <span class="value budget">{{ formatBudget(chantier.montant_marche) }}</span>
         </div>
       </div>
 
@@ -89,13 +86,13 @@
       <div class="progress-section">
         <div class="progress-header">
           <span>Avancement</span>
-          <strong>{{ chantier.avancement }}%</strong>
+          <strong>{{ chantier.avancement_global }}%</strong>
         </div>
         <div class="progress-bar">
           <div
             class="progress-fill"
-            [style.width.%]="chantier.avancement"
-            [style.background-color]="getAvancementColor(chantier.avancement)"
+            [style.width.%]="chantier.avancement_global"
+            [style.background-color]="getAvancementColor(chantier.avancement_global)"
           ></div>
         </div>
       </div>
@@ -116,7 +113,7 @@
     </div>
   </div>
 
-  <!-- Modal de création — protégée -->
+  <!-- Modal de création -->
   <div class="modal-overlay" *ngIf="showModal && ('chantiers:create' | can)" (click)="fermerModal()">
     <div class="modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
@@ -127,6 +124,13 @@
       </div>
 
       <div class="modal-body">
+        <div class="form-group">
+          <label>Contrat associé</label>
+          <select [(ngModel)]="nouveauChantier.contrat_id">
+            <option [ngValue]="null">— Sélectionner un contrat —</option>
+            <option *ngFor="let c of contratsOptions" [ngValue]="c.id">{{ c.label }}</option>
+          </select>
+        </div>
         <div class="form-group">
           <label>Nom du chantier *</label>
           <input type="text" [(ngModel)]="nouveauChantier.nom" placeholder="Ex: Résidence Les Acacias" />

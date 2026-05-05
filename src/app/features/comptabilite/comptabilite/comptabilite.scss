@@ -1,22 +1,25 @@
-// ── Variables BuildDFlow ───────────────────────────────────────────────────
-$cream:      #F5F1EA;
-$dark:       #1A1A18;
-$orange:     #E8520A;
-$gray-mid:   #6B6B67;
-$gray-light: #E8E4DB;
-$green:      #16A34A;
-$green-light:#DCFCE7;
-$red:        #DC2626;
-$red-light:  #FEE2E2;
-$orange-light: #FFF3ED;
-$blue:       #2563EB;
-$blue-light: #DBEAFE;
+@use 'sass:color';
 
-// ── Page layout ────────────────────────────────────────────────────────────
+// ── Variables BuildDFlow ────────────────────────────────────────────────────
+$cream:        #F5F1EA;
+$dark:         #1A1A18;
+$orange:       #E8520A;
+$gray-mid:     #6B6B67;
+$gray-light:   #E8E4DB;
+$green:        #16A34A;
+$green-light:  #DCFCE7;
+$red:          #DC2626;
+$red-light:    #FEE2E2;
+$orange-light: #FFF3ED;
+$blue:         #2563EB;
+$blue-light:   #DBEAFE;
+
+// ── Page ───────────────────────────────────────────────────────────────────
 .comptabilite-page {
   padding: 28px 32px;
   max-width: 1300px;
   min-height: 100vh;
+  @media (max-width: 600px) { padding: 16px; }
 }
 
 // ── Header ─────────────────────────────────────────────────────────────────
@@ -35,11 +38,7 @@ $blue-light: #DBEAFE;
   font-size: 1.75rem;
   font-weight: 800;
   color: $dark;
-
-  .material-icons {
-    font-size: 2rem;
-    color: $orange;
-  }
+  .material-icons { font-size: 2rem; color: $orange; }
 }
 
 .page-subtitle {
@@ -55,16 +54,15 @@ $blue-light: #DBEAFE;
   align-items: center;
   gap: 10px;
   background: $green-light;
-  border: 1px solid darken($green-light, 10%);
+  border: 1px solid color.adjust($green-light, $lightness: -10%);
   border-left: 4px solid $green;
-  color: darken($green, 5%);
+  color: color.adjust($green, $lightness: -5%);
   padding: 12px 16px;
   border-radius: 8px;
   margin-bottom: 20px;
   cursor: pointer;
   font-weight: 500;
   font-size: 0.9rem;
-
   .material-icons { font-size: 1.1rem; }
 }
 
@@ -78,13 +76,18 @@ $blue-light: #DBEAFE;
   padding: 4px;
   margin-bottom: 24px;
   width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+  @media (max-width: 600px) { width: 100%; }
 }
 
 .tab-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 18px;
+  padding: 8px 16px;
   border: none;
   border-radius: 7px;
   background: transparent;
@@ -94,15 +97,11 @@ $blue-light: #DBEAFE;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-
+  white-space: nowrap;
+  flex-shrink: 0;
   .material-icons { font-size: 1rem; }
-
   &:hover { background: $gray-light; color: $dark; }
-
-  &.active {
-    background: $dark;
-    color: white;
-  }
+  &.active { background: $dark; color: white; }
 }
 
 // ── Tab content ────────────────────────────────────────────────────────────
@@ -121,9 +120,8 @@ $blue-light: #DBEAFE;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-bottom: 24px;
-
-  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
-  @media (max-width: 500px) { grid-template-columns: 1fr; }
+  @media (max-width: 1000px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 500px)  { grid-template-columns: 1fr; }
 }
 
 .kpi-card {
@@ -135,7 +133,6 @@ $blue-light: #DBEAFE;
   gap: 14px;
   align-items: flex-start;
   transition: box-shadow 0.2s;
-
   &:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
 
   .kpi-icon {
@@ -146,18 +143,17 @@ $blue-light: #DBEAFE;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-
     .material-icons { font-size: 1.3rem; }
   }
 
-  &.green .kpi-icon  { background: $green-light;  color: $green; }
+  &.green  .kpi-icon { background: $green-light;  color: $green; }
   &.orange .kpi-icon { background: $orange-light; color: $orange; }
-  &.red .kpi-icon    { background: $red-light;    color: $red; }
-  &.blue .kpi-icon   { background: $blue-light;   color: $blue; }
+  &.red    .kpi-icon { background: $red-light;    color: $red; }
+  &.blue   .kpi-icon { background: $blue-light;   color: $blue; }
 }
 
 .kpi-label  { font-size: 0.78rem; color: $gray-mid; font-weight: 500; text-transform: uppercase; letter-spacing: 0.03em; }
-.kpi-value  { font-family: 'Sora', sans-serif; font-size: 1.25rem; font-weight: 700; color: $dark; margin-top: 4px; }
+.kpi-value  { font-family: 'Sora', sans-serif; font-size: 1.15rem; font-weight: 700; color: $dark; margin-top: 4px; word-break: break-all; }
 .kpi-unit   { font-size: 0.7rem; font-weight: 500; color: $gray-mid; }
 .kpi-detail { font-size: 0.75rem; color: $gray-mid; margin-top: 4px; }
 
@@ -167,7 +163,6 @@ $blue-light: #DBEAFE;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   margin-bottom: 28px;
-
   @media (max-width: 700px) { grid-template-columns: 1fr; }
 }
 
@@ -179,22 +174,23 @@ $blue-light: #DBEAFE;
   display: flex;
   align-items: center;
   gap: 14px;
-
-  .material-icons { font-size: 2rem; color: $orange; }
-
+  .material-icons { font-size: 2rem; color: $orange; flex-shrink: 0; }
   &.positive .material-icons { color: $green; }
   &.negative .material-icons { color: $red; }
 }
 
 .summary-label { font-size: 0.8rem; color: $gray-mid; font-weight: 500; }
-.summary-value { font-family: 'Sora', sans-serif; font-size: 1.2rem; font-weight: 700; color: $dark; margin-top: 2px; }
+.summary-value { font-family: 'Sora', sans-serif; font-size: 1.1rem; font-weight: 700; color: $dark; margin-top: 2px; word-break: break-all; }
 
 // ── Section block ──────────────────────────────────────────────────────────
+// Utilisé dans l'onglet Dashboard uniquement
 .section-block {
   background: white;
   border: 1px solid $gray-light;
   border-radius: 12px;
-  overflow: hidden;
+  // PAS de overflow:hidden ici — ça couperait le scroll horizontal
+  // On laisse les coins arrondis sur la table directement
+  overflow: hidden; // garde les coins mais on compense avec le scroll-container ci-dessous
 }
 
 .section-header {
@@ -219,6 +215,7 @@ $blue-light: #DBEAFE;
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
+  white-space: nowrap;
   &:hover { text-decoration: underline; }
 }
 
@@ -240,9 +237,9 @@ $blue-light: #DBEAFE;
   border-radius: 8px;
   padding: 8px 14px;
   flex: 1;
-  min-width: 220px;
+  min-width: 200px;
 
-  .material-icons { color: $gray-mid; font-size: 1.1rem; }
+  .material-icons { color: $gray-mid; font-size: 1.1rem; flex-shrink: 0; }
 
   input {
     border: none;
@@ -252,7 +249,6 @@ $blue-light: #DBEAFE;
     font-size: 0.875rem;
     color: $dark;
     width: 100%;
-
     &::placeholder { color: $gray-mid; }
   }
 }
@@ -264,6 +260,10 @@ $blue-light: #DBEAFE;
   border: 1px solid $gray-light;
   border-radius: 8px;
   padding: 3px;
+  overflow-x: auto;
+  flex-shrink: 0;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
 
   button {
     padding: 6px 12px;
@@ -275,75 +275,111 @@ $blue-light: #DBEAFE;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.15s;
-
-    &:hover { background: $gray-light; }
+    white-space: nowrap;
+    &:hover  { background: $gray-light; }
     &.active { background: $dark; color: white; }
   }
 }
 
-// ── Table ──────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════════
+//  CORRECTIF PRINCIPAL — Scroll horizontal des tableaux
+//
+//  Principe :
+//  1. .table-wrapper  → border, border-radius, overflow:hidden (coins ronds)
+//  2. .scroll-container → overflow-x:auto (le scroll réel)
+//  3. .data-table → min-width fixe, jamais compressé
+//
+//  Pourquoi deux niveaux ?
+//  Un seul overflow:hidden couperait le scroll.
+//  Deux niveaux : le wrapper garde les coins, le container scrolle.
+// ════════════════════════════════════════════════════════════════════════════
+
+// wrapper : coins arrondis + bordure uniquement
 .table-wrapper {
   background: white;
   border: 1px solid $gray-light;
   border-radius: 12px;
-  overflow: hidden;
+  overflow: hidden; // clips les coins — le scroll-container s'en charge en dessous
 }
 
+// Aussi utilisé à l'intérieur de .section-block (dashboard)
+.scroll-container {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+
+  // Scrollbar fine mais visible
+  scrollbar-width: thin;
+  scrollbar-color: $gray-light transparent;
+
+  &::-webkit-scrollbar        { height: 6px; }
+  &::-webkit-scrollbar-track  { background: $cream; }
+  &::-webkit-scrollbar-thumb  {
+    background: color.adjust($gray-light, $lightness: -12%);
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb:hover { background: $gray-mid; }
+}
+
+// ── Table ──────────────────────────────────────────────────────────────────
 .data-table {
   width: 100%;
+  min-width: 860px;      // en dessous de cette largeur → scrollbar apparaît
   border-collapse: collapse;
+  table-layout: auto;    // colonnes dimensionnées par leur contenu
 
   th {
     background: #FAFAF8;
-    padding: 12px 14px;
+    padding: 11px 16px;
     text-align: left;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 600;
     color: $gray-mid;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
     border-bottom: 1px solid $gray-light;
-    white-space: nowrap;
+    white-space: nowrap;   // les en-têtes ne wrappent jamais
   }
 
   td {
-    padding: 12px 14px;
+    padding: 12px 16px;
     font-size: 0.875rem;
     color: $dark;
     border-bottom: 1px solid $gray-light;
     vertical-align: middle;
-
-    &:last-child { border-right: none; }
+    white-space: nowrap;   // empêche le texte de wrapper et de casser la mise en page
   }
 
-  tr:last-child td { border-bottom: none; }
+  // exception : certaines cellules peuvent wrapper (noms très longs)
+  td.wrap-cell { white-space: normal; min-width: 160px; max-width: 260px; }
 
-  tr.row-retard { background: #FFF8F6; }
-  tr.row-contestee { background: #FFF8F6; }
-
-  tr:hover td { background: rgba(232, 82, 10, 0.03); }
+  tr:last-child td  { border-bottom: none; }
+  tr.row-retard     { background: #FFF8F6; }
+  tr.row-contestee  { background: #FFF8F6; }
+  tr:hover td       { background: rgba(232, 82, 10, 0.03); }
 }
 
-.mono    { font-family: monospace; font-size: 0.8rem; }
-.montant { font-family: 'Sora', sans-serif; font-size: 0.875rem; font-weight: 600; text-align: right; }
-.text-muted { color: $gray-mid; }
-.bold    { font-weight: 700; }
+// Colonnes spéciales
+.mono        { font-family: 'Courier New', monospace; font-size: 0.78rem; letter-spacing: 0.02em; }
+.montant     { font-family: 'Sora', sans-serif; font-size: 0.875rem; font-weight: 600; text-align: right; white-space: nowrap; }
+.text-muted  { color: $gray-mid; }
+.bold        { font-weight: 700; }
 .date-retard { color: $red; font-weight: 600; }
 
 .link-chantier {
   color: $orange;
   cursor: pointer;
   font-weight: 500;
+  text-decoration: none;
   &:hover { text-decoration: underline; }
 }
 
-// ── Progress inline ─────────────────────────────────────────────────────────
+// Progress inline (dans les cellules)
 .progress-inline {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 120px;
-
+  min-width: 110px;
   span { font-size: 0.8rem; font-weight: 600; color: $dark; white-space: nowrap; }
 }
 
@@ -353,6 +389,7 @@ $blue-light: #DBEAFE;
   background: $gray-light;
   border-radius: 3px;
   overflow: hidden;
+  min-width: 60px;
 }
 
 .progress-fill {
@@ -368,36 +405,36 @@ $blue-light: #DBEAFE;
   align-items: center;
   padding: 3px 10px;
   border-radius: 20px;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
   white-space: nowrap;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
 }
 
-// Situations
-.badge-payee      { background: $green-light;   color: darken($green, 5%); }
-.badge-emise      { background: $blue-light;    color: darken($blue, 5%); }
-.badge-en_attente { background: #FEF9C3;        color: #854D0E; }
-.badge-en_retard  { background: $red-light;     color: darken($red, 5%); }
+// Statuts situations
+.badge-payee      { background: $green-light;  color: color.adjust($green, $lightness: -8%); }
+.badge-emise      { background: $blue-light;   color: color.adjust($blue,  $lightness: -8%); }
+.badge-en_attente { background: #FEF9C3;       color: #854D0E; }
+.badge-en_retard  { background: $red-light;    color: color.adjust($red,   $lightness: -5%); }
 
-// Factures ST
-.badge-fst-validee   { background: $green-light;  color: darken($green, 5%); }
-.badge-fst-en_attente{ background: #FEF9C3;       color: #854D0E; }
-.badge-fst-contestee { background: $red-light;    color: darken($red, 5%); }
+// Statuts factures ST
+.badge-fst-validee    { background: $green-light;  color: color.adjust($green, $lightness: -8%); }
+.badge-fst-en_attente { background: #FEF9C3;       color: #854D0E; }
+.badge-fst-contestee  { background: $red-light;    color: color.adjust($red,   $lightness: -5%); }
 
-// Chantiers
-.badge-chantier-en_cours { background: $blue-light;   color: darken($blue, 10%); }
-.badge-chantier-termine  { background: $green-light;  color: darken($green, 5%); }
-.badge-chantier-suspendu { background: #F3F4F6;       color: $gray-mid; }
+// Statuts chantier
+.badge-chantier-en_cours { background: $blue-light;  color: color.adjust($blue,  $lightness: -10%); }
+.badge-chantier-termine  { background: $green-light; color: color.adjust($green, $lightness: -5%); }
+.badge-chantier-suspendu { background: #F3F4F6;      color: $gray-mid; }
 
-// Bilan
-.badge-bilan           { margin-left: 6px; }
-.badge-bilan-en_cours  { background: $gray-light;    color: $gray-mid; }
+// Statuts bilan
+.badge-bilan              { margin-left: 6px; }
+.badge-bilan-en_cours     { background: $gray-light;   color: $gray-mid; }
 .badge-bilan-bilan_valide { background: $orange-light; color: $orange; }
-.badge-bilan-cloture   { background: $dark;          color: white; }
+.badge-bilan-cloture      { background: $dark;         color: white; }
 
-// ── Boutons d'action ──────────────────────────────────────────────────────
+// ── Boutons ────────────────────────────────────────────────────────────────
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -411,12 +448,11 @@ $blue-light: #DBEAFE;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
   transition: background 0.2s, transform 0.1s;
-
   .material-icons { font-size: 1rem; }
-
-  &:hover { background: darken($orange, 8%); }
-  &:active { transform: scale(0.98); }
+  &:hover   { background: color.adjust($orange, $lightness: -8%); }
+  &:active  { transform: scale(0.98); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
@@ -433,8 +469,8 @@ $blue-light: #DBEAFE;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
+  white-space: nowrap;
   transition: all 0.2s;
-
   .material-icons { font-size: 1rem; }
   &:hover { border-color: $dark; }
 }
@@ -446,15 +482,14 @@ $blue-light: #DBEAFE;
   padding: 5px 12px;
   background: $orange-light;
   color: $orange;
-  border: 1px solid lighten($orange, 30%);
+  border: 1px solid color.adjust($orange, $lightness: 30%);
   border-radius: 6px;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-
   .material-icons { font-size: 0.9rem; }
-  &:hover { background: lighten($orange-light, 2%); border-color: $orange; }
+  &:hover { background: color.adjust($orange-light, $lightness: -3%); border-color: $orange; }
 }
 
 .btn-valider {
@@ -464,14 +499,14 @@ $blue-light: #DBEAFE;
   padding: 5px 12px;
   background: $green-light;
   color: $green;
-  border: 1px solid lighten($green, 30%);
+  border: 1px solid color.adjust($green, $lightness: 30%);
   border-radius: 6px;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-
+  white-space: nowrap;
   .material-icons { font-size: 0.9rem; }
-  &:hover { background: darken($green-light, 3%); }
+  &:hover { background: color.adjust($green-light, $lightness: -3%); }
 }
 
 .ref-virement {
@@ -481,34 +516,31 @@ $blue-light: #DBEAFE;
   font-size: 0.78rem;
   color: $green;
   font-weight: 500;
-
   .material-icons { font-size: 0.9rem; }
 }
 
-// ── Empty state ────────────────────────────────────────────────────────────
+// ── Empty state ─────────────────────────────────────────────────────────────
 .empty-state {
   text-align: center;
   padding: 48px 24px;
   color: $gray-mid;
-
   .material-icons { font-size: 3rem; display: block; margin-bottom: 12px; }
   p { font-size: 0.9rem; }
 }
 
-// ── Bilan cards ────────────────────────────────────────────────────────────
+// ── Bilan ──────────────────────────────────────────────────────────────────
 .bilan-info-banner {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   background: $blue-light;
   border-left: 4px solid $blue;
-  color: darken($blue, 10%);
+  color: color.adjust($blue, $lightness: -10%);
   padding: 12px 16px;
   border-radius: 8px;
   margin-bottom: 20px;
   font-size: 0.875rem;
-
-  .material-icons { font-size: 1.1rem; flex-shrink: 0; }
+  .material-icons { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
   p { margin: 0; }
 }
 
@@ -516,7 +548,6 @@ $blue-light: #DBEAFE;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
-
   @media (max-width: 900px) { grid-template-columns: 1fr; }
 }
 
@@ -526,35 +557,19 @@ $blue-light: #DBEAFE;
   border-radius: 14px;
   padding: 22px;
   transition: box-shadow 0.2s;
-
   &:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-
-  &.depassement {
-    border-color: $red;
-    border-width: 2px;
-  }
+  &.depassement { border-color: $red; border-width: 2px; }
 }
 
 .bilan-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 12px;
   margin-bottom: 14px;
-
-  h3 {
-    font-family: 'Sora', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    color: $dark;
-  }
-
-  .bilan-client {
-    font-size: 0.8rem;
-    color: $gray-mid;
-    margin-top: 2px;
-  }
-
-  .bilan-badges { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  h3 { font-family: 'Sora', sans-serif; font-size: 1rem; font-weight: 700; color: $dark; }
+  .bilan-client { font-size: 0.8rem; color: $gray-mid; margin-top: 2px; }
+  .bilan-badges { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; flex-shrink: 0; }
 }
 
 .bilan-alerte {
@@ -562,14 +577,13 @@ $blue-light: #DBEAFE;
   align-items: center;
   gap: 8px;
   background: $red-light;
-  color: darken($red, 5%);
+  color: color.adjust($red, $lightness: -5%);
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 0.8rem;
   font-weight: 600;
   margin-bottom: 14px;
-
-  .material-icons { font-size: 1rem; }
+  .material-icons { font-size: 1rem; flex-shrink: 0; }
 }
 
 .bilan-avancement {
@@ -580,6 +594,7 @@ $blue-light: #DBEAFE;
   font-size: 0.8rem;
   color: $gray-mid;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .progress-bar-lg {
@@ -588,7 +603,7 @@ $blue-light: #DBEAFE;
   background: $gray-light;
   border-radius: 4px;
   overflow: hidden;
-
+  min-width: 40px;
   .progress-fill {
     height: 100%;
     border-radius: 4px;
@@ -597,7 +612,7 @@ $blue-light: #DBEAFE;
   }
 }
 
-.pct { font-weight: 700; color: $dark; font-size: 0.875rem; white-space: nowrap; }
+.pct { font-weight: 700; color: $dark; font-size: 0.875rem; }
 
 .bilan-financiers { margin-bottom: 18px; }
 
@@ -605,18 +620,16 @@ $blue-light: #DBEAFE;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 0;
+  gap: 12px;
+  padding: 7px 0;
   border-bottom: 1px dashed $gray-light;
-
-  &:last-child { border-bottom: none; }
-  &.separator { border-top: 1px solid $gray-light; border-bottom: none; padding-top: 10px; margin-top: 4px; }
+  &:last-child  { border-bottom: none; }
+  &.separator   { border-top: 1px solid $gray-light; border-bottom: none; padding-top: 10px; margin-top: 4px; }
 }
 
-.bilan-ligne-label { font-size: 0.82rem; color: $gray-mid; }
+.bilan-ligne-label { font-size: 0.82rem; color: $gray-mid; white-space: nowrap; }
 .bilan-ligne-value {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: $dark;
+  font-size: 0.875rem; font-weight: 600; color: $dark; text-align: right; word-break: break-all;
   &.green  { color: $green; }
   &.red    { color: $red; }
   &.orange { color: $orange; }
@@ -644,10 +657,10 @@ $blue-light: #DBEAFE;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
   transition: background 0.2s;
-
   .material-icons { font-size: 1rem; }
-  &:hover { background: darken($green, 8%); }
+  &:hover { background: color.adjust($green, $lightness: -8%); }
 }
 
 .bilan-valide-label {
@@ -657,7 +670,6 @@ $blue-light: #DBEAFE;
   font-size: 0.82rem;
   color: $orange;
   font-weight: 600;
-
   .material-icons { font-size: 1rem; }
 }
 
@@ -668,7 +680,6 @@ $blue-light: #DBEAFE;
   font-size: 0.82rem;
   color: $gray-mid;
   font-weight: 600;
-
   .material-icons { font-size: 1rem; }
 }
 
@@ -701,7 +712,6 @@ $blue-light: #DBEAFE;
   justify-content: space-between;
   padding: 20px 24px;
   border-bottom: 1px solid $gray-light;
-
   h3 {
     display: flex;
     align-items: center;
@@ -710,7 +720,6 @@ $blue-light: #DBEAFE;
     font-size: 1.1rem;
     font-weight: 700;
     color: $dark;
-
     .material-icons { color: $orange; }
   }
 }
@@ -723,23 +732,10 @@ $blue-light: #DBEAFE;
   display: flex;
   padding: 4px;
   border-radius: 6px;
-
   &:hover { background: $gray-light; color: $dark; }
 }
 
-.modal-body {
-  padding: 24px;
-}
-
-.modal-recap {
-  background: $cream;
-  border-radius: 10px;
-  padding: 14px;
-  margin-bottom: 20px;
-
-  p { font-size: 0.875rem; color: $dark; margin-bottom: 4px; }
-}
-
+.modal-body  { padding: 24px; }
 .modal-footer {
   padding: 16px 24px;
   border-top: 1px solid $gray-light;
@@ -748,10 +744,17 @@ $blue-light: #DBEAFE;
   gap: 10px;
 }
 
+.modal-recap {
+  background: $cream;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 20px;
+  p { font-size: 0.875rem; color: $dark; margin-bottom: 4px; }
+}
+
 // ── Forms ──────────────────────────────────────────────────────────────────
 .form-group {
   margin-bottom: 16px;
-
   label {
     display: block;
     font-size: 0.8rem;
@@ -761,9 +764,7 @@ $blue-light: #DBEAFE;
     text-transform: uppercase;
     letter-spacing: 0.03em;
   }
-
   .required { color: $red; }
-
   input, select {
     width: 100%;
     padding: 9px 12px;
@@ -775,8 +776,8 @@ $blue-light: #DBEAFE;
     background: white;
     outline: none;
     transition: border-color 0.2s;
-
-    &:focus { border-color: $orange; }
+    box-sizing: border-box;
+    &:focus       { border-color: $orange; }
     &::placeholder { color: $gray-mid; }
   }
 }
@@ -785,11 +786,10 @@ $blue-light: #DBEAFE;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-
   @media (max-width: 500px) { grid-template-columns: 1fr; }
 }
 
-// ── Récap montants ─────────────────────────────────────────────────────────
+// ── Récap montants modal ───────────────────────────────────────────────────
 .recap-montants {
   background: $cream;
   border-radius: 10px;
@@ -803,9 +803,7 @@ $blue-light: #DBEAFE;
   font-size: 0.875rem;
   padding: 5px 0;
   color: $dark;
-
   span:last-child { font-weight: 600; }
-
   &.total {
     border-top: 1px solid $gray-light;
     margin-top: 6px;

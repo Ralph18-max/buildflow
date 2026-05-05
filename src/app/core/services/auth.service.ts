@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { PermissionService, CurrentUser } from './permission.service';
 
 export type UserRole = 'admin' | 'conducteur' | 'chef_chantier' | 'comptable';
 
@@ -39,26 +40,32 @@ export class AuthService {
 
   private currentUser: AuthUser = USERS_SIMULÉS['admin'];
 
+  constructor(private perms: PermissionService) {}
+
   login(role: UserRole): void {
     this.currentUser = USERS_SIMULÉS[role];
+
+    // ← synchronisation avec PermissionService
+    const u = this.currentUser;
+    this.perms.login({
+      id: u.id,
+      nom: u.nom,
+      prenom: u.prenom,
+      email: u.email,
+      role: u.role,
+      tenant_id: 'tenant-abc-123',
+      avatar: u.initiales
+    });
   }
 
   logout(): void {
     this.currentUser = USERS_SIMULÉS['admin'];
+    this.perms.logout();
   }
 
-  isLoggedIn(): boolean {
-    return true;
-  }
-
-  getUser(): AuthUser {
-    return this.currentUser;
-  }
-
-  getRole(): UserRole {
-    return this.currentUser.role;
-  }
-
+  isLoggedIn(): boolean { return true; }
+  getUser(): AuthUser { return this.currentUser; }
+  getRole(): UserRole { return this.currentUser.role; }
   hasRole(roles: UserRole[]): boolean {
     return roles.includes(this.currentUser.role);
   }

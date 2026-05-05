@@ -5,10 +5,9 @@
       <h1>Contrats</h1>
       <p>{{ contrats.length }} contrats enregistrés</p>
     </div>
-    <!-- Bouton "Nouveau contrat" — Admin uniquement -->
     <button *ngIf="perm.can('contrats:create')" class="btn-primary" (click)="showModal = true">
       <span class="material-icons">add</span>
-        Nouveau contrat
+      Nouveau contrat
     </button>
   </div>
 
@@ -38,7 +37,7 @@
           <div class="contrat-info-grid">
             <div class="info-item">
               <span class="info-label">Client</span>
-              <span class="info-value">{{ c.client }}</span>
+              <span class="info-value">{{ c.nom_client }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Type de construction</span>
@@ -46,11 +45,15 @@
             </div>
             <div class="info-item">
               <span class="info-label">Montant du marché</span>
-              <span class="info-value highlight">{{ c.montant }} FCFA</span>
+              <span class="info-value highlight">{{ formatMontant(c.montant_marche) }}</span>
+              <!-- Affiche le montant révisé si avenants -->
+              <span class="info-value-revised" *ngIf="hasAvenants(c)">
+                Révisé : {{ formatMontant(getMontantRevise(c)) }}
+              </span>
             </div>
             <div class="info-item">
               <span class="info-label">Pénalités/jour</span>
-              <span class="info-value">{{ c.penalites }} FCFA</span>
+              <span class="info-value">{{ formatMontant(c.penalites_retard) }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Date de signature</span>
@@ -58,25 +61,33 @@
             </div>
             <div class="info-item">
               <span class="info-label">Démarrage prévu</span>
-              <span class="info-value">{{ c.date_demarrage }}</span>
+              <span class="info-value">{{ c.date_demarrage_prevue }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Livraison prévue</span>
-              <span class="info-value">{{ c.date_livraison }}</span>
+              <span class="info-value">{{ c.date_livraison_prevue }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Avenants</span>
+              <span class="info-value">{{ getNbAvenants(c) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Situations émises</span>
+              <span class="info-value">{{ getNbSituations(c) }}</span>
             </div>
           </div>
         </div>
 
         <div class="contrat-footer">
-           <button class="action-btn" (click)="voirContrat(c.id)">
-             <span class="material-icons">visibility</span>
-              Voir le contrat
-           </button>
-          <button class="action-btn">
+          <button class="action-btn" (click)="voirContrat(c.id)">
+            <span class="material-icons">visibility</span>
+            Voir le contrat
+          </button>
+          <button class="action-btn" *ngIf="perm.can('contrats:edit')">
             <span class="material-icons">edit</span>
             Modifier
           </button>
-          <button class="action-btn">
+          <button class="action-btn" *ngIf="perm.can('contrats:avenants:create')">
             <span class="material-icons">add_circle_outline</span>
             Modification
           </button>
@@ -117,14 +128,10 @@
             <span class="material-icons input-icon">person</span>
             <select formControlName="id_client" [class.error]="id_client?.invalid && id_client?.touched">
               <option value="">Sélectionner un client</option>
-              <option *ngFor="let cl of clients" [value]="cl.id">
-                {{ cl.nom }}
-              </option>
+              <option *ngFor="let cl of clients" [value]="cl.id">{{ cl.nom }}</option>
             </select>
           </div>
-          <span class="error-msg" *ngIf="id_client?.invalid && id_client?.touched">
-            Client requis
-          </span>
+          <span class="error-msg" *ngIf="id_client?.invalid && id_client?.touched">Client requis</span>
         </div>
 
         <div class="form-group">
@@ -138,9 +145,7 @@
               [class.error]="type_construction?.invalid && type_construction?.touched"
             />
           </div>
-          <span class="error-msg" *ngIf="type_construction?.invalid && type_construction?.touched">
-            Type requis
-          </span>
+          <span class="error-msg" *ngIf="type_construction?.invalid && type_construction?.touched">Type requis</span>
         </div>
 
         <div class="form-row">
@@ -149,30 +154,26 @@
             <div class="input-wrapper">
               <span class="material-icons input-icon">payments</span>
               <input
-                type="text"
+                type="number"
                 formControlName="montant_marche"
-                placeholder="450 000 000"
+                placeholder="450000000"
                 [class.error]="montant_marche?.invalid && montant_marche?.touched"
               />
             </div>
-            <span class="error-msg" *ngIf="montant_marche?.invalid && montant_marche?.touched">
-              Montant requis
-            </span>
+            <span class="error-msg" *ngIf="montant_marche?.invalid && montant_marche?.touched">Montant requis</span>
           </div>
           <div class="form-group">
             <label>Pénalités de retard/jour (FCFA)</label>
             <div class="input-wrapper">
               <span class="material-icons input-icon">warning</span>
               <input
-                type="text"
+                type="number"
                 formControlName="penalites_retard"
-                placeholder="500 000"
+                placeholder="500000"
                 [class.error]="penalites_retard?.invalid && penalites_retard?.touched"
               />
             </div>
-            <span class="error-msg" *ngIf="penalites_retard?.invalid && penalites_retard?.touched">
-              Pénalités requises
-            </span>
+            <span class="error-msg" *ngIf="penalites_retard?.invalid && penalites_retard?.touched">Pénalités requises</span>
           </div>
         </div>
 
@@ -181,22 +182,14 @@
             <label>Date de signature</label>
             <div class="input-wrapper">
               <span class="material-icons input-icon">event</span>
-              <input
-                type="date"
-                formControlName="date_signature"
-                [class.error]="date_signature?.invalid && date_signature?.touched"
-              />
+              <input type="date" formControlName="date_signature" />
             </div>
           </div>
           <div class="form-group">
             <label>Date de démarrage prévue</label>
             <div class="input-wrapper">
               <span class="material-icons input-icon">play_circle</span>
-              <input
-                type="date"
-                formControlName="date_demarrage_prevue"
-                [class.error]="date_demarrage_prevue?.invalid && date_demarrage_prevue?.touched"
-              />
+              <input type="date" formControlName="date_demarrage_prevue" />
             </div>
           </div>
         </div>
@@ -205,11 +198,7 @@
           <label>Date de livraison prévue</label>
           <div class="input-wrapper">
             <span class="material-icons input-icon">flag</span>
-            <input
-              type="date"
-              formControlName="date_livraison_prevue"
-              [class.error]="date_livraison_prevue?.invalid && date_livraison_prevue?.touched"
-            />
+            <input type="date" formControlName="date_livraison_prevue" />
           </div>
         </div>
 
