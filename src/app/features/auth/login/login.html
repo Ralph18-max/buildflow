@@ -1,34 +1,207 @@
-<div class="login-page">
-  <div class="login-card">
+<div class="auth-root">
 
-    <div class="login-logo">
-      Buil<span class="accent">D</span>Flow
+  <!-- ══════════════════════════════ LEFT PANEL ══════════════════════════════ -->
+  <aside class="auth-left">
+    <div class="auth-left-inner">
+
+      <a routerLink="/" class="auth-brand">Buil<span>D</span>Flow</a>
+      <p class="auth-brand-sub">La plateforme SaaS de gestion de chantiers BTP pour l'Afrique de l'Ouest.</p>
+
+      <ul class="auth-perks">
+        @for (a of avantages; track a.icon) {
+          <li>
+            <span class="perk-icon"><span class="material-icons">{{ a.icon }}</span></span>
+            <span>{{ a.text }}</span>
+          </li>
+        }
+      </ul>
+
+      <div class="auth-demo">
+        <p class="auth-demo-label">
+          <span class="material-icons">play_circle</span>
+          Tester la démo — choisissez un rôle
+        </p>
+        <div class="auth-demo-list">
+          @for (c of comptes; track c.email) {
+            <button
+              class="demo-card"
+              (click)="setDemo(c.email)"
+              [class.active]="email === c.email && mode === 'login'">
+              <span class="material-icons demo-card-icon">{{ c.icon }}</span>
+              <span class="demo-card-info">
+                <strong>{{ c.label }}</strong>
+                <small>{{ c.desc }}</small>
+              </span>
+              <span class="material-icons demo-card-check">check_circle</span>
+            </button>
+          }
+        </div>
+        <p class="auth-demo-hint">
+          <span class="material-icons">info</span>
+          Mot de passe universel : <code>Buildflow2026!</code>
+        </p>
+      </div>
+
     </div>
-    <p class="login-subtitle">Choisissez un profil pour tester l'application</p>
+  </aside>
 
-    <div class="role-grid">
-      @for (r of roles; track r.value) {
-        <div
-          class="role-card"
-          [class.selected]="selectedRole === r.value"
-          (click)="selectRole(r.value)">
-          <div class="role-avatar">{{ r.initiales }}</div>
-          <div class="role-info">
-            <p class="role-label">{{ r.label }}</p>
-            <p class="role-desc">{{ r.description }}</p>
-          </div>
-          <span class="material-icons check-icon">check_circle</span>
+  <!-- ══════════════════════════════ RIGHT PANEL ══════════════════════════════ -->
+  <main class="auth-right">
+    <div class="auth-card">
+
+      <!-- ── Onglets avec indicateur glissant ── -->
+      <div class="auth-tabs">
+        <button class="auth-tab" [class.active]="mode === 'register'" (click)="setMode('register')">
+          S'inscrire
+        </button>
+        <button class="auth-tab" [class.active]="mode === 'login'" (click)="setMode('login')">
+          Se connecter
+        </button>
+        <span class="auth-tab-pill" [class.at-login]="mode === 'login'"></span>
+      </div>
+
+      <!-- ── Alertes ── -->
+      @if (error) {
+        <div class="auth-alert auth-alert--error">
+          <span class="material-icons">error_outline</span>
+          {{ error }}
         </div>
       }
-    </div>
-
-    <button class="btn-login" (click)="login()" [disabled]="loading">
-      @if (!loading) {
-        <span>Se connecter</span>
-      } @else {
-        <span class="loading-dots">Connexion en cours...</span>
+      @if (success) {
+        <div class="auth-alert auth-alert--success">
+          <span class="material-icons">check_circle</span>
+          {{ success }}
+        </div>
       }
-    </button>
 
-  </div>
+      <!-- ── Slider de formulaires ── -->
+      <div class="auth-forms-outer">
+        <div class="auth-forms-track" [class.at-login]="mode === 'login'">
+
+          <!-- ───────── Formulaire Inscription ───────── -->
+          <div class="auth-form-panel" [class.is-active]="mode === 'register'">
+            <div class="auth-form-header">
+              <h1>Créer un compte</h1>
+              <p>Démarrez votre essai gratuit, sans engagement.</p>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label>Prénom</label>
+                <div class="field-input">
+                  <span class="material-icons">person_outline</span>
+                  <input type="text" [(ngModel)]="reg.prenom" placeholder="Jean" />
+                </div>
+              </div>
+              <div class="field">
+                <label>Nom</label>
+                <div class="field-input">
+                  <span class="material-icons">person_outline</span>
+                  <input type="text" [(ngModel)]="reg.nom" placeholder="KOUAMÉ" />
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Nom de l'entreprise</label>
+              <div class="field-input">
+                <span class="material-icons">domain</span>
+                <input type="text" [(ngModel)]="reg.societe" placeholder="BTP Côte d'Ivoire SA" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Email professionnel</label>
+              <div class="field-input">
+                <span class="material-icons">mail_outline</span>
+                <input type="email" [(ngModel)]="reg.email" placeholder="jean@votre-entreprise.ci" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Mot de passe</label>
+              <div class="field-input">
+                <span class="material-icons">lock_outline</span>
+                <input
+                  [type]="showRegPassword ? 'text' : 'password'"
+                  [(ngModel)]="reg.password"
+                  placeholder="8 caractères minimum"
+                  (keyup.enter)="mode === 'register' && register()" />
+                <button class="field-eye" type="button" (click)="showRegPassword = !showRegPassword" tabindex="-1">
+                  <span class="material-icons">{{ showRegPassword ? 'visibility_off' : 'visibility' }}</span>
+                </button>
+              </div>
+            </div>
+
+            <button class="auth-btn" (click)="register()" [disabled]="loading">
+              @if (!loading) { <span class="material-icons">rocket_launch</span> }
+              @else { <span class="auth-spinner"></span> }
+              {{ loading ? 'Création en cours…' : 'Créer mon compte' }}
+            </button>
+
+            <p class="auth-switch">
+              Déjà un compte ?
+              <button class="auth-switch-btn" (click)="setMode('login')">Se connecter →</button>
+            </p>
+          </div>
+
+          <!-- ───────── Formulaire Connexion ───────── -->
+          <div class="auth-form-panel" [class.is-active]="mode === 'login'">
+            <div class="auth-form-header">
+              <h1>Connexion</h1>
+              <p>Accédez à votre espace BuilDFlow.</p>
+            </div>
+
+            <div class="field">
+              <label>Adresse email</label>
+              <div class="field-input">
+                <span class="material-icons">mail_outline</span>
+                <input
+                  type="email"
+                  [(ngModel)]="email"
+                  placeholder="votre@email.ci"
+                  autocomplete="email"
+                  (keyup.enter)="mode === 'login' && login()" />
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-label-row">
+                <label>Mot de passe</label>
+                <a routerLink="/forgot-password" class="field-forgot">Mot de passe oublié ?</a>
+              </div>
+              <div class="field-input">
+                <span class="material-icons">lock_outline</span>
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  [(ngModel)]="password"
+                  placeholder="••••••••"
+                  autocomplete="current-password"
+                  (keyup.enter)="mode === 'login' && login()" />
+                <button class="field-eye" type="button" (click)="showPassword = !showPassword" tabindex="-1">
+                  <span class="material-icons">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
+                </button>
+              </div>
+            </div>
+
+            <button class="auth-btn" (click)="login()" [disabled]="loading">
+              @if (!loading) { <span class="material-icons">login</span> }
+              @else { <span class="auth-spinner"></span> }
+              {{ loading ? 'Connexion en cours…' : 'Se connecter' }}
+            </button>
+
+            <p class="auth-switch">
+              Pas encore de compte ?
+              <button class="auth-switch-btn" (click)="setMode('register')">S'inscrire gratuitement →</button>
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      <p class="auth-back"><a routerLink="/">← Retour à l'accueil</a></p>
+
+    </div>
+  </main>
+
 </div>

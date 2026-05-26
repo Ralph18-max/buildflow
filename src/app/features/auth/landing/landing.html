@@ -1,24 +1,66 @@
-<nav class="nav">
-  <div class="logo">Buil<span>D</span>Flow</div>
-  <ul class="nav-links" [class.open]="menuOpen">
-   <li><a (click)="scrollTo('features')" (click)="menuOpen=false">Fonctionnalités</a></li>
-   <li><a (click)="scrollTo('roles')" (click)="menuOpen=false">Pour qui ?</a></li>
-    <li>
-      <a routerLink="/login" class="btn-nav" (click)="menuOpen=false">
-        Se connecter
+<!-- ══════════════ NAV ══════════════ -->
+<nav class="nav" [class.nav--scrolled]="scrolled">
+  <a routerLink="/" class="logo">Buil<span>D</span>Flow</a>
+  <!-- Dropdown desktop -->
+  <div class="nav-dropdown-wrap" [class.open]="dropdownOpen">
+    <button class="nav-dropdown-toggle" (click)="dropdownOpen = !dropdownOpen">
+      Explorer
+      <span class="material-icons">{{ dropdownOpen ? 'expand_less' : 'expand_more' }}</span>
+    </button>
+    <div class="nav-dropdown-panel">
+      <a class="nav-dropdown-item" (click)="scrollTo('features')">
+        <span class="nav-dropdown-item-icon">
+          <span class="material-icons">dashboard</span>
+        </span>
+        <span>
+          <strong>Fonctionnalités</strong>
+          <small>Budget, planning, rapports, clôture…</small>
+        </span>
       </a>
-    </li>
-  </ul>
-  <button class="hamburger" (click)="menuOpen=!menuOpen">
+      <a class="nav-dropdown-item" (click)="scrollTo('roles')">
+        <span class="nav-dropdown-item-icon">
+          <span class="material-icons">groups</span>
+        </span>
+        <span>
+          <strong>Pour qui ?</strong>
+          <small>Admin, conducteur, chef de chantier, comptable</small>
+        </span>
+      </a>
+    </div>
+  </div>
+
+  <div class="nav-sep"></div>
+  <a routerLink="/login" class="btn-nav">Se connecter →</a>
+
+  <!-- Hamburger mobile -->
+  <button class="hamburger" (click)="menuOpen=!menuOpen" aria-label="Menu">
     <span [class.open]="menuOpen"></span>
     <span [class.open]="menuOpen"></span>
     <span [class.open]="menuOpen"></span>
   </button>
 </nav>
 
+<!-- Menu mobile -->
+<div class="mobile-menu" [class.open]="menuOpen">
+  <a (click)="scrollTo('features')">
+    <span class="material-icons">dashboard</span>
+    Fonctionnalités
+  </a>
+  <a (click)="scrollTo('roles')">
+    <span class="material-icons">groups</span>
+    Pour qui ?
+  </a>
+  <div class="mobile-menu-sep"></div>
+  <a routerLink="/login" class="mobile-menu-cta">Se connecter →</a>
+</div>
+
+<!-- ══════════════ HERO ══════════════ -->
 <section class="hero">
   <div class="hero-left">
-    <div class="hero-tag">Plateforme BTP SaaS</div>
+    <div class="hero-tag">
+      <span class="material-icons">construction</span>
+      Plateforme BTP SaaS
+    </div>
     <h1>
       BuilDFlow,<br>
       la plateforme qui<br>
@@ -30,8 +72,11 @@
       en temps réel — sans double saisie, sans perte d'information.
     </p>
     <div class="hero-ctas">
-      <a routerLink="/login" class="btn-primary">Connexion</a>
-      <a href="#features" class="btn-secondary">Découvrir →</a>
+      <a routerLink="/login" class="btn-primary">
+        <span class="material-icons">login</span>
+        Connexion
+      </a>
+      <a (click)="scrollTo('features')" class="btn-secondary">Découvrir →</a>
     </div>
     <div class="hero-stats">
       <div class="stat-item">
@@ -48,58 +93,77 @@
       </div>
     </div>
   </div>
+
   <div class="hero-right">
-    <div class="hero-overlay"></div>
     <div class="hero-badge">
       <div class="badge-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-        </svg>
+        <span class="material-icons">trending_up</span>
       </div>
       <div class="badge-text">
         <p>Avancement global</p>
         <p>Calculé automatiquement</p>
       </div>
     </div>
+    <div class="hero-badge hero-badge--alt">
+      <div class="badge-icon" style="background:#2563EB">
+        <span class="material-icons">notifications_active</span>
+      </div>
+      <div class="badge-text">
+        <p>Rapport soumis</p>
+        <p>Il y a 12 minutes</p>
+      </div>
+    </div>
   </div>
 </section>
 
+<!-- ══════════════ FONCTIONNALITÉS ══════════════ -->
 <section class="section-features" id="features">
   <div class="section-header">
     <p class="section-label">Fonctionnalités</p>
-    <h2>Tout ce dont une entreprise de construction a besoin</h2>
-    <p class="section-desc">Un cycle complet en un seul outil.</p>
+    <h2>Tout ce dont une entreprise BTP a besoin</h2>
+    <p class="section-desc">Un cycle complet — de la signature du contrat à la clôture — en un seul outil.</p>
   </div>
   <div class="features-grid">
     <div class="feature-card" *ngFor="let f of features">
-      <span class="material-icons feature-icon">{{ f.icon }}</span>
+      <div class="feature-icon-wrap" [style.background]="f.color + '15'">
+        <span class="material-icons" [style.color]="f.color">{{ f.icon }}</span>
+      </div>
       <div class="feature-title">{{ f.title }}</div>
       <div class="feature-desc">{{ f.desc }}</div>
     </div>
   </div>
 </section>
 
+<!-- ══════════════ RÔLES ══════════════ -->
 <section class="section-roles" id="roles">
   <div class="section-header">
     <p class="section-label">Pour qui ?</p>
     <h2>4 rôles, une seule plateforme</h2>
+    <p class="section-desc">Chaque membre de votre équipe accède uniquement à ce dont il a besoin.</p>
   </div>
   <div class="roles-grid">
     <div class="role-card" *ngFor="let r of roles">
-      <span class="material-icons role-icon">{{ r.icon }}</span>
+      <div class="role-icon-wrap" [style.background]="r.color + '15'">
+        <span class="material-icons" [style.color]="r.color">{{ r.icon }}</span>
+      </div>
       <h3 class="role-title">{{ r.title }}</h3>
       <p class="role-desc">{{ r.desc }}</p>
     </div>
   </div>
 </section>
 
+<!-- ══════════════ CTA ══════════════ -->
 <section class="section-cta">
   <h2>Prêt à piloter vos chantiers autrement ?</h2>
   <p>Rejoignez les entreprises qui ont choisi la clarté en temps réel.</p>
-  <a routerLink="/login" class="btn-white">Connexion →</a>
+  <a routerLink="/login" class="btn-white">
+    <span class="material-icons">rocket_launch</span>
+    Accéder à BuilDFlow
+  </a>
 </section>
 
+<!-- ══════════════ FOOTER ══════════════ -->
 <footer>
-  <div class="footer-logo">Build<span>D</span>Flow</div>
+  <div class="footer-logo">Buil<span>D</span>Flow</div>
   <p>© 2026 BuilDFlow · Plateforme SaaS BTP multi-tenant</p>
 </footer>

@@ -1,104 +1,209 @@
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
 import { NgFor, NgIf, NgClass } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { CanPipe } from '../../core/pipes/can.pipe';
 import { PermissionService } from '../../core/services/permission.service';
+import { ClientService } from '../../core/services/client.service';
+import { Client } from '../../core/models';
+import { PaginationComponent } from '../../shared/pagination/pagination';
 
 @Component({
   selector: 'app-clients-list',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, ReactiveFormsModule, FormsModule, CanPipe],
+  imports: [NgFor, NgIf, NgClass, ReactiveFormsModule, FormsModule, CanPipe, PaginationComponent],
   templateUrl: './clients-list.html',
   styleUrl: './clients-list.scss'
 })
-export class ClientsList {
+export class ClientsList implements OnInit {
 
-  showModal = false;
-  searchQuery = '';
-  isLoading = false;
+  showModal      = false;
+  isLoading      = false;
   successMessage = '';
+  errorMessage   = '';
+  currentPage    = 1;
+  readonly pageSize = 12;
 
+  // Voir / Modifier
+  selectedClient:    Client | null = null;
+  showModalVoir      = false;
+  showModalModifier  = false;
+  isLoadingModifier  = false;
+  successModifier    = false;
+  errorModifier      = '';
+  formModifier = { type_client: '', nom: '', prenom: '', raison_sociale: '', telephone: '', email: '', adresse: '' };
+
+  private _searchQuery = '';
+  get searchQuery()          { return this._searchQuery; }
+  set searchQuery(v: string) { this._searchQuery = v; this.currentPage = 1; }
+
+  clients: Client[] = [];
   clientForm: FormGroup;
 
-  clients = [
-    { id: 1, nom: 'Konan', prenom: 'Yves', raison_sociale: '', type: 'particulier', telephone: '+225 07 00 00 01', email: 'yves@gmail.com', adresse: 'Cocody, Abidjan', contrats: 2, initiales: 'KY' },
-    { id: 2, nom: '', prenom: '', raison_sociale: 'SCI Les Palmiers', type: 'societe', telephone: '+225 27 00 00 02', email: 'contact@palmiers.ci', adresse: 'Plateau, Abidjan', contrats: 1, initiales: 'SP' },
-    { id: 3, nom: 'Diabaté', prenom: 'Moussa', raison_sociale: '', type: 'particulier', telephone: '+225 05 00 00 03', email: 'moussa@gmail.com', adresse: 'Marcory, Abidjan', contrats: 3, initiales: 'DM' },
-    { id: 4, nom: '', prenom: '', raison_sociale: 'Groupe Immobilier du Sud', type: 'societe', telephone: '+225 27 00 00 04', email: 'contact@gis.ci', adresse: 'Zone 4, Abidjan', contrats: 1, initiales: 'GI' },
-  ];
-
-  constructor(private fb: FormBuilder, public perm: PermissionService) {
+  constructor(
+    private fb:            FormBuilder,
+    public  perm:          PermissionService,
+    private clientService: ClientService,
+  ) {
     this.clientForm = this.fb.group({
-      type: ['particulier', Validators.required],
-      nom: [''],
-      prenom: [''],
+      type:          ['particulier', Validators.required],
+      nom:           ['', Validators.required],
+      prenom:        ['', Validators.required],
       raison_sociale: [''],
-      telephone: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      adresse: ['', Validators.required],
+      telephone:     ['', Validators.required],
+      email:         ['', [Validators.required, Validators.email]],
+      adresse:       ['', Validators.required],
     });
+    this.clientForm.get('type')!.valueChanges.subscribe(t => this.updateValidateurs(t));
   }
 
-  get filteredClients() {
-    if (!this.searchQuery) return this.clients;
-    const q = this.searchQuery.toLowerCase();
+  ngOnInit(): void {
+    this.chargerClients();
+  }
+
+  private chargerClients(): void {
+    this.clientService.getAll().subscribe(clients => this.clients = clients);
+  }
+
+  private updateValidateurs(type: string): void {
+    const nom    = this.clientForm.get('nom')!;
+    const prenom = this.clientForm.get('prenom')!;
+    const rs     = this.clientForm.get('raison_sociale')!;
+    if (type === 'societe') {
+      nom.clearValidators(); prenom.clearValidators();
+      rs.setValidators(Validators.required);
+    } else {
+      nom.setValidators(Validators.required);
+      prenom.setValidators(Validators.required);
+      rs.clearValidators();
+    }
+    [nom, prenom, rs].forEach(c => c.updateValueAndValidity());
+  }
+
+  private get _allFiltered(): Client[] {
+    if (!this._searchQuery) return this.clients;
+    const q = this._searchQuery.toLowerCase();
     return this.clients.filter(c =>
-      c.nom.toLowerCase().includes(q) ||
-      c.prenom.toLowerCase().includes(q) ||
-      c.raison_sociale.toLowerCase().includes(q) ||
+      (c.nom || '').toLowerCase().includes(q) ||
+      (c.prenom || '').toLowerCase().includes(q) ||
+      (c.raison_sociale || '').toLowerCase().includes(q) ||
       c.email.toLowerCase().includes(q)
     );
   }
 
-  getClientNom(c: any): string {
-    return c.type === 'societe' ? c.raison_sociale : `${c.nom} ${c.prenom}`;
+  get filteredTotal(): number { return this._allFiltered.length; }
+
+  get filteredClients(): Client[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this._allFiltered.slice(start, start + this.pageSize);
   }
 
-  openModal() {
+  getClientNom(c: any): string {
+    return c.type_client === 'societe'
+      ? (c.raison_sociale || '')
+      : `${c.nom || ''} ${c.prenom || ''}`.trim();
+  }
+
+  getInitiales(c: any): string {
+    if (c.type_client === 'societe') return (c.raison_sociale || '??').substring(0, 2).toUpperCase();
+    return `${(c.nom || '?')[0]}${(c.prenom || '?')[0]}`.toUpperCase();
+  }
+
+  openModal(): void {
     this.showModal = true;
     this.clientForm.reset({ type: 'particulier' });
+    this.updateValidateurs('particulier');
     this.successMessage = '';
+    this.errorMessage   = '';
   }
 
-  closeModal() {
+  closeModal(): void {
     this.showModal = false;
-    this.successMessage = '';
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.clientForm.invalid) return;
-    this.isLoading = true;
+    this.isLoading    = true;
+    this.errorMessage = '';
 
-    setTimeout(() => {
-      const v = this.clientForm.value;
-      const initiales = v.type === 'societe'
-        ? v.raison_sociale.substring(0, 2).toUpperCase()
-        : `${v.nom[0]}${v.prenom[0]}`.toUpperCase();
-
-      this.clients.push({
-        id: this.clients.length + 1,
-        nom: v.nom || '',
-        prenom: v.prenom || '',
-        raison_sociale: v.raison_sociale || '',
-        type: v.type,
-        telephone: v.telephone,
-        email: v.email,
-        adresse: v.adresse,
-        contrats: 0,
-        initiales
-      });
-      this.isLoading = false;
-      this.successMessage = `Client "${this.getClientNom(v)}" créé avec succès.`;
-    }, 1000);
+    const v = this.clientForm.value;
+    this.clientService.ajouter({
+      type_client:    v.type,
+      nom:            v.nom   || undefined,
+      prenom:         v.prenom || undefined,
+      raison_sociale: v.raison_sociale || undefined,
+      telephone:      v.telephone,
+      email:          v.email,
+      adresse:        v.adresse,
+    }).subscribe({
+      next: () => {
+        this.isLoading     = false;
+        this.successMessage = `Client "${this.getClientNom(v)}" créé avec succès.`;
+        this.chargerClients();
+      },
+      error: (err) => {
+        this.isLoading    = false;
+        this.errorMessage = err?.error?.message || 'Erreur lors de la création du client.';
+      },
+    });
   }
 
-  get typeClient() { return this.clientForm.get('type'); }
-  get nom() { return this.clientForm.get('nom'); }
-  get prenom() { return this.clientForm.get('prenom'); }
+  get typeClient()     { return this.clientForm.get('type'); }
+  get nom()            { return this.clientForm.get('nom'); }
+  get prenom()         { return this.clientForm.get('prenom'); }
   get raison_sociale() { return this.clientForm.get('raison_sociale'); }
-  get telephone() { return this.clientForm.get('telephone'); }
-  get email() { return this.clientForm.get('email'); }
-  get adresse() { return this.clientForm.get('adresse'); }
+  get telephone()      { return this.clientForm.get('telephone'); }
+  get email()          { return this.clientForm.get('email'); }
+  get adresse()        { return this.clientForm.get('adresse'); }
+
+  // ── Voir ──────────────────────────────────────────────────
+  voirClient(c: Client): void {
+    this.selectedClient = c;
+    this.showModalVoir  = true;
+  }
+  fermerVoir(): void { this.showModalVoir = false; this.selectedClient = null; }
+
+  // ── Modifier ──────────────────────────────────────────────
+  ouvrirModifier(c: Client): void {
+    this.selectedClient   = c;
+    this.formModifier     = {
+      type_client:    c.type_client,
+      nom:            c.nom    || '',
+      prenom:         c.prenom || '',
+      raison_sociale: c.raison_sociale || '',
+      telephone:      c.telephone,
+      email:          c.email,
+      adresse:        c.adresse || '',
+    };
+    this.errorModifier   = '';
+    this.successModifier = false;
+    this.showModalModifier = true;
+  }
+
+  fermerModifier(): void { this.showModalModifier = false; this.selectedClient = null; }
+
+  validerModifier(): void {
+    if (!this.selectedClient) return;
+    if (!this.formModifier.telephone || !this.formModifier.email) {
+      this.errorModifier = 'Téléphone et email sont obligatoires.'; return;
+    }
+    this.isLoadingModifier = true;
+    this.errorModifier     = '';
+
+    this.clientService.modifier(this.selectedClient.id, {
+      ...this.formModifier,
+      type_client: this.formModifier.type_client as Client['type_client'],
+    }).subscribe({
+      next: () => {
+        this.isLoadingModifier = false;
+        this.successModifier   = true;
+        this.chargerClients();
+        setTimeout(() => { this.showModalModifier = false; this.successModifier = false; }, 1200);
+      },
+      error: (err) => {
+        this.isLoadingModifier = false;
+        this.errorModifier = err?.error?.message || 'Erreur lors de la mise à jour.';
+      },
+    });
+  }
 }

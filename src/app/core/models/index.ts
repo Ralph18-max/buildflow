@@ -53,7 +53,7 @@ export interface Avenant {
   date: string;
   montant: number;
   delai_jours: number;
-  statut: 'approuve' | 'en_attente' | 'refuse';
+  statut: 'signe' | 'en_attente' | 'refuse';
 }
 
 export interface SituationTravaux {
@@ -61,12 +61,18 @@ export interface SituationTravaux {
   numero: string;
   periode: string;
   date_emission: string;
+  date_echeance?: string;
   avancement_pct: number;
+  avancement_facture?: number;
+  montant_ht?: number;
+  montant_ttc?: number;
   montant_periode: number;
   montant_cumule: number;
+  retenue_garantie?: number;  // 5% du TTC, libérable à la réception
+  montant_net?: number;       // montant_ttc - retenue_garantie
   montant_encaisse: number;
   reste_a_facturer: number;
-  statut: 'payee' | 'validee' | 'en_attente';
+  statut: 'payee' | 'validee' | 'en_attente' | 'en_retard';
 }
 
 export interface Contrat {
@@ -75,8 +81,8 @@ export interface Contrat {
   id_client: number;
   nom_client: string;
   type_construction: string;
-  montant_marche: number;        // montant initial S0 — figé
-  montant_marche_revise: number; // montant après avenants
+  montant_marche: number;        // montant initial S0 — figé à la création
+  montant_marche_revise: number; // mis à jour à chaque avenant signé
   date_signature: string;
   date_demarrage_prevue: string;
   date_livraison_prevue: string;
@@ -85,6 +91,8 @@ export interface Contrat {
   id_chantier?: number;
   avenants: Avenant[];
   situations: SituationTravaux[];
+  modifications?: Avenant[];     // alias DB pour avenants (retourné par GET /chantiers/:id)
+  client?: Client;               // embarqué par l'API detail
 }
 
 // ─────────────────────────────────────────
@@ -132,13 +140,14 @@ export interface CorpsEtat {
   cout_reel: number;
   statut: StatutCorpsEtat;
   responsable?: string;
+  intervenants?: Intervenant[];  // embarqués par l'API
 }
 
 // ─────────────────────────────────────────
 // PLANNING & JALONS
 // ─────────────────────────────────────────
 
-export type StatutJalon = 'atteint' | 'manque' | 'a_venir';
+export type StatutJalon = 'atteint' | 'manque' | 'en_attente';
 
 export interface Jalon {
   id: number;
@@ -208,6 +217,9 @@ export interface Chantier {
   intervenants: Intervenant[];
   planning?: Planning;
   budget?: Budget;
+  situations?: SituationTravaux[]; // embarquées par GET /chantiers/:id
+  cloture?: Cloture;               // embarquée par GET /chantiers/:id
+  contrat?: Contrat;               // embarqué par GET /chantiers/:id (avec client + modifications)
   // Dénormalisé pour affichage liste
   numero_marche?: string;
   nom_client?: string;
@@ -218,7 +230,7 @@ export interface Chantier {
 // RAPPORT TERRAIN
 // ─────────────────────────────────────────
 
-export type Meteo = 'soleil' | 'nuageux' | 'pluie' | 'orage' | 'vent';
+export type Meteo = 'ensoleille' | 'nuageux' | 'pluvieux' | 'orageux' | 'venteux';
 
 export interface AvancementCorpsEtat {
   id_corps_etat: number;

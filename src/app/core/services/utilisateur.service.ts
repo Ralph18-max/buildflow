@@ -1,53 +1,92 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
 import { Utilisateur, Role } from '../models';
+import { PermissionService } from './permission.service';
+import { environment } from '../../../environments/environment';
+
+const API_URL = environment.apiUrl;
 
 @Injectable({ providedIn: 'root' })
 export class UtilisateurService {
 
-  private readonly UTILISATEURS: Utilisateur[] = [
-    { id: 1, tenant_id: 'tenant-001', nom: 'Koné', prenom: 'Youssouf', email: 'admin@buildflow.ci', role: 'admin', actif: true, date_creation: '2024-01-01', avatar_initiales: 'YK' },
-    { id: 2, tenant_id: 'tenant-001', nom: 'Bah', prenom: 'Mamadou', email: 'bah.mamadou@buildflow.ci', role: 'conducteur', actif: true, date_creation: '2024-01-05', avatar_initiales: 'MB' },
-    { id: 3, tenant_id: 'tenant-001', nom: 'Koné', prenom: 'Drissa', email: 'kone.drissa@buildflow.ci', role: 'chef_chantier', actif: true, date_creation: '2024-01-05', avatar_initiales: 'DK' },
-    { id: 4, tenant_id: 'tenant-001', nom: 'Diallo', prenom: 'Fatoumata', email: 'diallo.fatoumata@buildflow.ci', role: 'comptable', actif: true, date_creation: '2024-02-01', avatar_initiales: 'FD' },
-    { id: 5, tenant_id: 'tenant-001', nom: 'Yapi', prenom: 'Serge', email: 'yapi.serge@buildflow.ci', role: 'chef_chantier', actif: true, date_creation: '2025-09-01', avatar_initiales: 'SY' },
-    { id: 6, tenant_id: 'tenant-001', nom: 'Traoré', prenom: 'Aminata', email: 'traore.aminata@buildflow.ci', role: 'conducteur', actif: false, date_creation: '2024-03-15', avatar_initiales: 'AT' },
-  ];
+  constructor(private http: HttpClient, private perms: PermissionService) {}
 
-  private utilisateursSubject = new BehaviorSubject<Utilisateur[]>(this.UTILISATEURS);
-  private utilisateurConnecte: Utilisateur = this.UTILISATEURS[0];
+  getAll(): Observable<Utilisateur[]> {
+    return this.http.get<any[]>(`${API_URL}/utilisateurs`).pipe(
+      map(users => users.map(u => this._map(u)))
+    );
+  }
 
-  getAll(): Observable<Utilisateur[]> { return this.utilisateursSubject.asObservable(); }
-  getById(id: number): Observable<Utilisateur | undefined> { return of(this.UTILISATEURS.find(u => u.id === id)); }
-  getMoiConnecte(): Utilisateur { return this.utilisateurConnecte; }
+  getById(id: number): Observable<Utilisateur | undefined> {
+    return this.getAll().pipe(
+      map(users => users.find(u => u.id === id))
+    );
+  }
 
-  hasRole(role: Role): boolean { return this.utilisateurConnecte.role === role; }
-  isAdmin(): boolean { return this.hasRole('admin'); }
-  isConducteur(): boolean { return this.hasRole('conducteur'); }
-  isChefChantier(): boolean { return this.hasRole('chef_chantier'); }
-  isComptable(): boolean { return this.hasRole('comptable'); }
-  peutVoirFinances(): boolean { return ['admin', 'comptable', 'conducteur'].includes(this.utilisateurConnecte.role); }
-  peutModifierAvancement(): boolean { return ['admin', 'conducteur'].includes(this.utilisateurConnecte.role); }
-  peutCreerComptes(): boolean { return this.isAdmin(); }
+  getMoiConnecte(): Utilisateur {
+    const permsUser = this.perms.currentUser();
+    return {
+      id:               permsUser?.id || 0,
+      tenant_id:        permsUser?.tenant_id || '',
+      nom:              permsUser?.nom || '',
+      prenom:           permsUser?.prenom || '',
+      email:            permsUser?.email || '',
+      role:             (permsUser?.role || 'admin') as Role,
+      actif:            true,
+      date_creation:    '',
+      avatar_initiales: permsUser?.avatar || '',
+    };
+  }
+
+  hasRole(role: Role): boolean { return this.getMoiConnecte().role === role; }
+  isAdmin(): boolean           { return this.hasRole('admin'); }
+  isConducteur(): boolean      { return this.hasRole('conducteur'); }
+  isChefChantier(): boolean    { return this.hasRole('chef_chantier'); }
+  isComptable(): boolean       { return this.hasRole('comptable'); }
+  peutVoirFinances(): boolean  { return ['admin', 'comptable', 'conducteur'].includes(this.getMoiConnecte().role); }
+  peutModifierAvancement(): boolean { return ['admin', 'conducteur'].includes(this.getMoiConnecte().role); }
+  peutCreerComptes(): boolean  { return this.isAdmin(); }
 
   ajouter(utilisateur: Omit<Utilisateur, 'id' | 'date_creation' | 'avatar_initiales' | 'tenant_id'>): Observable<Utilisateur> {
-    const nouveau: Utilisateur = { ...utilisateur, id: Math.max(...this.UTILISATEURS.map(u => u.id)) + 1, tenant_id: 'tenant-001', date_creation: new Date().toISOString().split('T')[0], avatar_initiales: `${utilisateur.prenom[0]}${utilisateur.nom[0]}`.toUpperCase() };
-    this.UTILISATEURS.push(nouveau);
-    this.utilisateursSubject.next([...this.UTILISATEURS]);
-    return of(nouveau);
+    return this.http.post<any>(`${API_URL}/utilisateurs`, utilisateur).pipe(
+      map(u => this._map(u))
+    );
+  }
+
+  modifier(id: number, data: { nom: string; prenom: string; email: string; role: string }): Observable<Utilisateur> {
+    return this.http.put<any>(`${API_URL}/utilisateurs/${id}`, data).pipe(
+      map(u => this._map(u))
+    );
   }
 
   toggleActif(id: number): Observable<boolean> {
-    const u = this.UTILISATEURS.find(u => u.id === id);
-    if (!u) return of(false);
-    u.actif = !u.actif;
-    this.utilisateursSubject.next([...this.UTILISATEURS]);
-    return of(true);
+    return this.http.patch<{ id: number; actif: boolean }>(`${API_URL}/utilisateurs/${id}/toggle`, {}).pipe(
+      map(res => res.actif)
+    );
   }
 
   getStats(): Observable<{ total: number; actifs: number; par_role: Record<Role, number> }> {
-    const par_role = { admin: 0, conducteur: 0, chef_chantier: 0, comptable: 0 } as Record<Role, number>;
-    this.UTILISATEURS.forEach(u => par_role[u.role]++);
-    return of({ total: this.UTILISATEURS.length, actifs: this.UTILISATEURS.filter(u => u.actif).length, par_role });
+    return this.getAll().pipe(
+      map(users => {
+        const par_role = { admin: 0, conducteur: 0, chef_chantier: 0, comptable: 0 } as Record<Role, number>;
+        users.forEach(u => par_role[u.role]++);
+        return { total: users.length, actifs: users.filter(u => u.actif).length, par_role };
+      })
+    );
+  }
+
+  private _map(u: any): Utilisateur {
+    return {
+      id:               u.id,
+      tenant_id:        u.tenant_id || '',
+      nom:              u.nom,
+      prenom:           u.prenom,
+      email:            u.email,
+      role:             u.role as Role,
+      actif:            u.actif,
+      date_creation:    u.date_creation?.split('T')[0] || '',
+      avatar_initiales: `${(u.prenom || '')[0] || ''}${(u.nom || '')[0] || ''}`.toUpperCase(),
+    };
   }
 }

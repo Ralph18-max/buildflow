@@ -38,5 +38,255 @@ h1, h2, h3, .logo, .stat-number {
 }
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 60px; // compense la navbar fixe
+  scroll-padding-top: 60px;
+}
+
+// ════════════════════════════════════════════════════════
+// DESIGN SYSTEM GLOBAL — Boutons, Modals, Formulaires
+// ════════════════════════════════════════════════════════
+
+// ─── Boutons partagés ────────────────────────────────────────────────────────
+
+.btn-primary, .btn-create {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--orange);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  white-space: nowrap;
+  text-decoration: none;
+
+  .material-icons { font-size: 18px; flex-shrink: 0; }
+
+  &:hover  { background: #c94409; transform: translateY(-1px); }
+  &:active { transform: translateY(0); }
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    pointer-events: none;
+  }
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  color: var(--dark);
+  border: 1.5px solid var(--gray-light);
+  border-radius: 10px;
+  padding: 11px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  white-space: nowrap;
+
+  .material-icons { font-size: 17px; flex-shrink: 0; }
+
+  &:hover  { border-color: var(--dark); background: var(--cream); }
+  &:disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+}
+
+.btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--orange);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  .material-icons { font-size: 16px; }
+
+  &:hover  { background: #c94409; transform: translateY(-1px); }
+  &:active { transform: translateY(0); }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    pointer-events: none;
+    background: var(--gray-mid);
+  }
+}
+
+// ─── Modal overlay + boîte ───────────────────────────────────────────────────
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(26, 26, 24, 0.55);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: modal-fade-in 0.2s ease;
+}
+
+.modal {
+  background: white;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+  animation: modal-slide-up 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes modal-slide-up {
+  from { opacity: 0; transform: translateY(24px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+// ─── Structure interne modal ─────────────────────────────────────────────────
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--gray-light);
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Sora', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--dark);
+
+    .material-icons { font-size: 20px; color: var(--orange); }
+  }
+}
+
+.btn-close {
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: var(--cream);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+
+  .material-icons { font-size: 20px; color: var(--gray-mid); }
+  &:hover { background: var(--gray-light); }
+}
+
+.modal-body {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 16px 28px 24px;
+  border-top: 1px solid var(--gray-light);
+}
+
+// ─── Formulaires (modal + inline) ────────────────────────────────────────────
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dark);
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--gray-light);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    background: white;
+    color: var(--dark);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+
+    &::placeholder { color: #C0BDB8; }
+
+    &:focus {
+      border-color: var(--orange);
+      box-shadow: 0 0 0 3px rgba(232, 82, 10, 0.1);
+    }
+
+    &:disabled {
+      background: var(--cream);
+      color: var(--gray-mid);
+      cursor: not-allowed;
+    }
+  }
+
+  textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+  select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6B67' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+// ─── Bannière succès ─────────────────────────────────────────────────────────
+
+.success-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #EAF5EF;
+  border: 1px solid #86C99E;
+  border-radius: 10px;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1A7A4A;
+  margin: 0 28px 4px;
+
+  .material-icons { font-size: 20px; flex-shrink: 0; }
 }

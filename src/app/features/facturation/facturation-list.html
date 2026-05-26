@@ -54,11 +54,11 @@
   <!-- Filtres + Recherche -->
   <div class="filter-row">
     <div class="filter-tabs">
-      <button [class.active]="activeTab === 'tous'"      (click)="activeTab = 'tous'">Toutes</button>
-      <button [class.active]="activeTab === 'payee'"     (click)="activeTab = 'payee'">Payées</button>
-      <button [class.active]="activeTab === 'emise'"     (click)="activeTab = 'emise'">Émises</button>
-      <button [class.active]="activeTab === 'en_retard'" (click)="activeTab = 'en_retard'">En retard</button>
-      <button [class.active]="activeTab === 'en_attente'"(click)="activeTab = 'en_attente'">En attente</button>
+      <button [class.active]="activeTab === 'tous'"       (click)="activeTab = 'tous'">Toutes</button>
+      <button [class.active]="activeTab === 'payee'"      (click)="activeTab = 'payee'">Payées</button>
+      <button [class.active]="activeTab === 'emise'"      (click)="activeTab = 'emise'">Émises</button>
+      <button [class.active]="activeTab === 'en_retard'"  (click)="activeTab = 'en_retard'">En retard</button>
+      <button [class.active]="activeTab === 'en_attente'" (click)="activeTab = 'en_attente'">En attente</button>
     </div>
     <div class="search-bar">
       <span class="material-icons">search</span>
@@ -73,7 +73,6 @@
         <tr>
           <th>Numéro</th>
           <th>Client / Chantier</th>
-          <th>Type</th>
           <th>Montant TTC</th>
           <th>Encaissé</th>
           <th>Échéance</th>
@@ -92,29 +91,21 @@
           <td>
             <div class="cell-numero">
               <span class="numero">{{ f.numero }}</span>
-              <span class="sit-ref" *ngIf="f.sit_ref">{{ f.sit_ref }}</span>
             </div>
           </td>
 
           <!-- Client / Chantier -->
           <td>
             <div class="cell-client">
-              <span class="client-name">{{ f.client }}</span>
-              <span class="chantier-name">{{ f.chantier }}</span>
+              <span class="client-name">{{ f.nom_client }}</span>
+              <span class="chantier-name">{{ f.nom_chantier }}</span>
             </div>
-          </td>
-
-          <!-- Type -->
-          <td>
-            <span class="type-badge" [ngClass]="f.type">
-              {{ getTypeLabel(f.type) }}
-            </span>
           </td>
 
           <!-- Montant TTC -->
           <td>
             <div class="cell-montant">
-              <span class="montant-val">{{ f.montant_ttc }}</span>
+              <span class="montant-val">{{ formatMontant(f.montant_ttc) }}</span>
               <span class="montant-unit">FCFA TTC</span>
             </div>
           </td>
@@ -122,7 +113,7 @@
           <!-- Encaissé -->
           <td>
             <div class="cell-encaisse" [ngClass]="getEncaisseClass(f)">
-              {{ f.encaisse }}
+              {{ formatMontant(f.montant_encaisse) }}
               <span class="encaisse-unit">FCFA</span>
             </div>
           </td>
@@ -151,7 +142,7 @@
 
         <!-- État vide -->
         <tr *ngIf="filteredFactures.length === 0">
-          <td colspan="8">
+          <td colspan="7">
             <div class="empty-state">
               <span class="material-icons">receipt_long</span>
               <p>Aucune facture trouvée</p>
@@ -162,4 +153,53 @@
     </table>
   </div>
 
+</div>
+
+<!-- ===== MODAL NOUVELLE FACTURE ===== -->
+<div class="modal-overlay" *ngIf="showModal" (click)="fermerModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2><span class="material-icons">receipt_long</span> Nouvelle facture</h2>
+      <button class="btn-close" (click)="fermerModal()"><span class="material-icons">close</span></button>
+    </div>
+    <div class="success-banner" *ngIf="successModal">
+      <span class="material-icons">check_circle</span> Facture créée avec succès !
+    </div>
+    <div class="modal-body" *ngIf="!successModal">
+      <div class="form-group">
+        <label>Chantier *</label>
+        <select [(ngModel)]="formFacture.id_chantier">
+          <option *ngFor="let c of chantiers" [value]="c.id">{{ c.nom }}</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Montant HT (FCFA) *</label>
+          <input type="number" [(ngModel)]="formFacture.montant_ht" min="0" placeholder="Ex: 50 000 000" />
+        </div>
+        <div class="form-group">
+          <label>TVA (%)</label>
+          <select [(ngModel)]="formFacture.tva">
+            <option [value]="18">18 %</option>
+            <option [value]="0">0 % (exonéré)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Date d'échéance *</label>
+        <input type="date" [(ngModel)]="formFacture.date_echeance" />
+      </div>
+      <div class="recap-ttc" *ngIf="formFacture.montant_ht > 0">
+        <span>Montant TTC calculé</span>
+        <strong>{{ montantTTC | number:'1.0-0' }} FCFA</strong>
+      </div>
+    </div>
+    <div class="modal-footer" *ngIf="!successModal">
+      <button class="btn-secondary" (click)="fermerModal()">Annuler</button>
+      <button class="btn-primary" (click)="validerFacture()"
+        [disabled]="!formFacture.montant_ht || !formFacture.date_echeance">
+        <span class="material-icons">save</span> Créer la facture
+      </button>
+    </div>
+  </div>
 </div>

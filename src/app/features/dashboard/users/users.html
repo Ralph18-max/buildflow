@@ -60,7 +60,7 @@
         <div class="table-row">
           <div class="user-info">
             <div class="user-avatar" [ngClass]="'role-' + u.role">
-              {{ u.initiales }}
+              {{ u.avatar_initiales }}
             </div>
             <div>
               <p class="user-nom">{{ u.nom }}</p>
@@ -78,7 +78,7 @@
             <span>{{ u.actif ? 'Actif' : 'Inactif' }}</span>
           </div>
           <div class="user-actions">
-            <button class="action-btn" title="Modifier">
+            <button class="action-btn" title="Modifier" (click)="ouvrirEditer(u)">
               <span class="material-icons">edit</span>
             </button>
             <button
@@ -231,4 +231,54 @@
     </div>
   </div>
 
+</div>
+
+<!-- ===== MODAL MODIFIER UTILISATEUR ===== -->
+<div class="modal-overlay" *ngIf="showModalEditer" (click)="fermerEditer()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <h2>Modifier le compte</h2>
+        <p>{{ userEdite?.nom }}</p>
+      </div>
+      <button class="modal-close" (click)="fermerEditer()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div class="success-banner" *ngIf="successEditer">
+      <span class="material-icons">check_circle</span> Modifications enregistrées !
+    </div>
+    <div *ngIf="!successEditer">
+      <div class="form-group">
+        <label>Nom complet</label>
+        <div class="input-wrapper">
+          <span class="material-icons input-icon">person_outline</span>
+          <input type="text" [(ngModel)]="formEditer.nom" placeholder="Nom complet" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <div class="input-wrapper">
+          <span class="material-icons input-icon">mail_outline</span>
+          <input type="email" [(ngModel)]="formEditer.email" placeholder="email@entreprise.com" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Rôle</label>
+        <div class="roles-grid">
+          <label class="role-option" *ngFor="let r of roles" [class.selected]="formEditer.role === r.value">
+            <input type="radio" [(ngModel)]="formEditer.role" [value]="r.value" hidden />
+            <span class="material-icons">{{ r.icon }}</span>
+            <span>{{ r.label }}</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="fermerEditer()">Annuler</button>
+        <button type="button" class="btn-submit" (click)="validerEditer()" [disabled]="!formEditer.nom || !formEditer.email">
+          <span class="material-icons">save</span> Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

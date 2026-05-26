@@ -1,40 +1,100 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
 import { RapportTerrain, Pointage } from '../models';
+import { environment } from '../../../environments/environment';
+
+const API_URL = environment.apiUrl;
 
 @Injectable({ providedIn: 'root' })
 export class TerrainService {
 
-  private rapports: RapportTerrain[] = [
-    { id: 1, id_chantier: 1, nom_chantier: 'Résidence Les Palmiers', date_rapport: '2025-04-24', redacteur: 'Bah Mamadou', effectif_present: 18, meteo: 'soleil', corps_etat_travailles: [{ id_corps_etat: 105, nom: 'Plomberie', avancement_avant: 80, avancement_apres: 85 }, { id_corps_etat: 106, nom: 'Électricité', avancement_avant: 65, avancement_apres: 70 }], observations: 'Avancement conforme au planning. Livraison tuyauterie cuisine effectuée.', a_incident: false },
-    { id: 2, id_chantier: 3, nom_chantier: 'Complexe Commercial Marcory', date_rapport: '2025-04-24', redacteur: 'Koné Drissa', effectif_present: 24, meteo: 'nuageux', corps_etat_travailles: [{ id_corps_etat: 302, nom: 'Fondations', avancement_avant: 55, avancement_apres: 60 }], observations: 'Coulage du radier nord effectué. Attente séchage 48h avant reprise.', a_incident: false },
-    { id: 3, id_chantier: 4, nom_chantier: 'Maison Individuelle Yopougon', date_rapport: '2025-04-23', redacteur: 'Yapi Serge', effectif_present: 6, meteo: 'soleil', corps_etat_travailles: [{ id_corps_etat: 401, nom: 'Terrassement', avancement_avant: 90, avancement_apres: 100 }], observations: 'Terrassement terminé. Début fondations prévu demain.', incidents: 'Légère chute d\'un ouvrier — sans gravité. Soigné sur place.', a_incident: true },
-  ];
+  constructor(private http: HttpClient) {}
 
-  private pointages: Pointage[] = [
-    { id: 1, id_chantier: 1, nom_chantier: 'Résidence Les Palmiers', date: '2025-04-24', effectif_prevu: 20, total_presents: 18, total_heures: 148, intervenants: [{ id_intervenant: 3, nom_complet: 'Bamba Moussa', corps_etat: 'Plomberie', present: true, heures: 8 }, { id_intervenant: 4, nom_complet: 'Touré Ibrahim', corps_etat: 'Électricité', present: true, heures: 8 }] },
-  ];
-
-  private rapportsSubject = new BehaviorSubject<RapportTerrain[]>(this.rapports);
-  private pointagesSubject = new BehaviorSubject<Pointage[]>(this.pointages);
-
-  getRapports(): Observable<RapportTerrain[]> { return this.rapportsSubject.asObservable(); }
-  getRapportsByChantier(id: number): Observable<RapportTerrain[]> { return of(this.rapports.filter(r => r.id_chantier === id)); }
-
-  ajouterRapport(rapport: Omit<RapportTerrain, 'id'>): Observable<RapportTerrain> {
-    const nouveau = { ...rapport, id: this.rapports.length + 1 };
-    this.rapports.push(nouveau);
-    this.rapportsSubject.next([...this.rapports]);
-    return of(nouveau);
+  getRapports(): Observable<RapportTerrain[]> {
+    return this.http.get<any[]>(`${API_URL}/terrain/rapports`).pipe(
+      map(rapports => rapports.map(r => this._mapRapport(r)))
+    );
   }
 
-  getPointages(): Observable<Pointage[]> { return this.pointagesSubject.asObservable(); }
-  getPointagesByChantier(id: number): Observable<Pointage[]> { return of(this.pointages.filter(p => p.id_chantier === id)); }
+  getRapportsByChantier(id: number): Observable<RapportTerrain[]> {
+    return this.http.get<any[]>(`${API_URL}/terrain/rapports?chantier=${id}`).pipe(
+      map(rapports => rapports.map(r => this._mapRapport(r)))
+    );
+  }
+
+  ajouterRapport(rapport: Omit<RapportTerrain, 'id'>): Observable<RapportTerrain> {
+    return this.http.post<any>(`${API_URL}/terrain/rapports`, {
+      id_chantier:          rapport.id_chantier,
+      redacteur:            rapport.redacteur,
+      date_rapport:         rapport.date_rapport,
+      effectif_present:     rapport.effectif_present,
+      meteo:                rapport.meteo,
+      observations:         rapport.observations,
+      incidents:            rapport.incidents,
+      a_incident:           rapport.a_incident,
+      corps_etat_travailles: rapport.corps_etat_travailles,
+    }).pipe(map(r => this._mapRapport(r)));
+  }
+
+  getPointages(): Observable<Pointage[]> {
+    return this.http.get<any[]>(`${API_URL}/terrain/pointages`).pipe(
+      map(pointages => pointages.map(p => this._mapPointage(p)))
+    );
+  }
+
+  getPointagesByChantier(id: number): Observable<Pointage[]> {
+    return this.http.get<any[]>(`${API_URL}/terrain/pointages?chantier=${id}`).pipe(
+      map(pointages => pointages.map(p => this._mapPointage(p)))
+    );
+  }
 
   ajouterPointage(pointage: Omit<Pointage, 'id'>): Observable<Pointage> {
-    const nouveau = { ...pointage, id: this.pointages.length + 1 };
-    this.pointages.push(nouveau);
-    this.pointagesSubject.next([...this.pointages]);
-    return of(nouveau);
+    return this.http.post<any>(`${API_URL}/terrain/pointages`, {
+      id_chantier:     pointage.id_chantier,
+      date:            pointage.date,
+      effectif_prevu:  pointage.effectif_prevu,
+      intervenants:    pointage.intervenants,
+    }).pipe(map(p => this._mapPointage(p)));
+  }
+
+  private _mapRapport(r: any): RapportTerrain {
+    return {
+      id:                    r.id,
+      id_chantier:           r.id_chantier,
+      nom_chantier:          r.chantier?.nom_chantier || '',
+      date_rapport:          r.date_rapport?.split('T')[0] || r.date_rapport || '',
+      redacteur:             r.redacteur,
+      effectif_present:      r.effectif_present || 0,
+      meteo:                 r.meteo,
+      corps_etat_travailles: r.corps_travaux?.map((c: any) => ({
+        id_corps_etat:    c.id_corps_etat,
+        nom:              c.nom || '',
+        avancement_avant: c.avancement_avant,
+        avancement_apres: c.avancement_apres,
+      })) || [],
+      observations: r.observations || '',
+      incidents:    r.incidents,
+      a_incident:   r.a_incident || false,
+    };
+  }
+
+  private _mapPointage(p: any): Pointage {
+    return {
+      id:              p.id,
+      id_chantier:     p.id_chantier,
+      nom_chantier:    p.chantier?.nom_chantier || '',
+      date:            p.date?.split('T')[0] || p.date || '',
+      effectif_prevu:  p.effectif_prevu || 0,
+      total_presents:  p.total_presents || 0,
+      total_heures:    p.total_heures || 0,
+      intervenants:    p.intervenants?.map((pi: any) => ({
+        id_intervenant: pi.id_intervenant,
+        nom_complet:    pi.nom_complet || '',
+        corps_etat:     pi.corps_etat || '',
+        present:        pi.present,
+        heures:         pi.heures || 0,
+      })) || [],
+    };
   }
 }

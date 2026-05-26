@@ -8,19 +8,25 @@ import { CanPipe } from '../../core/pipes/can.pipe';
 import { ChantierService } from '../../core/services/chantier.service';
 import { Chantier } from '../../core/models';
 import { ContratService } from '../../core/services/contrat.service';
+import { PaginationComponent } from '../../shared/pagination/pagination';
 
 @Component({
   selector: 'app-chantiers-list',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, FormsModule, CanPipe],
+  imports: [NgFor, NgIf, NgClass, FormsModule, CanPipe, PaginationComponent],
   templateUrl: './chantiers-list.html',
   styleUrl: './chantiers-list.scss'
 })
 export class ChantiersList implements OnInit, OnDestroy {
 
-  activeTab: string = 'tous';
-  searchQuery: string = '';
-  showModal: boolean = false;
+  activeTab:   string = 'tous';
+  showModal:   boolean = false;
+  currentPage  = 1;
+  readonly pageSize = 9;
+
+  private _searchQuery = '';
+  get searchQuery()        { return this._searchQuery; }
+  set searchQuery(v: string) { this._searchQuery = v; this.currentPage = 1; }
 
   chantiers: Chantier[] = [];
   contratsOptions: { id: number; label: string }[] = [];
@@ -45,18 +51,17 @@ export class ChantiersList implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Branchement sur ChantierService — filtrage par rôle automatique
-    this.subs.add(
-      this.chantierService.getAll().subscribe(chantiers => {
-        this.chantiers = chantiers;
-      })
-    );
-
-    // Options contrats pour le modal de création
+    this._chargerChantiers();
     this.subs.add(
       this.contratService.getOptions().subscribe(options => {
         this.contratsOptions = options;
       })
+    );
+  }
+
+  private _chargerChantiers(): void {
+    this.subs.add(
+      this.chantierService.getAll().subscribe(chantiers => this.chantiers = chantiers)
     );
   }
 
@@ -66,23 +71,25 @@ export class ChantiersList implements OnInit, OnDestroy {
 
   // ── Filtrage ──────────────────────────────────────────────
 
-  get filteredChantiers(): Chantier[] {
+  private get _allFiltered(): Chantier[] {
     let list = this.chantiers;
-
-    if (this.activeTab !== 'tous') {
-      list = list.filter(c => c.statut === this.activeTab);
-    }
-
-    if (this.searchQuery) {
-      const q = this.searchQuery.toLowerCase();
+    if (this.activeTab !== 'tous') list = list.filter(c => c.statut === this.activeTab);
+    if (this._searchQuery) {
+      const q = this._searchQuery.toLowerCase();
       list = list.filter(c =>
         c.nom_chantier.toLowerCase().includes(q) ||
         c.localisation.toLowerCase().includes(q) ||
         (c.nom_client || '').toLowerCase().includes(q)
       );
     }
-
     return list;
+  }
+
+  get filteredTotal(): number { return this._allFiltered.length; }
+
+  get filteredChantiers(): Chantier[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this._allFiltered.slice(start, start + this.pageSize);
   }
 
   getCount(statut: string): number {
@@ -142,22 +149,20 @@ export class ChantiersList implements OnInit, OnDestroy {
     if (!this.perm.can('chantiers:create')) return;
     if (!this.nouveauChantier.nom || !this.nouveauChantier.localisation) return;
 
-    // En Sprint 8 : POST /api/chantiers → service met à jour le BehaviorSubject
-    // Pour l'instant : ajout local via le service
-    this.chantierService.ajouter({
-      nom_chantier: this.nouveauChantier.nom,
-      localisation: this.nouveauChantier.localisation,
-      chef_chantier: this.nouveauChantier.chef_chantier || 'Non assigné',
-      date_demarrage_reelle: this.nouveauChantier.date_debut,
-      date_livraison_prevue: this.nouveauChantier.date_fin_prevue,
-      description: this.nouveauChantier.description,
-      id_contrat: this.nouveauChantier.contrat_id || 0,
-      statut: 'en_cours',
-      avancement_global: 0,
-      corps_etat: [],
-      intervenants: []
-    });
-
-    this.fermerModal();
+    this.subs.add(
+      this.chantierService.ajouter({
+        nom_chantier:          this.nouveauChantier.nom,
+        localisation:          this.nouveauChantier.localisation,
+        chef_chantier:         this.nouveauChantier.chef_chantier || 'Non assigné',
+        date_livraison_prevue: this.nouveauChantier.date_fin_prevue,
+        description:           this.nouveauChantier.description,
+        id_contrat:            this.nouveauChantier.contrat_id || 0,
+      }).subscribe({
+        next: () => {
+          this.fermerModal();
+          this._chargerChantiers();
+        },
+      })
+    );
   }
 }

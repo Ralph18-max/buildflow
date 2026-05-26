@@ -1,30 +1,82 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, BehaviorSubject } from 'rxjs';
-import { Facture, StatutFacture } from '../models';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+import { Facture } from '../models';
+import { environment } from '../../../environments/environment';
+
+const API_URL = environment.apiUrl;
 
 @Injectable({ providedIn: 'root' })
 export class FactureService {
 
-  private readonly FACTURES: Facture[] = [
-    { id: 1, numero: 'FAC-2024-001', id_chantier: 1, id_contrat: 1, nom_chantier: 'Résidence Les Palmiers', nom_client: 'SCI Les Palmiers', date_emission: '2024-03-31', date_echeance: '2024-04-30', montant_ht: 120000000, tva: 18, montant_ttc: 141600000, montant_encaisse: 141600000, reste_a_payer: 0, statut: 'payee', situations_liees: [1], historique_paiements: [{ date: '2024-04-25', montant: 141600000, mode: 'Virement bancaire', reference: 'VIR-20240425-001' }] },
-    { id: 2, numero: 'FAC-2024-002', id_chantier: 1, id_contrat: 1, nom_chantier: 'Résidence Les Palmiers', nom_client: 'SCI Les Palmiers', date_emission: '2024-06-30', date_echeance: '2024-07-30', montant_ht: 160000000, tva: 18, montant_ttc: 188800000, montant_encaisse: 188800000, reste_a_payer: 0, statut: 'payee', situations_liees: [2], historique_paiements: [{ date: '2024-07-28', montant: 188800000, mode: 'Virement bancaire', reference: 'VIR-20240728-001' }] },
-    { id: 3, numero: 'FAC-2025-001', id_chantier: 1, id_contrat: 1, nom_chantier: 'Résidence Les Palmiers', nom_client: 'SCI Les Palmiers', date_emission: '2024-12-31', date_echeance: '2025-01-31', montant_ht: 220000000, tva: 18, montant_ttc: 259600000, montant_encaisse: 0, reste_a_payer: 259600000, statut: 'en_retard', situations_liees: [3, 4], historique_paiements: [] },
-    { id: 4, numero: 'FAC-2024-003', id_chantier: 2, id_contrat: 2, nom_chantier: 'Villa Duplex Riviera', nom_client: 'Konan Yves', date_emission: '2024-03-10', date_echeance: '2024-04-10', montant_ht: 180000000, tva: 18, montant_ttc: 212400000, montant_encaisse: 212400000, reste_a_payer: 0, statut: 'payee', situations_liees: [5, 6, 7], historique_paiements: [{ date: '2024-04-08', montant: 106200000, mode: 'Virement bancaire', reference: 'VIR-20240408-001' }, { date: '2024-04-09', montant: 106200000, mode: 'Virement bancaire', reference: 'VIR-20240409-001' }] },
-    { id: 5, numero: 'FAC-2025-002', id_chantier: 3, id_contrat: 3, nom_chantier: 'Complexe Commercial Marcory', nom_client: 'Groupe Immobilier du Sud', date_emission: '2025-03-31', date_echeance: '2025-04-30', montant_ht: 95000000, tva: 18, montant_ttc: 112100000, montant_encaisse: 0, reste_a_payer: 112100000, statut: 'emise', situations_liees: [8], historique_paiements: [] },
-  ];
+  constructor(private http: HttpClient) {}
 
-  private facturesSubject = new BehaviorSubject<Facture[]>(this.FACTURES);
+  getAll(): Observable<Facture[]> {
+    return this.http.get<any[]>(`${API_URL}/facturation/situations`).pipe(
+      map(situations => situations.map(s => this._map(s)))
+    );
+  }
 
-  getAll(): Observable<Facture[]> { return this.facturesSubject.asObservable(); }
-  getById(id: number): Observable<Facture | undefined> { return of(this.FACTURES.find(f => f.id === id)); }
-  getByChantier(idChantier: number): Observable<Facture[]> { return of(this.FACTURES.filter(f => f.id_chantier === idChantier)); }
+  getById(id: number): Observable<Facture | undefined> {
+    return this.http.get<any>(`${API_URL}/facturation/situations/${id}`).pipe(
+      map(s => this._map(s))
+    );
+  }
+
+  getByChantier(idChantier: number): Observable<Facture[]> {
+    return this.http.get<any[]>(`${API_URL}/facturation/situations?chantier=${idChantier}`).pipe(
+      map(situations => situations.map(s => this._map(s)))
+    );
+  }
+
+  creerSituation(data: { id_chantier: number; montant_ht: number; taux_tva: number; avancement_facture: number }): Observable<Facture> {
+    return this.http.post<any>(`${API_URL}/facturation/situations`, data).pipe(
+      map(s => this._map(s))
+    );
+  }
 
   getStats(): Observable<{ total_encaisse: number; en_attente: number; emises: number; en_retard: number }> {
-    return of({
-      total_encaisse: this.FACTURES.filter(f => f.statut === 'payee').reduce((a, f) => a + f.montant_ttc, 0),
-      en_attente: this.FACTURES.filter(f => f.statut === 'en_attente').reduce((a, f) => a + f.montant_ttc, 0),
-      emises: this.FACTURES.filter(f => f.statut === 'emise').reduce((a, f) => a + f.montant_ttc, 0),
-      en_retard: this.FACTURES.filter(f => f.statut === 'en_retard').reduce((a, f) => a + f.montant_ttc, 0),
-    });
+    return this.http.get<{ total_encaisse: number; en_retard: number }>(`${API_URL}/facturation/stats`).pipe(
+      map(s => ({
+        total_encaisse: s.total_encaisse,
+        en_attente:     0,
+        emises:         0,
+        en_retard:      s.en_retard,
+      }))
+    );
+  }
+
+  private _map(s: any): Facture {
+    const client  = s.chantier?.contrat?.client;
+    const nomClient = client?.raison_sociale
+      || `${client?.prenom || ''} ${client?.nom || ''}`.trim()
+      || '';
+
+    const dateEmission = s.date_emission ? new Date(s.date_emission) : new Date();
+    const dateEcheance = new Date(dateEmission.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    return {
+      id:               s.id,
+      numero:           `SIT-${s.id_chantier}-${String(s.numero_situation).padStart(3, '0')}`,
+      id_chantier:      s.id_chantier,
+      id_contrat:       s.chantier?.contrat?.id || 0,
+      nom_chantier:     s.chantier?.nom_chantier || '',
+      nom_client:       nomClient,
+      date_emission:    dateEmission.toISOString().split('T')[0],
+      date_echeance:    dateEcheance.toISOString().split('T')[0],
+      montant_ht:       s.montant_ht,
+      tva:              s.taux_tva,
+      montant_ttc:      s.montant_ttc,
+      montant_encaisse: s.montant_encaisse,
+      reste_a_payer:    s.reste_a_facturer,
+      statut:           s.statut,
+      situations_liees: [s.id],
+      historique_paiements: (s.paiements || []).map((p: any) => ({
+        date:      p.date_paiement ? new Date(p.date_paiement).toISOString().split('T')[0] : '',
+        montant:   p.montant,
+        mode:      p.mode_paiement || 'Virement',
+        reference: p.reference || '',
+      })),
+    };
   }
 }

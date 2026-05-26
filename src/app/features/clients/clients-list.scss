@@ -233,10 +233,57 @@ form { display: flex; flex-direction: column; gap: 16px; }
 
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
+// Modale voir — avatar compact dans le header
+.client-avatar-sm {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 9px;
+  font-size: 12px; font-weight: 700; color: white; flex-shrink: 0;
+  &.particulier { background: var(--orange); }
+  &.societe      { background: #4299e1; }
+}
+
+// Modale voir — grille de détails
+.voir-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+}
+
+.voir-item {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 12px 14px; border-radius: 10px;
+  background: var(--cream); border: 1px solid var(--gray-light);
+}
+
+.voir-label {
+  font-size: 11px; font-weight: 600; color: var(--gray-mid);
+  text-transform: uppercase; letter-spacing: 0.4px;
+}
+
+.voir-val {
+  font-size: 14px; font-weight: 500; color: var(--dark);
+  word-break: break-word;
+}
+
+// Bannière erreur (modifier)
+.error-banner {
+  display: flex; gap: 10px; align-items: center;
+  padding: 14px 16px; margin-bottom: 4px;
+  background: rgba(229,62,62,0.06);
+  border-radius: 10px; border: 1px solid rgba(229,62,62,0.2);
+  font-size: 13px; color: #c53030;
+  .material-icons { font-size: 20px; color: #e53e3e; flex-shrink: 0; }
+}
+
+// Modale modifier — modal-body sans padding propre au composant
+.modal .modal-body {
+  display: flex; flex-direction: column; gap: 16px;
+  padding: 0; margin-top: 8px;
+}
+
 @media (max-width: 768px) {
   .clients-page { padding: 16px; }
   .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
   .client-card { grid-template-columns: auto 1fr; gap: 12px;
     .client-meta, .client-actions { display: none; } }
   .form-row { grid-template-columns: 1fr; }
+  .voir-grid { grid-template-columns: 1fr; }
 }

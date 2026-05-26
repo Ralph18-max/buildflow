@@ -1,38 +1,20 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgFor, NgIf, DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { PermissionService } from '../../../core/services/permission.service';
+import { ChantierService } from '../../../core/services/chantier.service';
+import { TerrainService } from '../../../core/services/terrain.service';
+import { RapportTerrain } from '../../../core/models';
 
-interface Chantier {
-  id: number;
-  nom: string;
-  statut: string;
-  conducteurId: number;
-  chefChantierIds: number[];
-}
-
-interface CorpsEtat {
+interface CorpsEtatLocal {
   id: number;
   nom: string;
   avancement: number;
   selected: boolean;
   avancementJour: number;
-}
-
-interface RapportSoumis {
-  id: number;
-  chantier: string;
-  chantierId: number;
-  date: string;
-  redacteur: string;
-  meteo: string;
-  effectif: number;
-  observations: string;
-  incidents: string;
-  corpsEtatTravailles: string[];
-  statut: string;
 }
 
 @Component({
@@ -42,25 +24,23 @@ interface RapportSoumis {
   templateUrl: './terrain-rapport.html',
   styleUrl: './terrain-rapport.scss'
 })
-export class TerrainRapport implements OnInit {
+export class TerrainRapport implements OnInit, OnDestroy {
 
   rapportForm!: FormGroup;
   soumis = false;
   loading = false;
 
-  // Onglet par défaut selon rôle :
-  // chef_chantier → 'nouveau' | admin / conducteur → 'historique'
+  private subs = new Subscription();
+
   get ongletInitial(): 'nouveau' | 'historique' {
     return this.perms.isChef ? 'nouveau' : 'historique';
   }
-  ongletActif: 'nouveau' | 'historique' = 'historique'; // sera mis à jour dans ngOnInit
+  ongletActif!: 'nouveau' | 'historique';
 
-  // ── Raccourcis rôles via PermissionService ───────────────────────────────────
   get isAdmin(): boolean      { return this.perms.isAdmin; }
   get isConducteur(): boolean { return this.perms.isConducteur; }
   get isChef(): boolean       { return this.perms.isChef; }
 
-  // Seul le chef_chantier (et conducteur) peut créer un rapport
   get peutCreerRapport(): boolean {
     return this.perms.can('terrain:rapport:create');
   }
@@ -70,7 +50,6 @@ export class TerrainRapport implements OnInit {
     this.ongletActif = onglet;
   }
 
-  // ── Météo ────────────────────────────────────────────────────────────────────
   meteoOptions = [
     { valeur: 'ensoleille', label: 'Ensoleillé', icone: 'wb_sunny' },
     { valeur: 'nuageux',    label: 'Nuageux',    icone: 'cloud' },
@@ -80,115 +59,87 @@ export class TerrainRapport implements OnInit {
   ];
   meteoSelectionnee = 'ensoleille';
 
-  // ── Chantiers ────────────────────────────────────────────────────────────────
-  tousLesChantiers: Chantier[] = [
-    { id: 1, nom: 'Résidence Les Palmiers',       statut: 'en_cours', conducteurId: 2, chefChantierIds: [3, 5] },
-    { id: 2, nom: 'Villa Duplex Riviera',          statut: 'termine',  conducteurId: 6, chefChantierIds: [5] },
-    { id: 3, nom: 'Complexe Commercial Marcory',   statut: 'en_cours', conducteurId: 2, chefChantierIds: [3, 5] },
-    { id: 4, nom: 'Maison Individuelle Yopougon',  statut: 'en_cours', conducteurId: 6, chefChantierIds: [3] },
-  ];
-
-  // Chantiers filtrés selon le rôle et l'id de l'utilisateur connecté
-  get chantiers(): Chantier[] {
-    const user = this.perms.currentUser();
-    if (this.isAdmin) return this.tousLesChantiers;
-    if (this.isConducteur) return this.tousLesChantiers.filter(c => c.conducteurId === user.id);
-    if (this.isChef) return this.tousLesChantiers.filter(c => c.chefChantierIds.includes(user.id));
-    return [];
-  }
-
-  // ── Corps d'état ─────────────────────────────────────────────────────────────
-  corpsEtatDisponibles: CorpsEtat[] = [
-    { id: 1, nom: 'Terrassement', avancement: 100, selected: false, avancementJour: 0 },
-    { id: 2, nom: 'Fondations',   avancement: 100, selected: false, avancementJour: 0 },
-    { id: 3, nom: 'Gros œuvre',   avancement: 80,  selected: false, avancementJour: 0 },
-    { id: 4, nom: 'Charpente',    avancement: 20,  selected: false, avancementJour: 0 },
-    { id: 5, nom: 'Plomberie',    avancement: 0,   selected: false, avancementJour: 0 },
-    { id: 6, nom: 'Électricité',  avancement: 0,   selected: false, avancementJour: 0 },
-    { id: 7, nom: 'Carrelage',    avancement: 0,   selected: false, avancementJour: 0 },
-    { id: 8, nom: 'Peinture',     avancement: 0,   selected: false, avancementJour: 0 },
-  ];
-
-  // ── Rapports ─────────────────────────────────────────────────────────────────
-  tousLesRapports: RapportSoumis[] = [
-    {
-      id: 1, chantierId: 1,
-      chantier: 'Résidence Les Palmiers',
-      date: '2025-04-24', redacteur: 'Kouassi Bernard',
-      meteo: 'ensoleille', effectif: 12,
-      observations: 'Travaux de gros œuvre avancent bien. Coulage du plancher du 2ème niveau terminé.',
-      incidents: '', corpsEtatTravailles: ['Gros œuvre', 'Charpente'], statut: 'soumis'
-    },
-    {
-      id: 2, chantierId: 3,
-      chantier: 'Complexe Commercial Marcory',
-      date: '2025-04-23', redacteur: 'Traoré Seydou',
-      meteo: 'nuageux', effectif: 8,
-      observations: 'Terrassement en cours. Bonne progression malgré le terrain difficile.',
-      incidents: 'Panne engin de terrassement — réparation 2h d\'arrêt',
-      corpsEtatTravailles: ['Terrassement'], statut: 'soumis'
-    },
-    {
-      id: 3, chantierId: 4,
-      chantier: 'Maison Individuelle Yopougon',
-      date: '2025-04-22', redacteur: 'Kouassi Bernard',
-      meteo: 'pluvieux', effectif: 5,
-      observations: 'Travaux ralentis par la pluie. Pose des fondations partiellement réalisée.',
-      incidents: 'Arrêt 3h cause météo',
-      corpsEtatTravailles: ['Fondations'], statut: 'soumis'
-    },
-  ];
-
-  // Rapports filtrés selon les chantiers accessibles au rôle connecté
-  get rapportsSoumis(): RapportSoumis[] {
-    if (this.isAdmin) return this.tousLesRapports;
-    const ids = this.chantiers.map(c => c.id);
-    return this.tousLesRapports.filter(r => ids.includes(r.chantierId));
-  }
-
+  chantiers: { id: number; nom: string }[] = [];
+  corpsEtatDisponibles: CorpsEtatLocal[] = [];
+  rapports: RapportTerrain[] = [];
   filtreChantierHistorique = 0;
   dateAujourdhui = new Date().toISOString().split('T')[0];
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    public perms: PermissionService   // public pour usage dans le template si besoin
-  ) {}
+    public perms: PermissionService,
+    private chantierService: ChantierService,
+    private terrainService: TerrainService,
+  ) {
+    this.ongletActif = this.ongletInitial;
+  }
 
   ngOnInit() {
-    // Définir l'onglet initial selon le rôle
-    this.ongletActif = this.ongletInitial;
-
-    // Nom du rédacteur depuis l'utilisateur connecté
     const user = this.perms.currentUser();
-    const redacteurNom = `${user.prenom} ${user.nom}`;
-
-    // Présélection automatique si 1 seul chantier accessible
-    const chantierInitial = this.chantiers.length === 1 ? this.chantiers[0].id : '';
+    const redacteurNom = user ? `${user.prenom} ${user.nom}` : 'Inconnu';
 
     this.rapportForm = this.fb.group({
-      chantierId:   [chantierInitial, Validators.required],
+      chantierId:   ['', Validators.required],
       date:         [this.dateAujourdhui, Validators.required],
       redacteur:    [redacteurNom, Validators.required],
       effectif:     [0, [Validators.required, Validators.min(0)]],
       observations: ['', Validators.required],
       incidents:    [''],
     });
+
+    this.subs.add(
+      this.chantierService.getEnCours().subscribe(list => {
+        this.chantiers = list.map(c => ({ id: c.id, nom: c.nom_chantier }));
+        if (this.chantiers.length === 1) {
+          this.rapportForm.patchValue({ chantierId: this.chantiers[0].id });
+          this._chargerCorpsEtat(this.chantiers[0].id);
+        }
+      })
+    );
+
+    this.subs.add(
+      this.rapportForm.get('chantierId')!.valueChanges.subscribe(id => {
+        if (id) this._chargerCorpsEtat(Number(id));
+        else this.corpsEtatDisponibles = [];
+      })
+    );
+
+    this.subs.add(
+      this.terrainService.getRapports().subscribe(list => this.rapports = list)
+    );
   }
 
-  get rapportsFiltres(): RapportSoumis[] {
-    if (this.filtreChantierHistorique === 0) return this.rapportsSoumis;
-    return this.rapportsSoumis.filter(r => r.chantierId === Number(this.filtreChantierHistorique));
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+  }
+
+  private _chargerCorpsEtat(idChantier: number): void {
+    this.corpsEtatDisponibles = [];
+    this.chantierService.getCorpsEtat(idChantier).subscribe(list =>
+      this.corpsEtatDisponibles = list.map(ce => ({
+        id:             ce.id,
+        nom:            ce.nom,
+        avancement:     ce.avancement,
+        selected:       false,
+        avancementJour: 0,
+      }))
+    );
+  }
+
+  get rapportsFiltres(): RapportTerrain[] {
+    if (this.filtreChantierHistorique === 0) return this.rapports;
+    return this.rapports.filter(r => r.id_chantier === Number(this.filtreChantierHistorique));
   }
 
   selectionnerMeteo(valeur: string) { this.meteoSelectionnee = valeur; }
 
-  toggleCorpsEtat(corps: CorpsEtat) {
+  toggleCorpsEtat(corps: CorpsEtatLocal) {
     corps.selected = !corps.selected;
     if (!corps.selected) corps.avancementJour = 0;
   }
 
-  getCorpsEtatSelectionnes(): CorpsEtat[] {
+  getCorpsEtatSelectionnes(): CorpsEtatLocal[] {
     return this.corpsEtatDisponibles.filter(c => c.selected);
   }
 
@@ -206,39 +157,48 @@ export class TerrainRapport implements OnInit {
       return;
     }
     this.loading = true;
-    setTimeout(() => {
-      const val = this.rapportForm.value;
-      const chantier = this.chantiers.find(c => c.id === Number(val.chantierId));
-      const nouveau: RapportSoumis = {
-        id: this.tousLesRapports.length + 1,
-        chantierId: Number(val.chantierId),       // ← liaison chantier obligatoire
-        chantier: chantier?.nom || '',
-        date: val.date,
-        redacteur: val.redacteur,
-        meteo: this.meteoSelectionnee,
-        effectif: val.effectif,
-        observations: val.observations,
-        incidents: val.incidents,
-        corpsEtatTravailles: this.getCorpsEtatSelectionnes().map(c => c.nom),
-        statut: 'soumis'
-      };
-      this.tousLesRapports.unshift(nouveau);
-      this.loading = false;
-      this.soumis = true;
-      setTimeout(() => {
-        this.soumis = false;
-        const user = this.perms.currentUser();
-        this.rapportForm.reset({
-          date: this.dateAujourdhui,
-          redacteur: `${user.prenom} ${user.nom}`,
-          effectif: 0,
-          chantierId: this.chantiers.length === 1 ? this.chantiers[0].id : ''
-        });
-        this.meteoSelectionnee = 'ensoleille';
-        this.corpsEtatDisponibles.forEach(c => { c.selected = false; c.avancementJour = 0; });
-        this.ongletActif = 'historique';
-      }, 2000);
-    }, 1000);
+    const val = this.rapportForm.value;
+    const chantier = this.chantiers.find(c => c.id === Number(val.chantierId));
+
+    this.terrainService.ajouterRapport({
+      id_chantier:           Number(val.chantierId),
+      nom_chantier:          chantier?.nom || '',
+      redacteur:             val.redacteur,
+      date_rapport:          val.date,
+      effectif_present:      val.effectif,
+      meteo:                 this.meteoSelectionnee as any,
+      observations:          val.observations,
+      incidents:             val.incidents || '',
+      a_incident:            !!(val.incidents?.trim()),
+      corps_etat_travailles: this.getCorpsEtatSelectionnes().map(c => ({
+        id_corps_etat:    c.id,
+        nom:              c.nom,
+        avancement_avant: c.avancement,
+        avancement_apres: c.avancement + c.avancementJour,
+      })),
+    }).subscribe({
+      next: (rapport) => {
+        this.loading = false;
+        this.soumis  = true;
+        this.rapports.unshift(rapport);
+
+        setTimeout(() => {
+          this.soumis = false;
+          const user = this.perms.currentUser();
+          const redacteurNom = user ? `${user.prenom} ${user.nom}` : 'Inconnu';
+          this.rapportForm.reset({
+            date:       this.dateAujourdhui,
+            redacteur:  redacteurNom,
+            effectif:   0,
+            chantierId: this.chantiers.length === 1 ? this.chantiers[0].id : '',
+          });
+          this.meteoSelectionnee = 'ensoleille';
+          this.corpsEtatDisponibles.forEach(c => { c.selected = false; c.avancementJour = 0; });
+          this.ongletActif = 'historique';
+        }, 2000);
+      },
+      error: () => { this.loading = false; },
+    });
   }
 
   allerPointage() {

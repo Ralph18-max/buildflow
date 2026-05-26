@@ -1,0 +1,23 @@
+<nav class="pagination" *ngIf="totalPages > 1" aria-label="Pagination">
+
+  <button class="page-btn nav" (click)="go(current - 1)" [disabled]="current === 1">
+    <span class="material-icons">chevron_left</span>
+  </button>
+
+  <ng-container *ngFor="let p of pages; let i = index">
+    <span class="ellipsis" *ngIf="isGap(i)">…</span>
+    <button
+      class="page-btn"
+      [class.active]="p === current"
+      (click)="go(p)">
+      {{ p }}
+    </button>
+  </ng-container>
+
+  <button class="page-btn nav" (click)="go(current + 1)" [disabled]="current === totalPages">
+    <span class="material-icons">chevron_right</span>
+  </button>
+
+  <span class="page-info">{{ current }}/{{ totalPages }}</span>
+
+</nav>

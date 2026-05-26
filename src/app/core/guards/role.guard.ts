@@ -1,6 +1,14 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
-import { PermissionService, Role } from '../services/permission.service';
+import { PermissionService } from '../services/permission.service';
+import { Role } from '../models';
+
+const FALLBACK_ROUTES: Record<string, string> = {
+  admin:         '/dashboard',
+  comptable:     '/comptabilite',
+  conducteur:    '/chantiers',
+  chef_chantier: '/terrain',
+};
 
 export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
   const permissions = inject(PermissionService);
@@ -13,7 +21,8 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
 
   if (permissions.hasRole(...allowedRoles)) return true;
 
-  // Rôle insuffisant → retour dashboard
-  router.navigate(['/dashboard']);
+  // Rôle insuffisant → redirection vers la page d'accueil du rôle courant
+  const fallback = FALLBACK_ROUTES[permissions.role ?? ''] ?? '/documents';
+  router.navigate([fallback]);
   return false;
 };

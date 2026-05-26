@@ -18,10 +18,7 @@
           <span>{{ contrat.numero_marche }}</span>
           <span class="sep">·</span>
           <span class="material-icons">person</span>
-          <span>{{ contrat.client_nom }}</span>
-          <span class="sep">·</span>
-          <span class="material-icons">engineering</span>
-          <span>{{ contrat.conducteur_travaux }}</span>
+          <span>{{ contrat.nom_client }}</span>
         </div>
       </div>
     </div>
@@ -29,7 +26,7 @@
       <span class="statut-badge" [ngClass]="contrat.statut">
         {{ getStatutLabel(contrat.statut) }}
       </span>
-      <button class="btn-edit">
+      <button class="btn-edit" disabled title="Fonctionnalité à venir">
         <span class="material-icons">edit</span>
         Modifier
       </button>
@@ -102,33 +99,17 @@
 
         <div class="partie-block">
           <div class="partie-label">
-            <span class="material-icons">{{ contrat.client_type === 'societe' ? 'business' : 'person' }}</span>
+            <span class="material-icons">person</span>
             Maître d'ouvrage (Client)
           </div>
           <div class="info-list">
             <div class="info-row">
               <span class="info-label">Nom</span>
-              <span class="info-val">{{ contrat.client_nom }}</span>
+              <span class="info-val">{{ contrat.nom_client }}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">Type</span>
-              <span class="info-val">
-                <span class="type-badge" [ngClass]="contrat.client_type">
-                  {{ contrat.client_type === 'societe' ? 'Société' : 'Particulier' }}
-                </span>
-              </span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Téléphone</span>
-              <span class="info-val">{{ contrat.client_telephone }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Email</span>
-              <span class="info-val">{{ contrat.client_email }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Adresse</span>
-              <span class="info-val">{{ contrat.client_adresse }}</span>
+              <span class="info-label">N° Marché</span>
+              <span class="info-val">{{ contrat.numero_marche }}</span>
             </div>
           </div>
         </div>
@@ -143,11 +124,7 @@
           <div class="info-list">
             <div class="info-row">
               <span class="info-label">Entreprise</span>
-              <span class="info-val">{{ contrat.entreprise_nom }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Conducteur travaux</span>
-              <span class="info-val">{{ contrat.conducteur_travaux }}</span>
+              <span class="info-val">BuildDFlow Construction SA</span>
             </div>
           </div>
         </div>
@@ -168,17 +145,9 @@
             <span class="info-label">Démarrage prévu</span>
             <span class="info-val">{{ contrat.date_demarrage_prevue }}</span>
           </div>
-          <div class="info-row" *ngIf="contrat.date_demarrage_reelle">
-            <span class="info-label">Démarrage réel</span>
-            <span class="info-val">{{ contrat.date_demarrage_reelle }}</span>
-          </div>
           <div class="info-row">
             <span class="info-label">Livraison prévue</span>
             <span class="info-val">{{ contrat.date_livraison_prevue }}</span>
-          </div>
-          <div class="info-row" *ngIf="contrat.date_livraison_reelle">
-            <span class="info-label">Livraison réelle</span>
-            <span class="info-val green">{{ contrat.date_livraison_reelle }}</span>
           </div>
           <div class="info-row" *ngIf="totalDelaiAvenants > 0">
             <span class="info-label">Prorogation avenants</span>
@@ -193,17 +162,13 @@
             <span class="info-label">Pénalités de retard</span>
             <span class="info-val">{{ formatFCFA(contrat.penalites_retard) }} / jour</span>
           </div>
-          <div class="info-row">
-            <span class="info-label">Retenue de garantie</span>
-            <span class="info-val">{{ contrat.retenue_garantie }}% sur chaque situation</span>
-          </div>
           <div class="info-row total-row">
-            <span class="info-label">Montant S0 (figé)</span>
-            <span class="info-val">{{ formatFCFA(contrat.montant_s0) }}</span>
+            <span class="info-label">Montant marché initial</span>
+            <span class="info-val">{{ formatFCFA(contrat.montant_marche) }}</span>
           </div>
           <div class="info-row total-row" *ngIf="nbAvenantsApprouves > 0">
             <span class="info-label">Montant marché révisé</span>
-            <span class="info-val orange">{{ formatFCFA(contrat.montant_marche) }}</span>
+            <span class="info-val orange">{{ formatFCFA(montantMarcheRevise) }}</span>
           </div>
         </div>
       </div>
@@ -216,9 +181,9 @@
           </div>
           <div>
             <p class="chantier-label">Chantier associé</p>
-            <h3>{{ contrat.chantier_nom }}</h3>
-            <span class="statut-badge small" [ngClass]="contrat.chantier_statut">
-              {{ getStatutLabel(contrat.chantier_statut) }}
+            <h3>{{ chantierNom }}</h3>
+            <span class="statut-badge small" [ngClass]="chantierStatut">
+              {{ getStatutLabel(chantierStatut) }}
             </span>
           </div>
         </div>
@@ -226,11 +191,12 @@
           <div class="avancement-cercle">
             <svg viewBox="0 0 36 36" class="circular-chart">
               <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-              <path class="circle" [attr.stroke-dasharray]="contrat.chantier_avancement + ', 100'"
-                [attr.stroke]="getAvancementColor(contrat.chantier_avancement)"
+              <path class="circle"
+                [attr.stroke-dasharray]="chantierAvancement + ', 100'"
+                [attr.stroke]="getAvancementColor(chantierAvancement)"
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
             </svg>
-            <span class="avancement-text">{{ contrat.chantier_avancement }}%</span>
+            <span class="avancement-text">{{ chantierAvancement }}%</span>
           </div>
           <span class="material-icons chevron">chevron_right</span>
         </div>
@@ -246,7 +212,7 @@
         <h2>Avenants ({{ contrat.avenants.length }})</h2>
         <p class="section-sub">Modifications officielles du contrat initial</p>
       </div>
-      <button class="btn-add">
+      <button class="btn-add" disabled title="Fonctionnalité à venir">
         <span class="material-icons">add</span> Nouvel avenant
       </button>
     </div>
@@ -254,18 +220,18 @@
     <!-- Récapitulatif avenants -->
     <div class="avenants-recap" *ngIf="contrat.avenants.length > 0">
       <div class="recap-item">
-        <span class="recap-label">Montant S0 initial</span>
-        <span class="recap-val">{{ formatFCFA(contrat.montant_s0) }}</span>
+        <span class="recap-label">Montant initial</span>
+        <span class="recap-val">{{ formatFCFA(contrat.montant_marche) }}</span>
       </div>
       <span class="material-icons recap-arrow">arrow_forward</span>
       <div class="recap-item">
         <span class="recap-label">Total avenants approuvés</span>
-        <span class="recap-val orange">+ {{ formatFCFA(contrat.montant_marche - contrat.montant_s0) }}</span>
+        <span class="recap-val orange">+ {{ formatFCFA(montantMarcheRevise - contrat.montant_marche) }}</span>
       </div>
       <span class="material-icons recap-arrow">arrow_forward</span>
       <div class="recap-item highlight">
         <span class="recap-label">Montant marché révisé</span>
-        <span class="recap-val big">{{ formatFCFA(contrat.montant_marche) }}</span>
+        <span class="recap-val big">{{ formatFCFA(montantMarcheRevise) }}</span>
       </div>
     </div>
 
@@ -273,9 +239,6 @@
     <div class="empty-state" *ngIf="contrat.avenants.length === 0">
       <span class="material-icons">edit_document</span>
       <p>Aucun avenant sur ce contrat</p>
-      <button class="btn-add">
-        <span class="material-icons">add</span> Créer le premier avenant
-      </button>
     </div>
 
     <!-- Liste avenants -->
@@ -297,23 +260,28 @@
               <span class="material-icons">calendar_today</span>
               {{ av.date }}
             </span>
-            <span class="meta-item orange" *ngIf="av.montant_supplementaire > 0">
+            <span class="meta-item orange" *ngIf="av.montant > 0">
               <span class="material-icons">payments</span>
-              + {{ formatFCFA(av.montant_supplementaire) }}
+              + {{ formatFCFA(av.montant) }}
             </span>
-            <span class="meta-item" *ngIf="av.delai_supplementaire > 0">
+            <span class="meta-item" *ngIf="av.delai_jours > 0">
               <span class="material-icons">schedule</span>
-              + {{ av.delai_supplementaire }} jours
+              + {{ av.delai_jours }} jours
             </span>
-            <span class="meta-item green" *ngIf="av.delai_supplementaire === 0">
+            <span class="meta-item green" *ngIf="av.delai_jours === 0">
               <span class="material-icons">schedule</span>
               Sans impact délai
             </span>
           </div>
         </div>
-        <button class="avenant-action">
-          <span class="material-icons">more_vert</span>
-        </button>
+        <div class="avenant-actions" *ngIf="av.statut === 'en_attente' && ('avenants:signer' | can)">
+          <button class="btn-signer" (click)="signerAvenant(av.id)" title="Signer">
+            <span class="material-icons">check_circle</span> Signer
+          </button>
+          <button class="btn-refuser" (click)="refuserAvenant(av.id)" title="Refuser">
+            <span class="material-icons">cancel</span> Refuser
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -325,7 +293,7 @@
         <h2>Situations de travaux ({{ contrat.situations.length }})</h2>
         <p class="section-sub">Factures d'avancement progressif</p>
       </div>
-      <button class="btn-add">
+      <button class="btn-add" disabled title="Fonctionnalité à venir">
         <span class="material-icons">add</span> Nouvelle situation
       </button>
     </div>
@@ -334,9 +302,6 @@
     <div class="empty-state" *ngIf="contrat.situations.length === 0">
       <span class="material-icons">receipt_long</span>
       <p>Aucune situation émise pour l'instant</p>
-      <button class="btn-add">
-        <span class="material-icons">add</span> Émettre la première situation
-      </button>
     </div>
 
     <!-- Situations -->
@@ -363,12 +328,12 @@
         <div class="situation-avancement">
           <div class="avancement-label">
             <span>Avancement cumulé</span>
-            <span class="avancement-pct">{{ sit.avancement_facture }}%</span>
+            <span class="avancement-pct">{{ sit.avancement_pct }}%</span>
           </div>
           <div class="progress-bar">
             <div class="progress-fill"
-              [style.width.%]="sit.avancement_facture"
-              [style.background]="getAvancementColor(sit.avancement_facture)">
+              [style.width.%]="sit.avancement_pct"
+              [style.background]="getAvancementColor(sit.avancement_pct)">
             </div>
           </div>
         </div>
@@ -384,7 +349,8 @@
             <p class="montant-val">{{ formatFCFA(sit.montant_cumule) }}</p>
           </div>
           <div class="montant-separator"></div>
-          <div class="montant-block" [class.encaisse-ok]="sit.montant_encaisse >= sit.montant_periode"
+          <div class="montant-block"
+            [class.encaisse-ok]="sit.montant_encaisse >= sit.montant_periode"
             [class.encaisse-partiel]="sit.montant_encaisse > 0 && sit.montant_encaisse < sit.montant_periode"
             [class.encaisse-zero]="sit.montant_encaisse === 0">
             <p class="montant-label">Encaissé</p>
@@ -392,8 +358,8 @@
           </div>
         </div>
 
-        <!-- Avertissement si non encaissé -->
-        <div class="situation-alerte" *ngIf="sit.montant_encaisse < sit.montant_periode && sit.statut !== 'contestee'">
+        <div class="situation-alerte"
+          *ngIf="sit.montant_encaisse < sit.montant_periode && sit.statut === 'en_attente'">
           <span class="material-icons">warning</span>
           Reste à encaisser : {{ formatFCFA(sit.montant_periode - sit.montant_encaisse) }}
         </div>

@@ -18,11 +18,14 @@ import { DocumentsList } from './features/documents/documents-list';
 import { TerrainRapport } from './features/terrain/terrain-rapport/terrain-rapport';
 import { TerrainPointage } from './features/terrain/terrain-pointage/terrain-pointage';
 import { ComptabiliteComponent } from './features/comptabilite/comptabilite/comptabilite';  // ← AJOUT
+import { CloturePage } from './features/chantiers/cloture/cloture';
+
+
 
 
   
 export const routes: Routes = [
-  { path: '', component: LandingComponent },
+  { path: '', component: LandingComponent, pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   {
@@ -52,13 +55,19 @@ export const routes: Routes = [
         path: 'chantiers',
         component: ChantiersList,
         canActivate: [roleGuard],
-        data: { roles: ['admin', 'conducteur', 'chef_chantier'] }
+        data: { roles: ['admin', 'conducteur', 'chef_chantier', 'comptable'] }
       },
       {
         path: 'chantiers/:id',
         component: ChantierDetail,
         canActivate: [roleGuard],
         data: { roles: ['admin', 'conducteur', 'chef_chantier', 'comptable'] }
+      },
+      {
+        path: 'chantiers/:id/cloture',
+        component: CloturePage,
+        canActivate: [roleGuard],
+        data: { roles: ['admin', 'comptable'] }
       },
       {
         path: 'contrats',

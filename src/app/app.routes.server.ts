@@ -16,5 +16,6 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'documents', renderMode: RenderMode.Client },
   { path: 'terrain', renderMode: RenderMode.Client },
   { path: 'terrain/pointage', renderMode: RenderMode.Client },
+  { path: 'chantiers/:id/cloture', renderMode: RenderMode.Client },
   { path: '**', renderMode: RenderMode.Client },
 ];

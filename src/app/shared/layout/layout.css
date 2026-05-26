@@ -1,0 +1,294 @@
+.app-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: #F5F1EA;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+}
+.sidebar-overlay.visible {
+  display: block;
+}
+
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  height: 100vh;
+  background: #1A1A18;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 100;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.sidebar .sidebar-logo {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+.sidebar .sidebar-logo .logo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sidebar .sidebar-logo .logo {
+  font-family: "Sora", sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: white;
+  text-decoration: none;
+}
+.sidebar .sidebar-logo .logo .accent {
+  color: #E8520A;
+}
+.sidebar .sidebar-logo .close-sidebar {
+  display: none;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+.sidebar .sidebar-logo .close-sidebar .material-icons {
+  font-size: 1.3rem;
+}
+.sidebar .sidebar-nav {
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sidebar .sidebar-nav .sidebar-section-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.35);
+  padding: 12px 10px 6px;
+  text-transform: uppercase;
+}
+.sidebar .sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sidebar .sidebar-nav a .material-icons {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.sidebar .sidebar-nav a:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+.sidebar .sidebar-nav a.active {
+  background: #E8520A;
+  color: white;
+}
+.sidebar .sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+.sidebar .sidebar-footer .user-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+.sidebar .sidebar-footer .user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #E8520A;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Sora", sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+.sidebar .sidebar-footer .user-info {
+  flex: 1;
+  min-width: 0;
+}
+.sidebar .sidebar-footer .user-info .user-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+.sidebar .sidebar-footer .user-info .user-role {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+  text-transform: capitalize;
+}
+.sidebar .sidebar-footer .logout-btn {
+  color: rgba(255, 255, 255, 0.4);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.sidebar .sidebar-footer .logout-btn:hover {
+  color: white;
+}
+.sidebar .sidebar-footer .logout-btn .material-icons {
+  font-size: 1.1rem;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.top-header {
+  height: 56px;
+  min-height: 56px;
+  background: white;
+  border-bottom: 1px solid #E8E4DB;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  flex-shrink: 0;
+}
+.top-header .header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.top-header .header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.top-header .menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  color: #1A1A18;
+  line-height: 1;
+}
+.top-header .menu-btn:hover {
+  background: #E8E4DB;
+}
+.top-header .menu-btn .material-icons {
+  font-size: 1.4rem;
+}
+.top-header .icon-btn {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  color: #1A1A18;
+  line-height: 1;
+}
+.top-header .icon-btn:hover {
+  background: #E8E4DB;
+}
+.top-header .icon-btn .material-icons {
+  font-size: 1.3rem;
+}
+.top-header .notif-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: #E8520A;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.top-header .user-avatar-sm {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #E8520A;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Sora", sans-serif;
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+  background: #F5F1EA;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 100;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .sidebar .sidebar-logo .close-sidebar {
+    display: flex;
+  }
+  .sidebar-overlay.visible {
+    display: block;
+  }
+  .top-header .menu-btn {
+    display: flex;
+  }
+  .page-content {
+    padding: 0;
+  }
+}/*# sourceMappingURL=layout.css.map */

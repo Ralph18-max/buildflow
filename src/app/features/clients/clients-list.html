@@ -34,8 +34,8 @@
   <div class="clients-grid">
     <ng-container *ngFor="let c of filteredClients">
       <div class="client-card">
-        <div class="client-avatar" [ngClass]="c.type">
-          {{ c.initiales }}
+        <div class="client-avatar" [ngClass]="c.type_client">
+          {{ getInitiales(c) }}
         </div>
         <div class="client-info">
           <p class="client-nom">{{ getClientNom(c) }}</p>
@@ -43,20 +43,19 @@
           <p class="client-tel">{{ c.telephone }}</p>
         </div>
         <div class="client-meta">
-          <span class="type-badge" [ngClass]="c.type">
-            {{ c.type === 'societe' ? 'Société' : 'Particulier' }}
+          <span class="type-badge" [ngClass]="c.type_client">
+            {{ c.type_client === 'societe' ? 'Société' : 'Particulier' }}
           </span>
           <span class="contrats-count">
             <span class="material-icons">description</span>
-            {{ c.contrats }} contrat(s)
+            {{ c.nb_contrats ?? 0 }} contrat(s)
           </span>
         </div>
         <div class="client-actions">
-          <button class="action-btn" title="Voir">
+          <button class="action-btn" (click)="voirClient(c)" title="Voir le client">
             <span class="material-icons">visibility</span>
           </button>
-          <!-- Modifier visible seulement si permission clients:edit -->
-          <button class="action-btn" title="Modifier" *ngIf="'clients:edit' | can">
+          <button class="action-btn" (click)="ouvrirModifier(c)" title="Modifier" *ngIf="'clients:edit' | can">
             <span class="material-icons">edit</span>
           </button>
         </div>
@@ -69,6 +68,13 @@
       <small *ngIf="'clients:create' | can">Créez votre premier client</small>
     </div>
   </div>
+
+  <app-pagination
+    [total]="filteredTotal"
+    [pageSize]="pageSize"
+    [current]="currentPage"
+    (pageChange)="currentPage = $event">
+  </app-pagination>
 
   <!-- MODAL — protégée par permission -->
   <div class="modal-overlay" *ngIf="showModal && ('clients:create' | can)" (click)="closeModal()">
@@ -87,6 +93,11 @@
       <div class="success-banner" *ngIf="successMessage">
         <span class="material-icons">check_circle</span>
         {{ successMessage }}
+      </div>
+
+      <div class="error-banner" *ngIf="errorMessage">
+        <span class="material-icons">error_outline</span>
+        {{ errorMessage }}
       </div>
 
       <form [formGroup]="clientForm" (ngSubmit)="onSubmit()" *ngIf="!successMessage">
@@ -195,4 +206,134 @@
     </div>
   </div>
 
+</div>
+
+<!-- ===== MODAL VOIR CLIENT ===== -->
+<div class="modal-overlay" *ngIf="showModalVoir && selectedClient" (click)="fermerVoir()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>
+        <span class="client-avatar-sm" [ngClass]="selectedClient.type_client">{{ getInitiales(selectedClient) }}</span>
+        {{ getClientNom(selectedClient) }}
+      </h2>
+      <button class="modal-close" (click)="fermerVoir()"><span class="material-icons">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div class="voir-grid">
+        <div class="voir-item">
+          <span class="voir-label">Type</span>
+          <span class="voir-val">{{ selectedClient.type_client === 'societe' ? 'Société' : 'Particulier' }}</span>
+        </div>
+        <div class="voir-item" *ngIf="selectedClient.raison_sociale">
+          <span class="voir-label">Raison sociale</span>
+          <span class="voir-val">{{ selectedClient.raison_sociale }}</span>
+        </div>
+        <div class="voir-item" *ngIf="selectedClient.nom">
+          <span class="voir-label">Nom</span>
+          <span class="voir-val">{{ selectedClient.nom }}</span>
+        </div>
+        <div class="voir-item" *ngIf="selectedClient.prenom">
+          <span class="voir-label">Prénom</span>
+          <span class="voir-val">{{ selectedClient.prenom }}</span>
+        </div>
+        <div class="voir-item">
+          <span class="voir-label">Téléphone</span>
+          <span class="voir-val">{{ selectedClient.telephone }}</span>
+        </div>
+        <div class="voir-item">
+          <span class="voir-label">Email</span>
+          <span class="voir-val">{{ selectedClient.email }}</span>
+        </div>
+        <div class="voir-item">
+          <span class="voir-label">Adresse</span>
+          <span class="voir-val">{{ selectedClient.adresse }}</span>
+        </div>
+        <div class="voir-item">
+          <span class="voir-label">Contrats</span>
+          <span class="voir-val">{{ selectedClient.nb_contrats ?? 0 }} contrat(s)</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="fermerVoir()">Fermer</button>
+      <button class="btn-submit" *ngIf="'clients:edit' | can" (click)="fermerVoir(); ouvrirModifier(selectedClient)">
+        <span class="material-icons">edit</span> Modifier
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL MODIFIER CLIENT ===== -->
+<div class="modal-overlay" *ngIf="showModalModifier && selectedClient" (click)="fermerModifier()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <h2>Modifier le client</h2>
+        <p>{{ getClientNom(selectedClient) }}</p>
+      </div>
+      <button class="modal-close" (click)="fermerModifier()"><span class="material-icons">close</span></button>
+    </div>
+
+    <div class="success-banner" *ngIf="successModifier">
+      <span class="material-icons">check_circle</span> Client mis à jour avec succès.
+    </div>
+    <div class="error-banner" *ngIf="errorModifier">
+      <span class="material-icons">error_outline</span> {{ errorModifier }}
+    </div>
+
+    <div class="modal-body" *ngIf="!successModifier">
+      <div class="form-group">
+        <label>Type</label>
+        <div class="type-toggle">
+          <label class="type-option" [class.selected]="formModifier.type_client === 'particulier'">
+            <input type="radio" [(ngModel)]="formModifier.type_client" value="particulier" hidden />
+            <span class="material-icons">person</span> Particulier
+          </label>
+          <label class="type-option" [class.selected]="formModifier.type_client === 'societe'">
+            <input type="radio" [(ngModel)]="formModifier.type_client" value="societe" hidden />
+            <span class="material-icons">business</span> Société
+          </label>
+        </div>
+      </div>
+      <div class="form-row" *ngIf="formModifier.type_client === 'particulier'">
+        <div class="form-group">
+          <label>Nom</label>
+          <input type="text" [(ngModel)]="formModifier.nom" placeholder="Konan" />
+        </div>
+        <div class="form-group">
+          <label>Prénom</label>
+          <input type="text" [(ngModel)]="formModifier.prenom" placeholder="Yves" />
+        </div>
+      </div>
+      <div class="form-group" *ngIf="formModifier.type_client === 'societe'">
+        <label>Raison sociale</label>
+        <input type="text" [(ngModel)]="formModifier.raison_sociale" placeholder="SCI Les Palmiers" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Téléphone *</label>
+          <input type="tel" [(ngModel)]="formModifier.telephone" placeholder="+225 07 00 00 00" />
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" [(ngModel)]="formModifier.email" placeholder="client@email.com" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Adresse</label>
+        <input type="text" [(ngModel)]="formModifier.adresse" placeholder="Cocody, Abidjan" />
+      </div>
+    </div>
+
+    <div class="modal-footer" *ngIf="!successModifier">
+      <button class="btn-cancel" (click)="fermerModifier()">Annuler</button>
+      <button class="btn-submit" (click)="validerModifier()"
+        [disabled]="isLoadingModifier || !formModifier.telephone || !formModifier.email">
+        <span *ngIf="!isLoadingModifier"><span class="material-icons">save</span> Enregistrer</span>
+        <span *ngIf="isLoadingModifier" class="loading">
+          <span class="material-icons spinning">autorenew</span> Enregistrement...
+        </span>
+      </button>
+    </div>
+  </div>
 </div>

@@ -1,8 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { NgFor, NgIf, NgClass, DecimalPipe, DatePipe } from '@angular/common';
+import { NgFor, NgIf, NgClass, DecimalPipe, DatePipe, SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { PermissionService } from '../../../core/services/permission.service';
+import { environment } from '../../../../environments/environment';
+
+const API_URL = environment.apiUrl;
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────
 
@@ -81,109 +85,13 @@ interface ModalFactureST {
   reference: string;
 }
 
-// ─── Données simulées ─────────────────────────────────────────────────────────
-
-const SITUATIONS_DATA: Situation[] = [
-  {
-    id: 1, numero: 'SIT-2024-001', chantier: 'Résidence Les Palmiers', chantierId: 1,
-    client: 'SCI Les Palmiers', dateEmission: '2024-03-15', dateEcheance: '2024-04-14',
-    avancement: 30, montantHT: 120_000_000, montantTTC: 141_600_000,
-    montantEncaisse: 141_600_000, statut: 'payee', referenceVirement: 'VIR-2024-0312'
-  },
-  {
-    id: 2, numero: 'SIT-2024-002', chantier: 'Résidence Les Palmiers', chantierId: 1,
-    client: 'SCI Les Palmiers', dateEmission: '2024-06-20', dateEcheance: '2024-07-20',
-    avancement: 60, montantHT: 160_000_000, montantTTC: 188_800_000,
-    montantEncaisse: 188_800_000, statut: 'payee', referenceVirement: 'VIR-2024-0615'
-  },
-  {
-    id: 3, numero: 'SIT-2025-001', chantier: 'Résidence Les Palmiers', chantierId: 1,
-    client: 'SCI Les Palmiers', dateEmission: '2025-01-10', dateEcheance: '2025-02-10',
-    avancement: 72, montantHT: 220_000_000, montantTTC: 259_600_000,
-    montantEncaisse: 0, statut: 'en_retard'
-  },
-  {
-    id: 4, numero: 'SIT-2024-003', chantier: 'Villa Duplex Riviera', chantierId: 2,
-    client: 'Konan Yves', dateEmission: '2024-09-05', dateEcheance: '2024-10-05',
-    avancement: 100, montantHT: 180_000_000, montantTTC: 212_400_000,
-    montantEncaisse: 212_400_000, statut: 'payee', referenceVirement: 'VIR-2024-0901'
-  },
-  {
-    id: 5, numero: 'SIT-2025-002', chantier: 'Complexe Commercial Marcory', chantierId: 3,
-    client: 'Groupe Immobilier du Sud', dateEmission: '2025-02-28', dateEcheance: '2025-03-30',
-    avancement: 18, montantHT: 95_000_000, montantTTC: 112_100_000,
-    montantEncaisse: 0, statut: 'emise'
-  },
-];
-
-const FACTURES_ST_DATA: FactureST[] = [
-  {
-    id: 1, numero: 'FST-2024-001', chantier: 'Résidence Les Palmiers', chantierId: 1,
-    intervenant: 'ELEC PLUS CI', corps_etat: 'Électricité',
-    dateFacture: '2024-05-10', dateReception: '2024-05-12',
-    montantHT: 28_000_000, montantTVA: 5_040_000, montantTTC: 33_040_000,
-    statut: 'validee'
-  },
-  {
-    id: 2, numero: 'FST-2024-002', chantier: 'Résidence Les Palmiers', chantierId: 1,
-    intervenant: 'MAÇON EXPERT SARL', corps_etat: 'Gros œuvre',
-    dateFacture: '2024-07-15', dateReception: '2024-07-16',
-    montantHT: 65_000_000, montantTVA: 11_700_000, montantTTC: 76_700_000,
-    statut: 'validee'
-  },
-  {
-    id: 3, numero: 'FST-2025-001', chantier: 'Complexe Commercial Marcory', chantierId: 3,
-    intervenant: 'TERRAS AFRIQUE', corps_etat: 'Terrassement',
-    dateFacture: '2025-01-20', dateReception: '2025-01-22',
-    montantHT: 18_500_000, montantTVA: 3_330_000, montantTTC: 21_830_000,
-    statut: 'en_attente'
-  },
-  {
-    id: 4, numero: 'FST-2025-002', chantier: 'Maison Individuelle Yopougon', chantierId: 4,
-    intervenant: 'PLOMBERIE ABIDJAN PRO', corps_etat: 'Plomberie',
-    dateFacture: '2025-03-05', dateReception: '2025-03-07',
-    montantHT: 9_200_000, montantTVA: 1_656_000, montantTTC: 10_856_000,
-    statut: 'contestee'
-  },
-];
-
-const BILANS_DATA: BilanChantier[] = [
-  {
-    id: 1, nom: 'Résidence Les Palmiers', client: 'SCI Les Palmiers',
-    statut: 'en_cours', statut_bilan: 'en_cours', avancement: 72,
-    montantMarche: 850_000_000, totalEncaisse: 330_400_000,
-    coutReel: 285_000_000, raf: 259_600_000, rad: 115_000_000,
-    marge: 45_400_000, depassement: false
-  },
-  {
-    id: 2, nom: 'Villa Duplex Riviera', client: 'Konan Yves',
-    statut: 'termine', statut_bilan: 'bilan_valide', avancement: 100,
-    montantMarche: 280_000_000, totalEncaisse: 212_400_000,
-    coutReel: 198_000_000, raf: 67_600_000, rad: 0,
-    marge: 14_400_000, depassement: false
-  },
-  {
-    id: 3, nom: 'Complexe Commercial Marcory', client: 'Groupe Immobilier du Sud',
-    statut: 'en_cours', statut_bilan: 'en_cours', avancement: 18,
-    montantMarche: 1_200_000_000, totalEncaisse: 0,
-    coutReel: 98_500_000, raf: 1_087_900_000, rad: 301_500_000,
-    marge: -98_500_000, depassement: true
-  },
-  {
-    id: 4, nom: 'Maison Individuelle Yopougon', client: 'Diabaté Moussa',
-    statut: 'en_cours', statut_bilan: 'en_cours', avancement: 5,
-    montantMarche: 95_000_000, totalEncaisse: 0,
-    coutReel: 8_200_000, raf: 95_000_000, rad: 51_800_000,
-    marge: -8_200_000, depassement: false
-  },
-];
 
 // ─── Composant ────────────────────────────────────────────────────────────────
 
 @Component({
   selector: 'app-comptabilite',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, DecimalPipe, DatePipe, FormsModule],
+  imports: [NgFor, NgIf, NgClass, DecimalPipe, DatePipe, SlicePipe, FormsModule],
   templateUrl: './comptabilite.html',
   styleUrl: './comptabilite.scss'
 })
@@ -208,19 +116,20 @@ export class ComptabiliteComponent implements OnInit {
 
   // Notifications
   successMessage: string = '';
+  erreurMessage: string = '';
+  encaissementErreur: string = '';
+
+  // Confirmation bilan
+  showConfirmBilan = false;
+  bilanAValider: BilanChantier | null = null;
 
   // Données
-  situations: Situation[] = [...SITUATIONS_DATA];
-  facturesST: FactureST[] = [...FACTURES_ST_DATA];
-  bilans: BilanChantier[] = [...BILANS_DATA];
+  situations: Situation[] = [];
+  facturesST: FactureST[] = [];
+  bilans: BilanChantier[] = [];
 
-  // Chantiers pour les selects
-  chantiers = [
-    { id: 1, nom: 'Résidence Les Palmiers' },
-    { id: 2, nom: 'Villa Duplex Riviera' },
-    { id: 3, nom: 'Complexe Commercial Marcory' },
-    { id: 4, nom: 'Maison Individuelle Yopougon' },
-  ];
+  // Chantiers pour les selects (chargés depuis l'API)
+  chantiers: { id: number; nom: string }[] = [];
 
   corpsEtat = [
     'Terrassement', 'Gros œuvre', 'Charpente', 'Étanchéité',
@@ -229,10 +138,100 @@ export class ComptabiliteComponent implements OnInit {
 
   constructor(
     private perms: PermissionService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient,
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this._chargerSituations();
+    this._chargerBilans();
+    this._chargerFacturesST();
+    this.http.get<any[]>(`${API_URL}/chantiers`).subscribe(list =>
+      this.chantiers = list.map(c => ({ id: c.id, nom: c.nom_chantier }))
+    );
+  }
+
+  private _chargerSituations(): void {
+    this.http.get<any[]>(`${API_URL}/facturation/situations`).subscribe(list =>
+      this.situations = list.map(s => this._mapSituation(s))
+    );
+  }
+
+  private _chargerBilans(): void {
+    this.http.get<any[]>(`${API_URL}/comptabilite/bilan`).subscribe(list =>
+      this.bilans = list.map(b => this._mapBilan(b))
+    );
+  }
+
+  private _chargerFacturesST(): void {
+    this.http.get<any[]>(`${API_URL}/facturation/factures-st`).subscribe(list =>
+      this.facturesST = list.map(f => this._mapFactureST(f))
+    );
+  }
+
+  private _mapFactureST(f: any): FactureST {
+    return {
+      id:            f.id,
+      numero:        f.numero,
+      chantier:      f.chantier?.nom_chantier || '',
+      chantierId:    f.id_chantier,
+      intervenant:   f.intervenant,
+      corps_etat:    f.corps_etat || '',
+      dateFacture:   f.date_facture ? new Date(f.date_facture).toISOString().split('T')[0] : '',
+      dateReception: f.date_reception ? new Date(f.date_reception).toISOString().split('T')[0] : '',
+      montantHT:     f.montant_ht,
+      montantTVA:    f.montant_tva,
+      montantTTC:    f.montant_ttc,
+      statut:        f.statut,
+    };
+  }
+
+  private _mapSituation(s: any): Situation {
+    const dateEmission = s.date_emission?.split('T')[0] || '';
+    const echeance = dateEmission
+      ? new Date(new Date(dateEmission).getTime() + 30 * 86400000).toISOString().split('T')[0]
+      : '';
+    const client = s.chantier?.contrat?.client;
+    const nomClient = client
+      ? (client.type_client === 'societe'
+          ? (client.raison_sociale || '')
+          : `${client.nom || ''} ${client.prenom || ''}`.trim())
+      : '';
+    const dernierPaiement = s.paiements?.[s.paiements.length - 1];
+    return {
+      id:                s.id,
+      numero:            `SIT-${s.id_chantier}-${String(s.numero_situation).padStart(3, '0')}`,
+      chantier:          s.chantier?.nom_chantier || '',
+      chantierId:        s.id_chantier,
+      client:            nomClient,
+      dateEmission,
+      dateEcheance:      echeance,
+      avancement:        s.avancement_facture || 0,
+      montantHT:         s.montant_ht || 0,
+      montantTTC:        s.montant_ttc || 0,
+      montantEncaisse:   s.montant_encaisse || 0,
+      statut:            s.statut || 'en_attente',
+      referenceVirement: dernierPaiement?.reference,
+    };
+  }
+
+  private _mapBilan(b: any): BilanChantier {
+    return {
+      id:            b.id,
+      nom:           b.nom_chantier,
+      client:        b.nom_client || '',
+      statut:        b.statut || 'en_cours',
+      statut_bilan:  b.statut_bilan || 'en_cours',
+      avancement:    b.avancement || 0,
+      montantMarche: b.montant_marche || 0,
+      totalEncaisse: b.encaisse || 0,
+      coutReel:      b.cout_reel || 0,
+      raf:           b.raf || 0,
+      rad:           b.rad || 0,
+      marge:         b.marge || 0,
+      depassement:   b.alerte || false,
+    };
+  }
 
   // ─── KPI Dashboard ────────────────────────────────────────────────────────
 
@@ -335,20 +334,40 @@ export class ComptabiliteComponent implements OnInit {
 
   fermerModalEncaissement(): void {
     this.modalEncaissement.visible = false;
+    this.encaissementErreur = '';
   }
 
   validerEncaissement(): void {
-    if (!this.modalEncaissement.situationId || !this.modalEncaissement.montant) return;
+    const m = this.modalEncaissement;
+    this.encaissementErreur = '';
 
-    const sit = this.situations.find(s => s.id === this.modalEncaissement.situationId);
-    if (sit) {
-      sit.statut = 'payee';
-      sit.montantEncaisse = this.modalEncaissement.montant;
-      sit.referenceVirement = this.modalEncaissement.reference;
+    if (!m.situationId || !m.montant) { this.encaissementErreur = 'Veuillez saisir un montant.'; return; }
+    if (m.montant <= 0) { this.encaissementErreur = 'Le montant doit être supérieur à zéro.'; return; }
+    if (!m.date) { this.encaissementErreur = 'La date de réception est obligatoire.'; return; }
+    if (!m.reference.trim()) { this.encaissementErreur = 'La référence de virement est obligatoire.'; return; }
+
+    const sit = this.situations.find(s => s.id === m.situationId);
+    if (sit && m.montant > sit.montantTTC) {
+      this.encaissementErreur = `Le montant ne peut pas dépasser ${new Intl.NumberFormat('fr-FR').format(sit.montantTTC)} FCFA TTC.`;
+      return;
     }
 
-    this.fermerModalEncaissement();
-    this.afficherSucces('Encaissement enregistré avec succès');
+    this.http.post(`${API_URL}/facturation/encaissements`, {
+      id_situation:  m.situationId,
+      montant:       m.montant,
+      date_paiement: m.date,
+      reference:     m.reference,
+      mode_paiement: 'virement',
+    }).subscribe({
+      next: () => {
+        this.fermerModalEncaissement();
+        this.afficherSucces('Encaissement enregistré avec succès');
+        this._chargerSituations();
+      },
+      error: (err) => {
+        this.encaissementErreur = err?.error?.message || 'Erreur lors de l\'enregistrement.';
+      },
+    });
   }
 
   getSituationParId(id: number | null): Situation | undefined {
@@ -396,32 +415,38 @@ export class ComptabiliteComponent implements OnInit {
   }
 
   enregistrerFactureST(): void {
-    if (!this.modalFactureST.chantierId || !this.modalFactureST.montantHT) return;
+    const m = this.modalFactureST;
+    if (!m.chantierId || !m.montantHT) return;
 
-    const chantier = this.chantiers.find(c => c.id === this.modalFactureST.chantierId);
-    const nouvelleFacture: FactureST = {
-      id: this.facturesST.length + 1,
-      numero: `FST-2025-00${this.facturesST.length + 1}`,
-      chantier: chantier?.nom || '',
-      chantierId: this.modalFactureST.chantierId,
-      intervenant: this.modalFactureST.intervenant,
-      corps_etat: this.modalFactureST.corps_etat,
-      dateFacture: this.modalFactureST.dateFacture,
-      dateReception: new Date().toISOString().split('T')[0],
-      montantHT: this.modalFactureST.montantHT,
-      montantTVA: this.getMontantTVA(),
-      montantTTC: this.getMontantTTCModal(),
-      statut: 'en_attente'
-    };
-
-    this.facturesST.unshift(nouvelleFacture);
-    this.fermerModalFactureST();
-    this.afficherSucces('Facture sous-traitant enregistrée');
+    this.http.post<any>(`${API_URL}/facturation/factures-st`, {
+      id_chantier:  m.chantierId,
+      intervenant:  m.intervenant,
+      corps_etat:   m.corps_etat || null,
+      date_facture: m.dateFacture,
+      montant_ht:   m.montantHT,
+      taux_tva:     m.tauxTVA,
+    }).subscribe({
+      next: () => {
+        this.fermerModalFactureST();
+        this.afficherSucces('Facture sous-traitant enregistrée');
+        this._chargerFacturesST();
+      },
+      error: (err: any) => {
+        this.afficherErreur(err?.error?.message || 'Erreur lors de l\'enregistrement.');
+      },
+    });
   }
 
   validerFactureST(facture: FactureST): void {
-    facture.statut = 'validee';
-    this.afficherSucces('Facture validée');
+    this.http.patch(`${API_URL}/facturation/factures-st/${facture.id}/valider`, {}).subscribe({
+      next: () => {
+        facture.statut = 'validee';
+        this.afficherSucces('Facture validée');
+      },
+      error: (err: any) => {
+        this.afficherErreur(err?.error?.message || 'Erreur lors de la validation.');
+      },
+    });
   }
 
   // ─── Bilan & Clôture ──────────────────────────────────────────────────────
@@ -431,8 +456,31 @@ export class ComptabiliteComponent implements OnInit {
   }
 
   validerBilan(bilan: BilanChantier): void {
-    bilan.statut_bilan = 'bilan_valide';
-    this.afficherSucces(`Bilan du chantier "${bilan.nom}" validé. L'administrateur peut maintenant procéder à la clôture.`);
+    this.bilanAValider = bilan;
+    this.showConfirmBilan = true;
+  }
+
+  confirmerValidationBilan(): void {
+    if (!this.bilanAValider) return;
+    const nom = this.bilanAValider.nom;
+    this.http.post(`${API_URL}/comptabilite/cloture/${this.bilanAValider.id}/valider`, {}).subscribe({
+      next: () => {
+        this.afficherSucces(`Bilan du chantier "${nom}" validé. L'administrateur peut maintenant procéder à la clôture.`);
+        this.showConfirmBilan = false;
+        this.bilanAValider = null;
+        this._chargerBilans();
+      },
+      error: (err) => {
+        this.afficherErreur(err?.error?.message || 'Erreur lors de la validation du bilan.');
+        this.showConfirmBilan = false;
+        this.bilanAValider = null;
+      },
+    });
+  }
+
+  annulerValidationBilan(): void {
+    this.showConfirmBilan = false;
+    this.bilanAValider = null;
   }
 
   voirChantier(id: number): void {
@@ -462,6 +510,11 @@ export class ComptabiliteComponent implements OnInit {
   afficherSucces(message: string): void {
     this.successMessage = message;
     setTimeout(() => this.successMessage = '', 4000);
+  }
+
+  afficherErreur(message: string): void {
+    this.erreurMessage = message;
+    setTimeout(() => this.erreurMessage = '', 5000);
   }
 
   fermerSuccess(): void {

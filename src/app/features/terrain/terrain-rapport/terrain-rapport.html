@@ -40,7 +40,7 @@
       (click)="setOnglet('historique')">
       <span class="material-icons">history</span>
       Historique
-      <span class="badge-count">{{ rapportsSoumis.length }}</span>
+      <span class="badge-count">{{ rapportsFiltres.length }}</span>
     </button>
 
   </div>
@@ -199,11 +199,11 @@
     <div class="historique-header">
       <div class="historique-stats">
         <div class="stat-mini">
-          <span class="stat-mini-num">{{ rapportsSoumis.length }}</span>
+          <span class="stat-mini-num">{{ rapportsFiltres.length }}</span>
           <span class="stat-mini-label">Rapports soumis</span>
         </div>
         <div class="stat-mini">
-          <span class="stat-mini-num">{{ rapportsSoumis[0]?.date | date:'dd/MM' }}</span>
+          <span class="stat-mini-num">{{ rapportsFiltres[0]?.date_rapport | date:'dd/MM' }}</span>
           <span class="stat-mini-label">Dernier rapport</span>
         </div>
       </div>
@@ -219,8 +219,8 @@
     <div *ngFor="let r of rapportsFiltres" class="rapport-card" [class.has-incident]="r.incidents">
       <div class="rapport-card-header">
         <div class="rapport-meta">
-          <span class="rapport-chantier">{{ r.chantier }}</span>
-          <span class="rapport-date">{{ r.date | date:'EEEE d MMMM yyyy' : '' : 'fr' }}</span>
+          <span class="rapport-chantier">{{ r.nom_chantier }}</span>
+          <span class="rapport-date">{{ r.date_rapport | date:'EEEE d MMMM yyyy' }}</span>
         </div>
         <div class="rapport-badges">
           <span class="badge-meteo">
@@ -229,7 +229,7 @@
           </span>
           <span class="badge-effectif">
             <span class="material-icons">people</span>
-            {{ r.effectif }} pers.
+            {{ r.effectif_present }} pers.
           </span>
           <span class="badge-incident" *ngIf="r.incidents">
             <span class="material-icons">warning</span>
@@ -239,8 +239,8 @@
       </div>
 
       <div class="rapport-card-body">
-        <div class="rapport-corps-etat" *ngIf="r.corpsEtatTravailles.length > 0">
-          <span *ngFor="let ce of r.corpsEtatTravailles" class="tag-corps">{{ ce }}</span>
+        <div class="rapport-corps-etat" *ngIf="r.corps_etat_travailles.length > 0">
+          <span *ngFor="let ce of r.corps_etat_travailles" class="tag-corps">{{ ce.nom }}</span>
         </div>
         <p class="rapport-obs">{{ r.observations }}</p>
         <div class="rapport-incident" *ngIf="r.incidents">

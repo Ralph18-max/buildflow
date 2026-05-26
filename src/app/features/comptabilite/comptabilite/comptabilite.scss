@@ -66,6 +66,23 @@ $blue-light:   #DBEAFE;
   .material-icons { font-size: 1.1rem; }
 }
 
+// ── Erreur banner ──────────────────────────────────────────────────────────
+.erreur-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: $red-light;
+  border: 1px solid color.adjust($red-light, $lightness: -10%);
+  border-left: 4px solid $red;
+  color: color.adjust($red, $lightness: -5%);
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  .material-icons { font-size: 1.1rem; }
+}
+
 // ── Tabs ───────────────────────────────────────────────────────────────────
 .tabs-bar {
   display: flex;

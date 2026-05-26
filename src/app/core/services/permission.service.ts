@@ -1,6 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-
-export type Role = 'admin' | 'conducteur' | 'chef_chantier' | 'comptable';
+import { Role } from '../models'; // ✅ FIX — importé depuis models, plus de doublon
 
 export interface CurrentUser {
   id: number;
@@ -22,6 +21,8 @@ const PERMISSIONS: Record<string, Role[]> = {
   'contrats:edit':            ['admin'],
   'contrats:read':            ['admin', 'conducteur', 'comptable'],
   'contrats:avenants:create': ['admin'],
+  'avenants:signer':          ['admin'],
+  'avenants:refuser':         ['admin'],
 
   'chantiers:create':         ['admin', 'conducteur'],
   'chantiers:edit':           ['admin', 'conducteur'],
@@ -35,10 +36,14 @@ const PERMISSIONS: Record<string, Role[]> = {
   'planning:create':          ['admin', 'conducteur'],
   'planning:edit':            ['admin', 'conducteur'],
   'planning:read':            ['admin', 'conducteur', 'chef_chantier', 'comptable'],
-  // ← conducteur ajouté : il met aussi à jour l'avancement depuis le terrain
+
+  'corps_etat:create':        ['admin', 'conducteur'],
+  'corps_etat:edit':          ['admin', 'conducteur'],
+  'corps_etat:delete':        ['admin'],
   'corps_etat:avancement':    ['admin', 'conducteur', 'chef_chantier'],
 
-  // ← conducteur ajouté : il peut aussi créer des rapports depuis le terrain
+  'intervenants:delete':      ['admin'],
+
   'terrain:rapport:create':   ['chef_chantier', 'conducteur'],
   'terrain:pointage:create':  ['chef_chantier', 'conducteur'],
   'terrain:read':             ['admin', 'conducteur', 'chef_chantier'],
@@ -47,6 +52,7 @@ const PERMISSIONS: Record<string, Role[]> = {
   'facturation:edit':         ['comptable'],
   'facturation:read':         ['admin', 'conducteur', 'comptable'],
   'facturation:encaissement': ['comptable'],
+
   'cloture:bilan_valider':    ['comptable'],
   'cloture:cloturer':         ['admin'],
 
@@ -62,21 +68,7 @@ const PERMISSIONS: Record<string, Role[]> = {
 @Injectable({ providedIn: 'root' })
 export class PermissionService {
 
-  // ── Utilisateur courant ─────────────────────────────────────────────────
-  // Signal réactif — en prod : chargé depuis le JWT décodé au login
-  //
-  // ⚠️  POUR TESTER EN DEV : changer le role ici ou appeler setRole()
-  //     depuis n'importe quel composant :
-  //       this.perms.setRole('chef_chantier')
-  //       this.perms.login({ id: 3, nom: 'Touré', prenom: 'Awa', role: 'chef_chantier', ... })
-  //
- private _currentUser = signal<CurrentUser>({
-  id: 1, nom: 'Yves', prenom: 'Konan',
-  email: 'konan.yves@buildflow.ci',
-  role: 'admin',
-  tenant_id: 'tenant-abc-123',
-  avatar: 'KY'
-});
+  private _currentUser = signal<CurrentUser | null>(null);
 
   readonly currentUser = this._currentUser.asReadonly();
 
@@ -85,10 +77,11 @@ export class PermissionService {
   /**
    * Vérifie si l'utilisateur courant possède une permission.
    * Usage : this.perms.can('terrain:rapport:create')
+   * Usage template : 'terrain:rapport:create' | can
    */
   can(permission: string): boolean {
     const user = this._currentUser();
-    if (!user) return false;
+    if (!user) return false; // ✅ null safe
     const allowedRoles = PERMISSIONS[permission];
     if (!allowedRoles) return false;
     return allowedRoles.includes(user.role);
@@ -99,7 +92,22 @@ export class PermissionService {
    * Usage : this.perms.hasRole('admin', 'conducteur')
    */
   hasRole(...roles: Role[]): boolean {
-    return roles.includes(this._currentUser().role);
+    const user = this._currentUser();
+    if (!user) return false; // ✅ null safe
+    return roles.includes(user.role);
+  }
+
+  /**
+   * Connexion — appelé par AuthService après login.
+   * En Sprint 10 : remplacé par décodage JWT.
+   */
+  login(user: CurrentUser): void {
+    this._currentUser.set(user);
+  }
+
+  // ✅ FIX — logout propre, plus de "null as any"
+  logout(): void {
+    this._currentUser.set(null);
   }
 
   /**
@@ -107,24 +115,15 @@ export class PermissionService {
    * En prod : supprimé — le rôle vient uniquement du JWT.
    */
   setRole(role: Role): void {
-    this._currentUser.update(u => ({ ...u, role }));
-  }
-
-  /**
-   * Connexion complète (sera remplacé par décodage JWT en Sprint 10).
-   */
-  login(user: CurrentUser): void {
-    this._currentUser.set(user);
-  }
-
-  logout(): void {
-    this._currentUser.set(null as any);
+    this._currentUser.update(u => u ? { ...u, role } : null);
   }
 
   // ── Raccourcis booléens ─────────────────────────────────────────────────
-  get role(): Role          { return this._currentUser().role; }
-  get isAdmin(): boolean    { return this.role === 'admin'; }
-  get isConducteur(): boolean { return this.role === 'conducteur'; }
-  get isChef(): boolean     { return this.role === 'chef_chantier'; }
-  get isComptable(): boolean { return this.role === 'comptable'; }
+
+  // ✅ null safe sur tous les getters
+  get role(): Role | null      { return this._currentUser()?.role ?? null; }
+  get isAdmin(): boolean       { return this.role === 'admin'; }
+  get isConducteur(): boolean  { return this.role === 'conducteur'; }
+  get isChef(): boolean        { return this.role === 'chef_chantier'; }
+  get isComptable(): boolean   { return this.role === 'comptable'; }
 }

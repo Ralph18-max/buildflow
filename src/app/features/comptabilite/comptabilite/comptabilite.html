@@ -17,6 +17,12 @@
     {{ successMessage }}
   </div>
 
+  <!-- ── Erreur banner ────────────────────────────────────────────────────── -->
+  <div class="erreur-banner" *ngIf="erreurMessage">
+    <span class="material-icons">error_outline</span>
+    {{ erreurMessage }}
+  </div>
+
   <!-- ── Tabs ────────────────────────────────────────────────────────────── -->
   <div class="tabs-bar">
     <button class="tab-btn" [class.active]="activeTab === 'dashboard'"     (click)="setTab('dashboard')">
@@ -90,7 +96,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let s of situations" [class.row-retard]="s.statut === 'en_retard'">
+            <tr *ngFor="let s of situations | slice:0:5" [class.row-retard]="s.statut === 'en_retard'">
               <td class="mono">{{ s.numero }}</td>
               <td>{{ s.chantier }}</td>
               <td class="text-muted">{{ s.client }}</td>
@@ -408,6 +414,11 @@
       </div>
     </div>
 
+    <div class="modal-erreur" *ngIf="encaissementErreur">
+      <span class="material-icons">error_outline</span>
+      {{ encaissementErreur }}
+    </div>
+
     <div class="modal-footer">
       <button class="btn-outline" (click)="fermerModalEncaissement()">Annuler</button>
       <button class="btn-primary" (click)="validerEncaissement()">
@@ -479,10 +490,35 @@
     <div class="modal-footer">
       <button class="btn-outline" (click)="fermerModalFactureST()">Annuler</button>
       <button class="btn-primary"
-        [disabled]="!modalFactureST.chantierId || !modalFactureST.montantHT || !modalFactureST.intervenant"
+        [disabled]="!modalFactureST.chantierId || !modalFactureST.montantHT || !modalFactureST.intervenant || !modalFactureST.corps_etat"
         (click)="enregistrerFactureST()">
         <span class="material-icons">save</span>
         Enregistrer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     MODAL — Confirmation validation bilan
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" *ngIf="showConfirmBilan" (click)="annulerValidationBilan()">
+  <div class="modal-box modal-confirm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><span class="material-icons">verified</span> Confirmer la validation du bilan</h3>
+    </div>
+    <div class="modal-body">
+      <p>
+        Vous êtes sur le point de valider le bilan financier du chantier
+        <strong>{{ bilanAValider?.nom }}</strong>.
+      </p>
+      <p>Cette action autorisera l'Administrateur à procéder à la clôture officielle.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" (click)="annulerValidationBilan()">Annuler</button>
+      <button class="btn-primary" (click)="confirmerValidationBilan()">
+        <span class="material-icons">check</span>
+        Valider le bilan
       </button>
     </div>
   </div>

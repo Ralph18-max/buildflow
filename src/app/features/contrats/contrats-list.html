@@ -83,13 +83,13 @@
             <span class="material-icons">visibility</span>
             Voir le contrat
           </button>
-          <button class="action-btn" *ngIf="perm.can('contrats:edit')">
+          <button class="action-btn" *ngIf="perm.can('contrats:edit')" disabled title="Fonctionnalité à venir">
             <span class="material-icons">edit</span>
             Modifier
           </button>
-          <button class="action-btn" *ngIf="perm.can('contrats:avenants:create')">
+          <button class="action-btn" *ngIf="perm.can('contrats:avenants:create')" disabled title="Fonctionnalité à venir">
             <span class="material-icons">add_circle_outline</span>
-            Modification
+            Avenant
           </button>
         </div>
       </div>
@@ -100,6 +100,13 @@
       <p>Aucun contrat trouvé</p>
     </div>
   </div>
+
+  <app-pagination
+    [total]="filteredTotal"
+    [pageSize]="pageSize"
+    [current]="currentPage"
+    (pageChange)="currentPage = $event">
+  </app-pagination>
 
   <!-- MODAL -->
   <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
@@ -118,6 +125,11 @@
       <div class="success-banner" *ngIf="successMessage">
         <span class="material-icons">check_circle</span>
         {{ successMessage }}
+      </div>
+
+      <div class="error-banner" *ngIf="errorMessage">
+        <span class="material-icons">error_outline</span>
+        {{ errorMessage }}
       </div>
 
       <form [formGroup]="contratForm" (ngSubmit)="onSubmit()" *ngIf="!successMessage">

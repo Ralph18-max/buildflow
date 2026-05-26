@@ -50,6 +50,25 @@
   &:hover { opacity: 0.9; transform: translateY(-1px); }
 }
 
+// ── Récap TTC modal ──────────────────────────
+.recap-ttc {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--cream);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--gray-mid);
+
+  strong {
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--dark);
+  }
+}
+
 // ── KPI Cards ────────────────────────────────
 .kpi-grid {
   display: grid;

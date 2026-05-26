@@ -1,0 +1,427 @@
+<div class="cloture-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <button class="btn-retour" (click)="retourChantier()">
+        <span class="material-icons">arrow_back</span>
+      </button>
+      <div class="header-info">
+        <div class="breadcrumb">
+          <span>Chantiers</span>
+          <span class="material-icons">chevron_right</span>
+          <span>{{ chantierNom }}</span>
+          <span class="material-icons">chevron_right</span>
+          <span class="breadcrumb-active">Clôture</span>
+        </div>
+        <h1 class="page-title">Clôture de chantier</h1>
+        <div class="chantier-meta">
+          <span class="meta-badge">
+            <span class="material-icons">tag</span>
+            {{ chantierNumeroMarche }}
+          </span>
+          <span class="meta-badge">
+            <span class="material-icons">location_on</span>
+            {{ chantierLocalisation }}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <!-- Badge statut clôture -->
+      <div class="statut-badge" [ngClass]="statutCloture">
+        <span class="material-icons">
+          {{ statutCloture === 'cloture' ? 'verified' : statutCloture === 'bilan_valide' ? 'pending_actions' : 'lock_open' }}
+        </span>
+        <span>
+          {{ statutCloture === 'cloture' ? 'Clôturé' : statutCloture === 'bilan_valide' ? 'Bilan validé' : 'Non initié' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline statut -->
+  <div class="workflow-timeline">
+    <div class="step" [ngClass]="{ 'done': statutCloture === 'bilan_valide' || statutCloture === 'cloture', 'active': statutCloture === 'non_initie' }">
+      <div class="step-icon">
+        <span class="material-icons">{{ (statutCloture === 'bilan_valide' || statutCloture === 'cloture') ? 'check' : '1' }}</span>
+      </div>
+      <div class="step-info">
+        <span class="step-role">Comptable</span>
+        <span class="step-label">Validation du bilan</span>
+        <span class="step-date" *ngIf="dateValidationComptable">
+          {{ dateValidationComptable | date:'dd/MM/yyyy HH:mm':'':'fr' }}
+        </span>
+      </div>
+    </div>
+    <div class="step-connector" [ngClass]="{ 'done': statutCloture === 'bilan_valide' || statutCloture === 'cloture' }"></div>
+    <div class="step" [ngClass]="{ 'done': statutCloture === 'cloture', 'active': statutCloture === 'bilan_valide', 'locked': statutCloture === 'non_initie' }">
+      <div class="step-icon">
+        <span class="material-icons">{{ statutCloture === 'cloture' ? 'check' : statutCloture === 'non_initie' ? 'lock' : '2' }}</span>
+      </div>
+      <div class="step-info">
+        <span class="step-role">Administrateur</span>
+        <span class="step-label">Clôture officielle</span>
+        <span class="step-date" *ngIf="dateClotureAdmin">
+          {{ dateClotureAdmin | date:'dd/MM/yyyy HH:mm':'':'fr' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="error-banner" *ngIf="erreurCloture">
+    <span class="material-icons">error_outline</span>
+    {{ erreurCloture }}
+  </div>
+
+  <div class="page-body">
+
+    <!-- Colonne gauche : Conditions + Bilan -->
+    <div class="col-main">
+
+      <!-- CONDITIONS DE CLÔTURE -->
+      <section class="card section-conditions">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="material-icons card-icon">checklist</span>
+            <h2 class="card-title">Conditions de clôture</h2>
+          </div>
+          <div class="conditions-score" [ngClass]="conditionsOk ? 'ok' : 'bloque'">
+            <span class="material-icons">{{ conditionsOk ? 'check_circle' : 'cancel' }}</span>
+            <span>{{ conditionsOkCount }} / {{ conditions.length }} remplies</span>
+          </div>
+        </div>
+
+        <div class="conditions-list">
+          <div class="condition-row" *ngFor="let c of conditions" [ngClass]="c.statut">
+            <div class="condition-icon">
+              <span class="material-icons">
+                {{ c.statut === 'ok' ? 'check_circle' : c.statut === 'warning' ? 'warning' : 'cancel' }}
+              </span>
+            </div>
+            <div class="condition-content">
+              <span class="condition-label">{{ c.label }}</span>
+              <span class="condition-desc">{{ c.description }}</span>
+            </div>
+            <div class="condition-valeur" [ngClass]="c.statut">
+              {{ c.valeur }}
+            </div>
+          </div>
+        </div>
+
+        <div class="conditions-alerte" *ngIf="!conditionsOk">
+          <span class="material-icons">info</span>
+          <span>Toutes les conditions doivent être remplies avant de pouvoir valider le bilan.</span>
+        </div>
+      </section>
+
+      <!-- BILAN FINANCIER -->
+      <section class="card section-bilan">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="material-icons card-icon">account_balance</span>
+            <h2 class="card-title">Bilan financier final</h2>
+          </div>
+        </div>
+
+        <!-- Bloc Marché -->
+        <div class="bilan-bloc">
+          <h3 class="bilan-bloc-titre">
+            <span class="material-icons">description</span>
+            Marché & Avenants
+          </h3>
+          <div class="bilan-grid">
+            <div class="bilan-ligne">
+              <span class="bilan-lib">Montant marché initial (S0)</span>
+              <span class="bilan-val">{{ formatMontant(bilan.montantMarcheInitial) }}</span>
+            </div>
+            <div class="bilan-ligne accent" *ngIf="totalAvenantsPositif">
+              <span class="bilan-lib">
+                <span class="material-icons">add_circle_outline</span>
+                Total avenants signés ({{ bilan.avenants.length }})
+              </span>
+              <span class="bilan-val positif">+ {{ formatMontant(bilan.totalAvenants) }}</span>
+            </div>
+            <div class="bilan-ligne total">
+              <span class="bilan-lib">Montant marché révisé</span>
+              <span class="bilan-val bold">{{ formatMontant(bilan.montantMarcheRevise) }}</span>
+            </div>
+          </div>
+          <!-- Détail avenants -->
+          <div class="avenant-detail" *ngIf="bilan.avenants.length > 0">
+            <div class="avenant-row" *ngFor="let av of bilan.avenants">
+              <span class="av-numero">{{ av.numero }}</span>
+              <span class="av-motif">{{ av.motif }}</span>
+              <span class="av-date">{{ av.date }}</span>
+              <span class="av-montant">+ {{ formatMontant(av.montant) }}</span>
+              <span class="av-statut" [ngClass]="av.statut">{{ av.statut }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bloc Facturation -->
+        <div class="bilan-bloc">
+          <h3 class="bilan-bloc-titre">
+            <span class="material-icons">receipt_long</span>
+            Facturation & Encaissements
+          </h3>
+          <div class="bilan-grid">
+            <div class="bilan-ligne">
+              <span class="bilan-lib">Total situations émises ({{ bilan.situations.length }})</span>
+              <span class="bilan-val">{{ formatMontant(bilan.totalSituationsEmises) }}</span>
+            </div>
+            <div class="bilan-ligne">
+              <span class="bilan-lib">Retenue de garantie (5%)</span>
+              <span class="bilan-val warning">- {{ formatMontant(bilan.retenueGarantie) }}</span>
+            </div>
+            <div class="bilan-ligne total">
+              <span class="bilan-lib">Total encaissé net</span>
+              <span class="bilan-val bold">{{ formatMontant(bilan.totalEncaisse) }}</span>
+            </div>
+            <div class="bilan-ligne" [ngClass]="bilan.raf === 0 ? 'ok' : 'bloque-row'">
+              <span class="bilan-lib">Reste à facturer (RAF)</span>
+              <span class="bilan-val" [ngClass]="bilan.raf === 0 ? 'positif' : 'negatif'">
+                {{ bilan.raf === 0 ? '0 FCFA ✓' : formatMontant(bilan.raf) }}
+              </span>
+            </div>
+          </div>
+          <!-- Détail situations -->
+          <div class="situations-detail">
+            <div class="situation-row" *ngFor="let s of bilan.situations">
+              <span class="sit-numero">{{ s.numero }}</span>
+              <span class="sit-date">{{ s.date }}</span>
+              <span class="sit-montant">{{ formatMontant(s.montant) }}</span>
+              <span class="sit-statut" [ngClass]="s.statut">{{ s.statut }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bloc Coûts -->
+        <div class="bilan-bloc">
+          <h3 class="bilan-bloc-titre">
+            <span class="material-icons">construction</span>
+            Coûts réels vs Budget S0
+          </h3>
+          <div class="bilan-grid">
+            <div class="bilan-ligne">
+              <span class="bilan-lib">Budget S0 (déboursé sec estimé)</span>
+              <span class="bilan-val">{{ formatMontant(bilan.budgetS0) }}</span>
+            </div>
+            <div class="bilan-ligne">
+              <span class="bilan-lib">Total coûts réels</span>
+              <span class="bilan-val" [ngClass]="ecartBudgetDepasse ? 'negatif' : ''">{{ formatMontant(bilan.totalCoutsReels) }}</span>
+            </div>
+            <div class="bilan-ligne total" [ngClass]="ecartBudgetDepasse ? 'alerte' : ''">
+              <span class="bilan-lib">
+                <span class="material-icons" *ngIf="ecartBudgetDepasse">warning</span>
+                Écart budget
+              </span>
+              <span class="bilan-val" [ngClass]="ecartBudgetDepasse ? 'negatif' : 'positif'">
+                {{ signeMontant(bilan.ecartBudget) }} {{ formatMontant(bilan.ecartBudget) }} ({{ bilan.ecartBudgetPct | number:'1.1-1' }}%)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bloc Marge — le plus important -->
+        <div class="bilan-bloc bilan-marge" [ngClass]="margeReellePositive ? 'marge-positive' : 'marge-negative'">
+          <h3 class="bilan-bloc-titre">
+            <span class="material-icons">trending_up</span>
+            Marge finale
+          </h3>
+          <div class="marge-cards">
+            <div class="marge-card prevue">
+              <span class="marge-label">Marge prévue</span>
+              <span class="marge-chiffre">{{ formatMontant(bilan.margePrevue) }}</span>
+            </div>
+            <div class="marge-arrow">
+              <span class="material-icons">arrow_forward</span>
+            </div>
+            <div class="marge-card reelle" [ngClass]="margeReellePositive ? 'positive' : 'negative'">
+              <span class="marge-label">Marge réelle</span>
+              <span class="marge-chiffre">{{ formatMontant(bilan.margeReelle) }}</span>
+            </div>
+            <div class="marge-ecart" [ngClass]="bilan.ecartMarge >= 0 ? 'gain' : 'perte'">
+              <span class="material-icons">{{ bilan.ecartMarge >= 0 ? 'arrow_upward' : 'arrow_downward' }}</span>
+              <span class="ecart-chiffre">{{ getAbsEcartMarge() }}</span>
+              <span class="ecart-label">{{ bilan.ecartMarge >= 0 ? 'de gain' : 'de perte' }}</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+    <!-- Colonne droite : Actions -->
+    <div class="col-aside">
+
+      <!-- PANNEAU ACTION COMPTABLE -->
+      <div class="action-panel" *ngIf="roleUtilisateur === 'comptable'">
+        <div class="action-panel-header comptable">
+          <span class="material-icons">manage_accounts</span>
+          <div>
+            <span class="action-role">Comptable</span>
+            <span class="action-subtitle">Validation du bilan</span>
+          </div>
+        </div>
+        <div class="action-panel-body">
+          <div *ngIf="statutCloture === 'non_initie'">
+            <p class="action-desc">
+              Vérifiez toutes les conditions ci-contre, puis validez le bilan pour autoriser la clôture officielle par l'Administrateur.
+            </p>
+            <div class="action-conditions-recap">
+              <div class="recap-item" *ngFor="let c of conditions" [ngClass]="c.statut">
+                <span class="material-icons">{{ c.statut === 'ok' ? 'check' : 'close' }}</span>
+                <span>{{ c.label }}</span>
+              </div>
+            </div>
+            <button
+              class="btn-action btn-valider"
+              [disabled]="!peutValiderBilan"
+              (click)="ouvrirConfirm('valider_bilan')">
+              <span class="material-icons">verified</span>
+              Valider le bilan financier
+            </button>
+            <p class="action-warning" *ngIf="!conditionsOk">
+              <span class="material-icons">lock</span>
+              Toutes les conditions doivent être remplies.
+            </p>
+          </div>
+          <div class="action-done" *ngIf="statutCloture === 'bilan_valide' || statutCloture === 'cloture'">
+            <span class="material-icons done-icon">check_circle</span>
+            <p>Bilan validé le {{ dateValidationComptable | date:'dd/MM/yyyy':'':'fr' }}</p>
+            <p class="done-sub">En attente de la clôture officielle par l'Administrateur.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANNEAU ACTION ADMIN -->
+      <div class="action-panel" *ngIf="roleUtilisateur === 'admin'">
+        <div class="action-panel-header admin">
+          <span class="material-icons">admin_panel_settings</span>
+          <div>
+            <span class="action-role">Administrateur</span>
+            <span class="action-subtitle">Clôture officielle</span>
+          </div>
+        </div>
+        <div class="action-panel-body">
+          <div *ngIf="statutCloture === 'non_initie'">
+            <div class="verrou-message">
+              <span class="material-icons">lock</span>
+              <div>
+                <p class="verrou-titre">Clôture verrouillée</p>
+                <p class="verrou-desc">Le Comptable doit d'abord valider le bilan financier avant que vous puissiez clôturer officiellement ce chantier.</p>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="statutCloture === 'bilan_valide'">
+            <div class="bilan-validé-notice">
+              <span class="material-icons">check_circle</span>
+              <div>
+                <p>Bilan validé par le Comptable</p>
+                <p class="notice-date">{{ dateValidationComptable | date:'dd/MM/yyyy':'':'fr' }}</p>
+              </div>
+            </div>
+            <p class="action-desc">
+              Le bilan a été vérifié et validé. Vous pouvez maintenant procéder à la clôture officielle du chantier. Cette action est <strong>irréversible</strong>.
+            </p>
+            <button
+              class="btn-action btn-cloture"
+              (click)="ouvrirConfirm('cloture_officielle')">
+              <span class="material-icons">lock</span>
+              Clôturer officiellement
+            </button>
+          </div>
+          <div class="action-done" *ngIf="statutCloture === 'cloture'">
+            <span class="material-icons done-icon">verified</span>
+            <p>Chantier clôturé officiellement</p>
+            <p class="done-sub">{{ dateClotureAdmin | date:'dd/MM/yyyy':'':'fr' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RÉSUMÉ CHANTIER -->
+      <div class="chantier-resume-card">
+        <h3 class="resume-title">
+          <span class="material-icons">info_outline</span>
+          Rappel chantier
+        </h3>
+        <div class="resume-rows">
+          <div class="resume-row">
+            <span>Avancement</span>
+            <div class="avancement-inline">
+              <div class="mini-bar">
+                <div class="mini-bar-fill" [style.width.%]="chantierAvancement"></div>
+              </div>
+              <span [ngClass]="chantierAvancement >= 100 ? 'positif' : ''">{{ chantierAvancement }}%</span>
+            </div>
+          </div>
+          <div class="resume-row">
+            <span>Début réel</span>
+            <span>{{ chantierDateDebut }}</span>
+          </div>
+          <div class="resume-row">
+            <span>Fin réelle</span>
+            <span>{{ chantierDateFin }}</span>
+          </div>
+          <div class="resume-row">
+            <span>Marché révisé</span>
+            <span class="bold">{{ formatMontant(bilan.montantMarcheRevise) }}</span>
+          </div>
+          <div class="resume-row">
+            <span>Marge réelle</span>
+            <span [ngClass]="margeReellePositive ? 'positif' : 'negatif'">{{ formatMontant(bilan.margeReelle) }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" *ngIf="loading">
+  <div class="loading-spinner">
+    <div class="spinner-ring"></div>
+    <p>Traitement en cours...</p>
+  </div>
+</div>
+
+<!-- Modal de confirmation -->
+<div class="modal-overlay" *ngIf="showConfirmModal" (click)="fermerConfirm()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-icon" [ngClass]="confirmAction === 'cloture_officielle' ? 'danger' : 'info'">
+      <span class="material-icons">
+        {{ confirmAction === 'cloture_officielle' ? 'warning' : 'verified' }}
+      </span>
+    </div>
+    <h3 class="modal-titre">
+      {{ confirmAction === 'cloture_officielle' ? 'Clôture officielle' : 'Validation du bilan' }}
+    </h3>
+    <p class="modal-message">
+      <ng-container *ngIf="confirmAction === 'valider_bilan'">
+        Vous confirmez avoir vérifié l'ensemble du bilan financier. Cette action autorisera l'Administrateur à procéder à la clôture officielle du chantier.
+      </ng-container>
+      <ng-container *ngIf="confirmAction === 'cloture_officielle'">
+        Vous allez clôturer officiellement le chantier <strong>{{ chantierNom }}</strong>. Cette action est <strong>irréversible</strong>. Le chantier passera en statut "Clôturé".
+      </ng-container>
+    </p>
+    <div class="modal-actions">
+      <button class="btn-annuler" (click)="fermerConfirm()">Annuler</button>
+      <button
+        class="btn-confirmer"
+        [ngClass]="confirmAction === 'cloture_officielle' ? 'danger' : 'primary'"
+        (click)="confirmerAction()">
+        <span class="material-icons">{{ confirmAction === 'cloture_officielle' ? 'lock' : 'verified' }}</span>
+        {{ confirmAction === 'cloture_officielle' ? 'Confirmer la clôture' : 'Valider le bilan' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast succès -->
+<div class="toast-success" [ngClass]="{ 'visible': showSuccessToast }">
+  <span class="material-icons">check_circle</span>
+  <span>{{ toastMessage }}</span>
+</div>

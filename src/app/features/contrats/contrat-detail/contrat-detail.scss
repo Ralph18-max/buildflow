@@ -264,6 +264,25 @@ h1 {
   &:hover { background: var(--gray-light); color: var(--dark); }
   .material-icons { font-size: 20px; }
 }
+.avenant-actions {
+  display: flex; gap: 8px; align-items: center;
+  .btn-signer {
+    display: flex; align-items: center; gap: 4px;
+    background: #48bb78; color: white; border: none; border-radius: 8px;
+    padding: 6px 12px; font-size: 12px; font-weight: 500; cursor: pointer;
+    transition: all 0.2s;
+    &:hover { background: #38a169; }
+    .material-icons { font-size: 14px; }
+  }
+  .btn-refuser {
+    display: flex; align-items: center; gap: 4px;
+    background: #e53e3e; color: white; border: none; border-radius: 8px;
+    padding: 6px 12px; font-size: 12px; font-weight: 500; cursor: pointer;
+    transition: all 0.2s;
+    &:hover { background: #c53030; }
+    .material-icons { font-size: 14px; }
+  }
+}
 
 // ─── SITUATIONS ─────────────────────────────────────────
 .situations-list { display: flex; flex-direction: column; gap: 14px; }

@@ -1,16 +1,18 @@
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgFor, NgIf, NgClass } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { UtilisateurService } from '../../../core/services/utilisateur.service';
+import { Utilisateur } from '../../../core/models';
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, ReactiveFormsModule],
+  imports: [NgFor, NgIf, NgClass, ReactiveFormsModule, FormsModule],
   templateUrl: './users.html',
   styleUrl: './users.scss'
 })
-export class UsersComponent {
+export class UsersComponent implements OnInit, OnDestroy {
 
   showModal = false;
   isLoading = false;
@@ -19,83 +21,116 @@ export class UsersComponent {
   userForm: FormGroup;
 
   roles = [
-    { value: 'conducteur', label: 'Conducteur de travaux', icon: 'engineering' },
-    { value: 'chef_chantier', label: 'Chef de chantier', icon: 'construction' },
-    { value: 'comptable', label: 'Comptable', icon: 'account_balance' },
+    { value: 'conducteur',    label: 'Conducteur de travaux', icon: 'engineering' },
+    { value: 'chef_chantier', label: 'Chef de chantier',      icon: 'construction' },
+    { value: 'comptable',     label: 'Comptable',             icon: 'account_balance' },
   ];
 
-  users = [
-    { id: 1, nom: 'Konan Yves', email: 'yves@buildflow.ci', role: 'admin', actif: true, initiales: 'KY' },
-    { id: 2, nom: 'Diabaté Moussa', email: 'moussa@buildflow.ci', role: 'conducteur', actif: true, initiales: 'DM' },
-    { id: 3, nom: 'Traoré Awa', email: 'awa@buildflow.ci', role: 'chef_chantier', actif: true, initiales: 'TA' },
-    { id: 4, nom: 'Coulibaly Jean', email: 'jean@buildflow.ci', role: 'comptable', actif: true, initiales: 'CJ' },
-    { id: 5, nom: 'Ouattara Fatou', email: 'fatou@buildflow.ci', role: 'conducteur', actif: false, initiales: 'OF' },
-  ];
+  users: Utilisateur[] = [];
 
-  constructor(private fb: FormBuilder) {
+  private subs = new Subscription();
+
+  constructor(private fb: FormBuilder, private utilisateurService: UtilisateurService) {
     this.userForm = this.fb.group({
-      nom: ['', [Validators.required, Validators.minLength(2)]],
+      nom:    ['', [Validators.required, Validators.minLength(2)]],
       prenom: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      role: ['', Validators.required],
+      email:  ['', [Validators.required, Validators.email]],
+      role:   ['', Validators.required],
     });
   }
 
+  ngOnInit(): void {
+    this.subs.add(
+      this.utilisateurService.getAll().subscribe(u => { this.users = u; })
+    );
+  }
+
+  ngOnDestroy(): void { this.subs.unsubscribe(); }
+
   getRoleLabel(role: string): string {
-    const labels: any = {
-      admin: 'Administrateur',
-      conducteur: 'Conducteur de travaux',
+    const labels: Record<string, string> = {
+      admin:         'Administrateur',
+      conducteur:    'Conducteur de travaux',
       chef_chantier: 'Chef de chantier',
-      comptable: 'Comptable'
+      comptable:     'Comptable',
     };
     return labels[role] || role;
   }
 
-  toggleActif(user: any) {
-    user.actif = !user.actif;
+  toggleActif(user: Utilisateur): void {
+    this.utilisateurService.toggleActif(user.id).subscribe();
   }
 
-  openModal() {
+  openModal(): void {
     this.showModal = true;
     this.userForm.reset();
     this.successMessage = '';
   }
 
-  closeModal() {
+  closeModal(): void {
     this.showModal = false;
     this.userForm.reset();
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.userForm.invalid) return;
     this.isLoading = true;
+    const v = this.userForm.value;
 
-    // Simulation — sera remplacé par l'appel API réel
-    setTimeout(() => {
-      const v = this.userForm.value;
-      this.users.push({
-        id: this.users.length + 1,
-        nom: `${v.nom} ${v.prenom}`,
-        email: v.email,
-        role: v.role,
-        actif: true,
-        initiales: `${v.nom[0]}${v.prenom[0]}`.toUpperCase()
-      });
-      this.isLoading = false;
-      this.successMessage = `Compte créé — un email avec le mot de passe temporaire a été envoyé à ${v.email}`;
-      this.userForm.reset();
-    }, 1500);
+    this.utilisateurService.ajouter({
+      nom:    v.nom,
+      prenom: v.prenom,
+      email:  v.email,
+      role:   v.role,
+      actif:  true,
+    }).subscribe({
+      next: (u) => {
+        this.users = [...this.users, u];
+        this.isLoading = false;
+        this.successMessage = `Compte créé — un email avec le mot de passe temporaire a été envoyé à ${v.email}`;
+        this.userForm.reset();
+      },
+      error: (err: any) => {
+        this.isLoading = false;
+        this.successMessage = err?.error?.message || 'Erreur lors de la création du compte.';
+      },
+    });
   }
-  getActifCount(): number {
-  return this.users.filter(u => u.actif).length;
-}
 
-getRoleCount(role: string): number {
-  return this.users.filter(u => u.role === role).length;
-}
+  getActifCount(): number { return this.users.filter(u => u.actif).length; }
+  getRoleCount(role: string): number { return this.users.filter(u => u.role === role).length; }
 
-  get nom() { return this.userForm.get('nom'); }
+  get nom()    { return this.userForm.get('nom'); }
   get prenom() { return this.userForm.get('prenom'); }
-  get email() { return this.userForm.get('email'); }
-  get role() { return this.userForm.get('role'); }
+  get email()  { return this.userForm.get('email'); }
+  get role()   { return this.userForm.get('role'); }
+
+  // ── Modal modifier ────────────────────────────────────────────────────────
+
+  showModalEditer = false;
+  successEditer   = false;
+  userEdite: Utilisateur | null = null;
+  formEditer = { nom: '', prenom: '', email: '', role: '' };
+
+  ouvrirEditer(user: Utilisateur): void {
+    this.userEdite  = user;
+    this.formEditer = { nom: user.nom, prenom: user.prenom, email: user.email, role: user.role };
+    this.showModalEditer = true;
+    this.successEditer   = false;
+  }
+
+  fermerEditer(): void { this.showModalEditer = false; }
+
+  validerEditer(): void {
+    if (!this.userEdite || !this.formEditer.nom || !this.formEditer.email) return;
+    this.utilisateurService.modifier(this.userEdite.id, this.formEditer).subscribe({
+      next: (updated) => {
+        const idx = this.users.findIndex(u => u.id === updated.id);
+        if (idx !== -1) this.users[idx] = updated;
+        this.successEditer = true;
+        setTimeout(() => { this.showModalEditer = false; this.successEditer = false; }, 1500);
+      },
+      error: () => { this.successEditer = false; },
+    });
+  }
 }

@@ -6,44 +6,47 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { PermissionService } from '../../core/services/permission.service';
 import { ContratService } from '../../core/services/contrat.service';
+import { ClientService } from '../../core/services/client.service';
 import { Contrat } from '../../core/models';
+import { PaginationComponent } from '../../shared/pagination/pagination';
 
 @Component({
   selector: 'app-contrats-list',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, ReactiveFormsModule, FormsModule],
+  imports: [NgFor, NgIf, NgClass, ReactiveFormsModule, FormsModule, PaginationComponent],
   templateUrl: './contrats-list.html',
   styleUrl: './contrats-list.scss'
 })
 export class ContratsList implements OnInit, OnDestroy {
 
-  showModal = false;
-  searchQuery = '';
-  isLoading = false;
+  showModal      = false;
+  isLoading      = false;
   successMessage = '';
+  errorMessage   = '';
+  currentPage    = 1;
+  readonly pageSize = 8;
+
+  private _searchQuery = '';
+  get searchQuery()          { return this._searchQuery; }
+  set searchQuery(v: string) { this._searchQuery = v; this.currentPage = 1; }
 
   contrats: Contrat[] = [];
+  clients: { id: number; nom: string }[] = [];
   private subs = new Subscription();
 
   contratForm: FormGroup;
-
-  clients = [
-    { id: 1, nom: 'SCI Les Palmiers' },
-    { id: 2, nom: 'Konan Yves' },
-    { id: 3, nom: 'Groupe Immobilier du Sud' },
-    { id: 4, nom: 'Diabaté Moussa' },
-  ];
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     public perm: PermissionService,
-    private contratService: ContratService
+    private contratService: ContratService,
+    private clientService: ClientService,
   ) {
     this.contratForm = this.fb.group({
       id_client: ['', Validators.required],
       type_construction: ['', Validators.required],
-      montant_marche: ['', Validators.required],
+      montant_marche: ['', [Validators.required, Validators.min(1)]],
       date_signature: ['', Validators.required],
       date_demarrage_prevue: ['', Validators.required],
       date_livraison_prevue: ['', Validators.required],
@@ -53,9 +56,17 @@ export class ContratsList implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subs.add(
-      this.contratService.getAll().subscribe(contrats => {
-        this.contrats = contrats;
-      })
+      this.contratService.getAll().subscribe(contrats => this.contrats = contrats)
+    );
+    this.subs.add(
+      this.clientService.getAll().subscribe(clients =>
+        this.clients = clients.map(c => ({
+          id:  c.id,
+          nom: c.type_client === 'societe'
+            ? (c.raison_sociale || '')
+            : `${c.nom || ''} ${c.prenom || ''}`.trim(),
+        }))
+      )
     );
   }
 
@@ -65,14 +76,21 @@ export class ContratsList implements OnInit, OnDestroy {
 
   // ── Filtrage ──────────────────────────────────────────
 
-  get filteredContrats(): Contrat[] {
-    if (!this.searchQuery) return this.contrats;
-    const q = this.searchQuery.toLowerCase();
+  private get _allFiltered(): Contrat[] {
+    if (!this._searchQuery) return this.contrats;
+    const q = this._searchQuery.toLowerCase();
     return this.contrats.filter(c =>
       c.numero_marche.toLowerCase().includes(q) ||
       c.nom_client.toLowerCase().includes(q) ||
       c.type_construction.toLowerCase().includes(q)
     );
+  }
+
+  get filteredTotal(): number { return this._allFiltered.length; }
+
+  get filteredContrats(): Contrat[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this._allFiltered.slice(start, start + this.pageSize);
   }
 
   // ── Affichage ─────────────────────────────────────────
@@ -131,35 +149,29 @@ export class ContratsList implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (this.contratForm.invalid) return;
-    this.isLoading = true;
+    this.isLoading    = true;
+    this.errorMessage = '';
 
-    setTimeout(() => {
-      const v = this.contratForm.value;
-      const client = this.clients.find(c => c.id == v.id_client);
-      const newId = Math.max(...this.contrats.map(c => c.id)) + 1;
-
-      // En Sprint 8 : POST /api/contrats
-      const nouveau: Contrat = {
-        id: newId,
-        numero_marche: `MRC-${new Date().getFullYear()}-00${newId}`,
-        id_client: v.id_client,
-        nom_client: client?.nom || '',
-        type_construction: v.type_construction,
-        montant_marche: Number(v.montant_marche),
-        montant_marche_revise: Number(v.montant_marche),
-        date_signature: v.date_signature,
-        date_demarrage_prevue: v.date_demarrage_prevue,
-        date_livraison_prevue: v.date_livraison_prevue,
-        penalites_retard: Number(v.penalites_retard),
-        statut: 'en_negociation',
-        avenants: [],
-        situations: []
-      };
-
-      this.contrats = [...this.contrats, nouveau];
-      this.isLoading = false;
-      this.successMessage = `Contrat ${nouveau.numero_marche} créé avec succès.`;
-    }, 1000);
+    const v = this.contratForm.value;
+    this.contratService.creer({
+      id_client:             Number(v.id_client),
+      type_construction:     v.type_construction,
+      montant_marche:        Number(v.montant_marche),
+      date_signature:        v.date_signature,
+      date_demarrage_prevue: v.date_demarrage_prevue,
+      date_livraison_prevue: v.date_livraison_prevue,
+      penalites_retard:      Number(v.penalites_retard),
+    }).subscribe({
+      next: (contrat) => {
+        this.isLoading      = false;
+        this.successMessage = `Contrat ${contrat.numero_marche} créé avec succès.`;
+        this.contratService.getAll().subscribe(list => this.contrats = list);
+      },
+      error: (err) => {
+        this.isLoading    = false;
+        this.errorMessage = err?.error?.message || 'Erreur lors de la création du contrat.';
+      },
+    });
   }
 
   // ── Getters formulaire ────────────────────────────────

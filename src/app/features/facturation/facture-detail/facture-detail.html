@@ -13,7 +13,7 @@
           <span>{{ facture.numero }}</span>
         </div>
         <h1>{{ facture.numero }}</h1>
-        <p class="header-objet">{{ facture.objet }}</p>
+        <p class="header-objet">{{ facture.nom_chantier }} — {{ facture.nom_client }}</p>
       </div>
     </div>
     <div class="header-right">
@@ -37,35 +37,41 @@
       <span class="material-icons kpi-icon orange">payments</span>
       <div>
         <p class="kpi-label">Montant HT</p>
-        <p class="kpi-value">{{ facture.montant_ht }} FCFA</p>
+        <p class="kpi-value">{{ formatFCFA(facture.montant_ht) }}</p>
       </div>
     </div>
     <div class="kpi-card">
       <span class="material-icons kpi-icon blue">account_balance</span>
       <div>
-        <p class="kpi-label">TVA ({{ facture.tva }}%)</p>
-        <p class="kpi-value">{{ facture.montant_ttc }} FCFA TTC</p>
+        <p class="kpi-label">Total TTC (TVA {{ facture.tva }}%)</p>
+        <p class="kpi-value">{{ formatFCFA(facture.montant_ttc) }}</p>
       </div>
     </div>
-    <div class="kpi-card">
-      <span class="material-icons kpi-icon" [class.red]="facture.statut === 'en_retard'" [class.green]="facture.statut === 'payee'" [class.blue]="facture.statut === 'emise'">event</span>
+    <div class="kpi-card"
+      [class.alert]="facture.statut === 'en_retard'">
+      <span class="material-icons kpi-icon"
+        [class.red]="facture.statut === 'en_retard'"
+        [class.green]="facture.statut === 'payee'"
+        [class.blue]="facture.statut === 'emise'">event</span>
       <div>
         <p class="kpi-label">Échéance</p>
-        <p class="kpi-value" [class.red-text]="facture.statut === 'en_retard'">{{ facture.date_echeance }}</p>
+        <p class="kpi-value" [class.red-text]="facture.statut === 'en_retard'">
+          {{ facture.date_echeance }}
+        </p>
       </div>
     </div>
-    <div class="kpi-card" *ngIf="facture.date_paiement">
+    <div class="kpi-card" *ngIf="facture.statut === 'payee'">
       <span class="material-icons kpi-icon green">check_circle</span>
       <div>
-        <p class="kpi-label">Date de paiement</p>
-        <p class="kpi-value green-text">{{ facture.date_paiement }}</p>
+        <p class="kpi-label">Encaissé</p>
+        <p class="kpi-value green-text">{{ formatFCFA(facture.montant_encaisse) }}</p>
       </div>
     </div>
     <div class="kpi-card alert" *ngIf="facture.statut === 'en_retard'">
       <span class="material-icons kpi-icon red">warning</span>
       <div>
-        <p class="kpi-label">Statut</p>
-        <p class="kpi-value red-text">Paiement en retard</p>
+        <p class="kpi-label">Reste à payer</p>
+        <p class="kpi-value red-text">{{ formatFCFA(facture.reste_a_payer) }}</p>
       </div>
     </div>
   </div>
@@ -76,10 +82,12 @@
       <span class="material-icons">info</span> Informations
     </button>
     <button class="tab" [class.active]="activeTab === 'situations'" (click)="activeTab='situations'">
-      <span class="material-icons">receipt_long</span> Situations liées ({{ facture.nb_situations }})
+      <span class="material-icons">receipt_long</span>
+      Situations liées ({{ situationsLiees.length }})
     </button>
     <button class="tab" [class.active]="activeTab === 'paiements'" (click)="activeTab='paiements'">
-      <span class="material-icons">payments</span> Paiements ({{ paiements.length }})
+      <span class="material-icons">payments</span>
+      Paiements ({{ paiements.length }})
     </button>
   </div>
 
@@ -98,10 +106,6 @@
             <span class="info-val">{{ facture.numero }}</span>
           </div>
           <div class="info-row">
-            <span class="info-label">Objet</span>
-            <span class="info-val">{{ facture.objet }}</span>
-          </div>
-          <div class="info-row">
             <span class="info-label">Date d'émission</span>
             <span class="info-val">{{ facture.date_emission }}</span>
           </div>
@@ -110,10 +114,6 @@
             <span class="info-val" [class.red-text]="facture.statut === 'en_retard'">
               {{ facture.date_echeance }}
             </span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Conditions</span>
-            <span class="info-val">{{ facture.conditions }}</span>
           </div>
         </div>
       </div>
@@ -126,19 +126,12 @@
         <div class="info-list">
           <div class="info-row">
             <span class="info-label">Client</span>
-            <span class="info-val">{{ facture.client }}</span>
+            <span class="info-val">{{ facture.nom_client }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">Chantier</span>
             <span class="info-val link-val" (click)="voirChantier()">
-              {{ facture.chantier }}
-              <span class="material-icons">open_in_new</span>
-            </span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Contrat</span>
-            <span class="info-val link-val" (click)="voirContrat()">
-              {{ facture.contrat }}
+              {{ facture.nom_chantier }}
               <span class="material-icons">open_in_new</span>
             </span>
           </div>
@@ -154,15 +147,23 @@
         <div class="financial-rows">
           <div class="financial-row">
             <span>Montant HT</span>
-            <span>{{ facture.montant_ht }} FCFA</span>
+            <span>{{ formatFCFA(facture.montant_ht) }}</span>
           </div>
           <div class="financial-row tva">
             <span>TVA ({{ facture.tva }}%)</span>
-            <span>{{ getMontantTVA() }} FCFA</span>
+            <span>{{ formatFCFA(getMontantTVA()) }}</span>
           </div>
           <div class="financial-row total">
             <span>Total TTC</span>
-            <span>{{ facture.montant_ttc }} FCFA</span>
+            <span>{{ formatFCFA(facture.montant_ttc) }}</span>
+          </div>
+          <div class="financial-row" *ngIf="facture.montant_encaisse > 0">
+            <span>Encaissé</span>
+            <span class="green-text">{{ formatFCFA(facture.montant_encaisse) }}</span>
+          </div>
+          <div class="financial-row" *ngIf="facture.reste_a_payer > 0">
+            <span>Reste à payer</span>
+            <span class="red-text">{{ formatFCFA(facture.reste_a_payer) }}</span>
           </div>
         </div>
       </div>
@@ -175,21 +176,32 @@
     <div class="section-header">
       <h2>Situations de travaux liées</h2>
     </div>
-    <div class="situations-list">
+
+    <div class="empty-state" *ngIf="situationsLiees.length === 0">
+      <span class="material-icons">receipt_long</span>
+      <p>Aucune situation liée</p>
+    </div>
+
+    <div class="situations-list" *ngIf="situationsLiees.length > 0">
       <div class="situation-card" *ngFor="let s of situationsLiees">
         <div class="situation-num">S{{ s.numero }}</div>
         <div class="situation-info">
           <p class="situation-periode">{{ s.periode }}</p>
           <div class="situation-avancement">
-            <span>Avancement : {{ s.avancement }}%</span>
+            <span>Avancement : {{ s.avancement_pct }}%</span>
             <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="s.avancement" [style.background]="'var(--orange)'"></div>
+              <div class="progress-fill"
+                [style.width.%]="s.avancement_pct"
+                [style.background]="'var(--orange)'">
+              </div>
             </div>
           </div>
         </div>
         <div class="situation-right">
-          <p class="situation-montant">{{ s.montant_periode }} FCFA</p>
-          <span class="statut-badge small" [ngClass]="s.statut">{{ getStatutLabel(s.statut) }}</span>
+          <p class="situation-montant">{{ formatFCFA(s.montant_periode) }}</p>
+          <span class="statut-badge small" [ngClass]="s.statut">
+            {{ getStatutLabel(s.statut) }}
+          </span>
         </div>
       </div>
     </div>
@@ -199,7 +211,7 @@
   <div class="tab-content" *ngIf="activeTab === 'paiements'">
     <div class="section-header">
       <h2>Historique des paiements</h2>
-      <button class="btn-add" *ngIf="facture.statut !== 'payee'">
+      <button class="btn-add" *ngIf="facture.statut !== 'payee'" (click)="ouvrirModalPaiement()">
         <span class="material-icons">add</span>
         Enregistrer un paiement
       </button>
@@ -215,7 +227,7 @@
           <p class="paiement-mode">{{ p.mode }}</p>
           <p class="paiement-ref">Réf : {{ p.reference }}</p>
         </div>
-        <p class="paiement-montant">{{ p.montant }} FCFA</p>
+        <p class="paiement-montant">{{ formatFCFA(p.montant) }}</p>
       </div>
     </div>
 
@@ -236,3 +248,41 @@
     <button (click)="retour()">Retour à la liste</button>
   </div>
 </ng-template>
+
+<!-- ===== MODAL ENREGISTRER UN PAIEMENT ===== -->
+<div class="modal-overlay" *ngIf="showModalPaiement" (click)="fermerModalPaiement()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2><span class="material-icons">payments</span> Enregistrer un paiement</h2>
+      <button class="btn-close" (click)="fermerModalPaiement()"><span class="material-icons">close</span></button>
+    </div>
+    <div class="success-banner" *ngIf="successPaiement">
+      <span class="material-icons">check_circle</span> Paiement enregistré !
+    </div>
+    <div class="modal-body" *ngIf="!successPaiement">
+      <div class="form-group">
+        <label>Montant (FCFA) *</label>
+        <input type="number" [(ngModel)]="formPaiement.montant" min="1" placeholder="Ex: 500000" />
+      </div>
+      <div class="form-group">
+        <label>Mode de paiement</label>
+        <select [(ngModel)]="formPaiement.mode">
+          <option value="Virement">Virement bancaire</option>
+          <option value="Chèque">Chèque</option>
+          <option value="Espèces">Espèces</option>
+          <option value="Mobile Money">Mobile Money</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Référence</label>
+        <input type="text" [(ngModel)]="formPaiement.reference" placeholder="N° chèque, référence virement…" />
+      </div>
+    </div>
+    <div class="modal-footer" *ngIf="!successPaiement">
+      <button class="btn-secondary" (click)="fermerModalPaiement()">Annuler</button>
+      <button class="btn-primary" (click)="validerPaiement()" [disabled]="!formPaiement.montant">
+        <span class="material-icons">save</span> Enregistrer
+      </button>
+    </div>
+  </div>
+</div>

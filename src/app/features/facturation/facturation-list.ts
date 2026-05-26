@@ -1,123 +1,154 @@
-import { Component } from '@angular/core';
-import { NgFor, NgIf, NgClass } from '@angular/common';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { NgFor, NgIf, NgClass, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { CanPipe } from '../../core/pipes/can.pipe';
-
-interface Facture {
-  id: number;
-  numero: string;
-  sit_ref?: string;
-  client: string;
-  chantier: string;
-  type: 'situation' | 'finale' | 'acompte';
-  montant_ttc: string;
-  encaisse: string;
-  encaisse_raw: number;
-  montant_raw: number;
-  date_echeance: string;
-  statut: 'payee' | 'en_retard' | 'emise' | 'en_attente';
-}
+import { FactureService } from '../../core/services/facture.service';
+import { ChantierService } from '../../core/services/chantier.service';
+import { Facture } from '../../core/models';
 
 @Component({
   selector: 'app-facturation-list',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, FormsModule, CanPipe],
+  imports: [NgFor, NgIf, NgClass, FormsModule, CanPipe, DecimalPipe],
   templateUrl: './facturation-list.html',
   styleUrl: './facturation-list.scss'
 })
-export class FacturationList {
+export class FacturationList implements OnInit, OnDestroy {
 
   activeTab = 'tous';
   searchQuery = '';
+  factures: Facture[] = [];
 
-  factures: Facture[] = [
-    {
-      id: 1, numero: 'FAC-2024-001', sit_ref: 'Sit. n°1',
-      client: 'SCI Les Palmiers', chantier: 'Résidence Les Palmiers',
-      type: 'situation', montant_ttc: '141 600 000', encaisse: '141 600 000',
-      montant_raw: 141600000, encaisse_raw: 141600000,
-      date_echeance: '15/07/2024', statut: 'payee'
-    },
-    {
-      id: 2, numero: 'FAC-2024-002', sit_ref: 'Sit. n°2',
-      client: 'SCI Les Palmiers', chantier: 'Résidence Les Palmiers',
-      type: 'situation', montant_ttc: '188 800 000', encaisse: '188 800 000',
-      montant_raw: 188800000, encaisse_raw: 188800000,
-      date_echeance: '20/10/2024', statut: 'payee'
-    },
-    {
-      id: 3, numero: 'FAC-2025-001', sit_ref: 'Sit. n°3',
-      client: 'SCI Les Palmiers', chantier: 'Résidence Les Palmiers',
-      type: 'situation', montant_ttc: '259 600 000', encaisse: '0',
-      montant_raw: 259600000, encaisse_raw: 0,
-      date_echeance: '10/03/2025', statut: 'en_retard'
-    },
-    {
-      id: 4, numero: 'FAC-2024-003',
-      client: 'Konan Yves', chantier: 'Villa Duplex Riviera',
-      type: 'finale', montant_ttc: '212 400 000', encaisse: '212 400 000',
-      montant_raw: 212400000, encaisse_raw: 212400000,
-      date_echeance: '31/12/2024', statut: 'payee'
-    },
-    {
-      id: 5, numero: 'FAC-2025-002', sit_ref: 'Sit. n°1',
-      client: 'Groupe Immobilier du Sud', chantier: 'Complexe Commercial Marcory',
-      type: 'situation', montant_ttc: '112 100 000', encaisse: '0',
-      montant_raw: 112100000, encaisse_raw: 0,
-      date_echeance: '05/05/2025', statut: 'emise'
-    },
-  ];
+  // ── Modal création facture ──────────────────
+  showModal    = false;
+  successModal = false;
+  formFacture  = {
+    id_chantier: 0,
+    montant_ht:  0,
+    tva:         18,
+    date_echeance: '',
+  };
 
-  constructor(private router: Router) {}
+  chantiers: { id: number; nom: string }[] = [];
+
+  private subs = new Subscription();
+
+  constructor(
+    private router: Router,
+    private factureService: FactureService,
+    private chantierService: ChantierService,
+  ) {}
+
+  ngOnInit(): void {
+    this.subs.add(
+      this.factureService.getAll().subscribe(factures => {
+        this.factures = factures;
+      })
+    );
+    this.subs.add(
+      this.chantierService.getEnCours().subscribe(list => {
+        this.chantiers = list.map(c => ({ id: c.id, nom: c.nom_chantier }));
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+  }
+
+  // ── Filtrage ──────────────────────────────────────────
 
   get filteredFactures(): Facture[] {
     let list = this.factures;
-    if (this.activeTab !== 'tous') list = list.filter(f => f.statut === this.activeTab);
+    if (this.activeTab !== 'tous') {
+      list = list.filter(f => f.statut === this.activeTab);
+    }
     if (this.searchQuery) {
       const q = this.searchQuery.toLowerCase();
       list = list.filter(f =>
         f.numero.toLowerCase().includes(q) ||
-        f.client.toLowerCase().includes(q) ||
-        f.chantier.toLowerCase().includes(q)
+        f.nom_client.toLowerCase().includes(q) ||
+        f.nom_chantier.toLowerCase().includes(q)
       );
     }
     return list;
   }
 
-  voirFacture(id: number) { this.router.navigate(['/facturation', id]); }
+  // ── Navigation ────────────────────────────────────────
 
-  getTypeLabel(type: string): string {
-    return { situation: 'Situation', finale: 'Facture finale', acompte: 'Acompte' }[type] || type;
+  voirFacture(id: number): void {
+    this.router.navigate(['/facturation', id]);
   }
 
-  getStatutLabel(statut: string): string {
-    return { payee: 'Payée', en_retard: 'En retard', emise: 'Émise', en_attente: 'En attente' }[statut] || statut;
-  }
-
-  getEncaisseClass(f: Facture): string {
-    if (f.encaisse_raw === 0) return 'zero';
-    if (f.encaisse_raw >= f.montant_raw) return 'full';
-    return 'partial';
-  }
+  // ── Calculs KPI ───────────────────────────────────────
 
   getTotalEncaisse(): number {
-    return this.factures.reduce((s, f) => s + f.encaisse_raw, 0);
+    return this.factures
+      .filter(f => f.statut === 'payee')
+      .reduce((s, f) => s + f.montant_encaisse, 0);
   }
 
   getTotalEnAttente(): number {
     return this.factures
       .filter(f => f.statut !== 'payee')
-      .reduce((s, f) => s + (f.montant_raw - f.encaisse_raw), 0);
+      .reduce((s, f) => s + f.reste_a_payer, 0);
   }
 
-  getCountRetard(): number { return this.factures.filter(f => f.statut === 'en_retard').length; }
+  getCountRetard(): number {
+    return this.factures.filter(f => f.statut === 'en_retard').length;
+  }
+
+  getEncaisseClass(f: Facture): string {
+    if (f.montant_encaisse < 0.01) return 'zero';
+    if (f.montant_encaisse >= f.montant_ttc - 0.01) return 'full';
+    return 'partial';
+  }
+
+  // ── Affichage ─────────────────────────────────────────
+
+  getStatutLabel(statut: string): string {
+    const labels: Record<string, string> = {
+      payee: 'Payée', en_retard: 'En retard',
+      emise: 'Émise', en_attente: 'En attente', validee: 'Validée'
+    };
+    return labels[statut] || statut;
+  }
 
   formatMontant(n: number): string {
+    if (!n) return '0';
     if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(1).replace('.', ',') + ' Mds';
-    if (n >= 1_000_000)     return (n / 1_000_000).toFixed(0) + ' M';
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(0) + ' M';
     return new Intl.NumberFormat('fr-FR').format(n);
   }
 
-  openModal() {}
+  openModal(): void {
+    this.formFacture = { id_chantier: this.chantiers[0]?.id || 0, montant_ht: 0, tva: 18, date_echeance: '' };
+    this.showModal    = true;
+    this.successModal = false;
+  }
+
+  fermerModal(): void { this.showModal = false; }
+
+  get montantTTC(): number {
+    return Math.round(this.formFacture.montant_ht * (1 + this.formFacture.tva / 100));
+  }
+
+  validerFacture(): void {
+    if (!this.formFacture.montant_ht || !this.formFacture.id_chantier) return;
+    this.factureService.creerSituation({
+      id_chantier:       Number(this.formFacture.id_chantier),
+      montant_ht:        this.formFacture.montant_ht,
+      taux_tva:          this.formFacture.tva,
+      avancement_facture: 0,
+    }).subscribe({
+      next: (nouvelle) => {
+        this.factures = [nouvelle, ...this.factures];
+        this.successModal = true;
+        setTimeout(() => { this.showModal = false; this.successModal = false; }, 1500);
+      },
+      error: () => alert('Erreur lors de la création de la situation'),
+    });
+  }
 }

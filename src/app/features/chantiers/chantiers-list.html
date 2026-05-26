@@ -113,6 +113,13 @@
     </div>
   </div>
 
+  <app-pagination
+    [total]="filteredTotal"
+    [pageSize]="pageSize"
+    [current]="currentPage"
+    (pageChange)="currentPage = $event">
+  </app-pagination>
+
   <!-- Modal de création -->
   <div class="modal-overlay" *ngIf="showModal && ('chantiers:create' | can)" (click)="fermerModal()">
     <div class="modal" (click)="$event.stopPropagation()">

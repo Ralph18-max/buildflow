@@ -26,7 +26,7 @@
     <button class="onglet" [class.actif]="ongletActif === 'historique'" (click)="ongletActif = 'historique'">
       <span class="material-icons">history</span>
       Historique
-      <span class="badge-count">{{ historiquePointages.length }}</span>
+      <span class="badge-count">{{ historique.length }}</span>
     </button>
   </div>
 
@@ -53,7 +53,7 @@
           <span class="material-icons">location_on</span>
           Chantier
         </label>
-        <select [(ngModel)]="chantierSelectionne" class="selector-input">
+        <select [(ngModel)]="chantierSelectionne" (ngModelChange)="onChantierChange()" class="selector-input">
           <option *ngFor="let c of chantiers" [value]="c.id">{{ c.nom }}</option>
         </select>
       </div>
@@ -74,7 +74,7 @@
         <span class="kpi-label">Total heures</span>
       </div>
       <div class="kpi-card">
-        <span class="kpi-num total">{{ intervenantsChantier.length }}</span>
+        <span class="kpi-num total">{{ intervenants.length }}</span>
         <span class="kpi-label">Effectif prévu</span>
       </div>
     </div>
@@ -100,7 +100,7 @@
         </div>
 
         <!-- Lignes intervenants -->
-        <div *ngFor="let i of intervenantsChantier"
+        <div *ngFor="let i of intervenants"
           class="table-row"
           [class.absent-row]="!i.present">
 
@@ -117,17 +117,17 @@
           <!-- Nom -->
           <div class="col-nom">
             <div class="intervenant-avatar" [class.absent]="!i.present">
-              {{ i.prenom[0] }}{{ i.nom[0] }}
+              {{ (i.nom_complet || 'XX').substring(0, 2).toUpperCase() }}
             </div>
             <div class="intervenant-info">
-              <span class="intervenant-nom">{{ i.prenom }} {{ i.nom }}</span>
-              <span class="intervenant-role">{{ i.role }}</span>
+              <span class="intervenant-nom">{{ i.nom_complet }}</span>
+              <span class="intervenant-role">{{ i.corps_etat }}</span>
             </div>
           </div>
 
-          <!-- Entreprise -->
+          <!-- Corps d'état -->
           <div class="col-entreprise">
-            <span class="entreprise-tag">{{ i.entreprise }}</span>
+            <span class="entreprise-tag">{{ i.corps_etat }}</span>
           </div>
 
           <!-- Heures — FIX #2 : méthodes propres -->
@@ -156,9 +156,11 @@
           </div>
         </div>
 
-        <div *ngIf="intervenantsChantier.length === 0" class="empty-table">
+        <div *ngIf="intervenants.length === 0" class="empty-table">
           <span class="material-icons">people_outline</span>
           <p>Aucun intervenant enregistré pour ce chantier</p>
+          <small *ngIf="chantiers.length > 1">Sélectionnez un autre chantier ou vérifiez les affectations.</small>
+          <small *ngIf="chantiers.length === 0">Vous n'êtes affecté à aucun chantier actif.</small>
         </div>
       </div>
     </div>
@@ -173,7 +175,7 @@
         <span class="material-icons">arrow_back</span>
         Retour
       </button>
-      <button class="btn-primary" (click)="soumettre()" [disabled]="loading || intervenantsChantier.length === 0">
+      <button class="btn-primary" (click)="soumettre()" [disabled]="loading || intervenants.length === 0">
         <span class="material-icons" *ngIf="!loading">save</span>
         <span class="spinner" *ngIf="loading"></span>
         {{ loading ? 'Enregistrement…' : 'Valider le pointage' }}
@@ -184,21 +186,20 @@
   <!-- ===== ONGLET HISTORIQUE ===== -->
   <div *ngIf="ongletActif === 'historique'" class="historique-section">
 
-    <div *ngFor="let p of historiquePointages" class="historique-card">
+    <div *ngFor="let p of historique" class="historique-card">
       <div class="histo-card-header">
         <div class="histo-meta">
-          <span class="histo-chantier">{{ p.chantierNom }}</span>
-          <!-- FIX #3 : date sans locale 'fr' hardcodée — géré par LOCALE_ID global -->
+          <span class="histo-chantier">{{ p.nom_chantier }}</span>
           <span class="histo-date">{{ p.date | date:'EEEE d MMMM yyyy' }}</span>
         </div>
         <div class="histo-kpi">
           <span class="histo-badge green">
             <span class="material-icons">check_circle</span>
-            {{ p.totalPresents }} présents
+            {{ p.total_presents }} présents
           </span>
           <span class="histo-badge orange">
             <span class="material-icons">schedule</span>
-            {{ p.totalHeures }}h travaillées
+            {{ p.total_heures }}h travaillées
           </span>
           <span class="histo-badge gray">
             <span class="material-icons">verified</span>
@@ -210,11 +211,11 @@
       <div class="histo-intervenants">
         <div *ngFor="let iv of p.intervenants" class="histo-intervenant" [class.absent]="!iv.present">
           <div class="histo-avatar" [class.absent]="!iv.present">
-            {{ iv.prenom[0] }}{{ iv.nom[0] }}
+            {{ (iv.nom_complet || 'XX').substring(0, 2).toUpperCase() }}
           </div>
           <div class="histo-iv-info">
-            <span class="histo-iv-nom">{{ iv.prenom }} {{ iv.nom }}</span>
-            <span class="histo-iv-role">{{ iv.role }}</span>
+            <span class="histo-iv-nom">{{ iv.nom_complet }}</span>
+            <span class="histo-iv-role">{{ iv.corps_etat }}</span>
           </div>
           <div class="histo-iv-heures">
             <span *ngIf="iv.present" class="heures-ok">{{ iv.heures }}h</span>
@@ -224,7 +225,7 @@
       </div>
     </div>
 
-    <div *ngIf="historiquePointages.length === 0" class="empty-state">
+    <div *ngIf="historique.length === 0" class="empty-state">
       <span class="material-icons">people_outline</span>
       <p>Aucun pointage enregistré</p>
     </div>
