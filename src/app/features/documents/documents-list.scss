@@ -374,26 +374,90 @@
   p { font-size: 14px; }
 }
 
-// ── Zone upload drag & drop ───────────────────
-.upload-zone {
+// ── Zone drag & drop (nouvelle) ──────────────
+.drop-zone {
   border: 2px dashed var(--gray-light);
-  border-radius: 12px;
-  padding: 32px;
+  border-radius: 14px;
+  padding: 32px 24px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s;
-  background: white;
+  transition: all 0.2s ease;
+  background: #FAFAF9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
 
-  .material-icons { font-size: 36px; color: var(--gray-mid); margin-bottom: 8px; display: block; }
-  p { font-size: 14px; color: var(--gray-mid); margin-bottom: 4px; }
-  small { font-size: 12px; color: #C0BDB8; }
+  .drop-icon {
+    font-size: 42px;
+    color: #C0BDB8;
+    transition: color 0.2s, transform 0.2s;
+    display: block;
 
-  &:hover, &.dragging {
+    &.selected { color: var(--orange); }
+  }
+
+  .drop-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #4B5563;
+    margin: 0;
+
+    &.selected {
+      color: var(--dark);
+      font-weight: 600;
+      word-break: break-all;
+    }
+  }
+
+  .drop-link {
+    color: var(--orange);
+    text-decoration: underline;
+    font-weight: 600;
+  }
+
+  .drop-hint {
+    font-size: 12px;
+    color: #9CA3AF;
+    margin: 0;
+  }
+
+  &:hover, &.drag-over {
     border-color: var(--orange);
-    background: rgba(232,82,10,0.02);
-    .material-icons { color: var(--orange); }
+    background: rgba(232, 82, 10, 0.03);
+    .drop-icon { color: var(--orange); transform: translateY(-3px); }
+  }
+
+  &.has-file {
+    border-color: var(--orange);
+    border-style: solid;
+    background: rgba(232, 82, 10, 0.04);
   }
 }
+
+// ── Erreur upload ─────────────────────────────
+.erreur-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #DC2626;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 0;
+
+  .material-icons { font-size: 16px; flex-shrink: 0; }
+}
+
+// ── Spinner upload ────────────────────────────
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.spin { animation: spin 0.8s linear infinite; }
 
 // ── Responsive ────────────────────────────────
 @media (max-width: 900px) {

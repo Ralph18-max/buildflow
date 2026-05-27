@@ -187,29 +187,31 @@
     <!-- KPI Cards -->
     <div class="kpi-grid">
 
-      <div class="kpi-card">
+      <div class="kpi-card" [title]="fmtFull(budget.debourse_sec_estime)">
         <span class="kpi-label">Déboursé sec S0</span>
-        <span class="kpi-value">{{ budget.debourse_sec_estime | number:'1.0-0' }}</span>
+        <span class="kpi-value">{{ fmt(budget.debourse_sec_estime) }}</span>
         <span class="kpi-unit">FCFA <span class="badge-fige"><span class="material-icons" style="font-size:12px">lock</span> Figé</span></span>
       </div>
 
-      <div class="kpi-card">
+      <div class="kpi-card" [title]="fmtFull(budget.montant_total_S0)">
         <span class="kpi-label">Prix de vente S0</span>
-        <span class="kpi-value">{{ budget.montant_total_S0 | number:'1.0-0' }}</span>
+        <span class="kpi-value">{{ fmt(budget.montant_total_S0) }}</span>
         <span class="kpi-unit">FCFA</span>
       </div>
 
-      <div class="kpi-card" [ngClass]="isEnDepassement() ? 'kpi-danger' : 'kpi-success'">
+      <div class="kpi-card"
+           [ngClass]="isEnDepassement() ? 'kpi-danger' : 'kpi-success'"
+           [title]="fmtFull(budget.cout_reel_a_date)">
         <span class="kpi-label">Coût réel à date</span>
-        <span class="kpi-value">{{ budget.cout_reel_a_date | number:'1.0-0' }}</span>
+        <span class="kpi-value">{{ fmt(budget.cout_reel_a_date) }}</span>
         <span class="kpi-unit">FCFA — {{ getConsommationPct() }}% consommé</span>
       </div>
 
-      <div class="kpi-card" [ngClass]="budget.ecart_budget >= 0 ? 'kpi-success' : 'kpi-danger'">
+      <div class="kpi-card"
+           [ngClass]="budget.ecart_budget >= 0 ? 'kpi-success' : 'kpi-danger'"
+           [title]="fmtFull(budget.ecart_budget)">
         <span class="kpi-label">Écart vs S0</span>
-        <span class="kpi-value">
-          {{ budget.ecart_budget >= 0 ? '+' : '' }}{{ budget.ecart_budget | number:'1.0-0' }}
-        </span>
+        <span class="kpi-value">{{ budget.ecart_budget >= 0 ? '+' : '' }}{{ fmt(budget.ecart_budget) }}</span>
         <span class="kpi-unit">FCFA</span>
       </div>
 

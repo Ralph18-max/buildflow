@@ -449,10 +449,12 @@ $blue:       #1E6FBB;
 
   .kpi-value {
     font-family: 'Sora', sans-serif;
-    font-size: 22px;
+    font-size: clamp(16px, 1.6vw, 22px);
     font-weight: 800;
     color: $dark;
-    line-height: 1.1;
+    line-height: 1.2;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   .kpi-unit {

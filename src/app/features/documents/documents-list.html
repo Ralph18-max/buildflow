@@ -139,38 +139,94 @@
 </div>
 
 <!-- ===== MODAL AJOUTER DOCUMENT ===== -->
-<div class="modal-overlay" *ngIf="showUpload" (click)="fermerUpload()">
+@if (showUpload) {
+<div class="modal-overlay" (click)="fermerUpload()">
   <div class="modal" (click)="$event.stopPropagation()">
+
     <div class="modal-header">
       <h2><span class="material-icons">upload_file</span> Ajouter un document</h2>
-      <button class="btn-close" (click)="fermerUpload()"><span class="material-icons">close</span></button>
-    </div>
-    <div class="success-banner" *ngIf="successUpload">
-      <span class="material-icons">check_circle</span> Document ajouté avec succès !
-    </div>
-    <div class="modal-body" *ngIf="!successUpload">
-      <div class="form-group">
-        <label>Nom du fichier *</label>
-        <input type="text" [(ngModel)]="formUpload.nom" placeholder="Ex: plan_facade_v2.pdf" />
-      </div>
-      <div class="form-group">
-        <label>Catégorie</label>
-        <select [(ngModel)]="formUpload.categorie">
-          <option *ngFor="let cat of categories" [value]="cat.key">{{ cat.label }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Chantier</label>
-        <select [(ngModel)]="formUpload.chantier_id">
-          <option *ngFor="let c of chantiers" [value]="c.id">{{ c.nom }}</option>
-        </select>
-      </div>
-    </div>
-    <div class="modal-footer" *ngIf="!successUpload">
-      <button class="btn-secondary" (click)="fermerUpload()">Annuler</button>
-      <button class="btn-primary" (click)="validerUpload()" [disabled]="!formUpload.nom">
-        <span class="material-icons">add</span> Ajouter
+      <button class="btn-close" (click)="fermerUpload()">
+        <span class="material-icons">close</span>
       </button>
     </div>
+
+    @if (successUpload) {
+      <div class="success-banner">
+        <span class="material-icons">check_circle</span> Document ajouté avec succès !
+      </div>
+    }
+
+    @if (!successUpload) {
+      <div class="modal-body">
+
+        <!-- Zone drag & drop -->
+        <div
+          class="drop-zone"
+          [class.drag-over]="dragOver"
+          [class.has-file]="!!selectedFile"
+          (dragover)="$event.preventDefault(); dragOver = true"
+          (dragleave)="dragOver = false"
+          (drop)="onFileDrop($event)"
+          (click)="fileInput.click()">
+
+          <input
+            #fileInput
+            type="file"
+            style="display:none"
+            (change)="onFileInput($event)" />
+
+          @if (!selectedFile) {
+            <span class="material-icons drop-icon">cloud_upload</span>
+            <p class="drop-text">Glissez un fichier ici ou <span class="drop-link">parcourez</span></p>
+            <p class="drop-hint">PDF, images, Word, Excel — max 20 Mo</p>
+          } @else {
+            <span class="material-icons drop-icon selected">insert_drive_file</span>
+            <p class="drop-text selected">{{ selectedFile.name }}</p>
+            <p class="drop-hint">{{ (selectedFile.size / 1024).toFixed(0) }} Ko — cliquer pour changer</p>
+          }
+        </div>
+
+        @if (erreurUpload) {
+          <p class="erreur-msg">
+            <span class="material-icons">error_outline</span> {{ erreurUpload }}
+          </p>
+        }
+
+        <div class="form-group">
+          <label>Catégorie</label>
+          <select [(ngModel)]="formUpload.categorie">
+            @for (cat of categories; track cat.key) {
+              <option [value]="cat.key">{{ cat.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Chantier</label>
+          <select [(ngModel)]="formUpload.chantier_id">
+            @for (c of chantiers; track c.id) {
+              <option [value]="c.id">{{ c.nom }}</option>
+            }
+          </select>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="fermerUpload()">Annuler</button>
+        <button
+          class="btn-primary"
+          (click)="validerUpload()"
+          [disabled]="!selectedFile || isUploading">
+          @if (isUploading) {
+            <span class="material-icons spin">sync</span> Envoi...
+          } @else {
+            <span class="material-icons">cloud_upload</span> Envoyer
+          }
+        </button>
+      </div>
+    }
+
   </div>
 </div>
+}

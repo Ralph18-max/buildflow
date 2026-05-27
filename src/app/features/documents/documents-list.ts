@@ -120,42 +120,59 @@ export class DocumentsList implements OnInit, OnDestroy {
   }
 
   successUpload = false;
+  isUploading   = false;
+  selectedFile: File | null = null;
+  dragOver = false;
   formUpload = { nom: '', categorie: 'divers', chantier_id: 0 };
 
   openUpload(): void {
-    this.formUpload = { nom: '', categorie: 'divers', chantier_id: this.chantiers[0]?.id || 0 };
-    this.showUpload = true;
+    this.formUpload   = { nom: '', categorie: 'divers', chantier_id: this.chantiers[0]?.id || 0 };
+    this.selectedFile = null;
+    this.showUpload   = true;
     this.successUpload = false;
+    this.erreurUpload  = '';
   }
 
   fermerUpload(): void { this.showUpload = false; }
 
+  onFileDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.dragOver = false;
+    const file = event.dataTransfer?.files?.[0];
+    if (file) this.setFile(file);
+  }
+
+  onFileInput(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) this.setFile(file);
+  }
+
+  private setFile(file: File): void {
+    this.selectedFile     = file;
+    this.formUpload.nom   = file.name;
+    this.erreurUpload     = '';
+  }
+
   validerUpload(): void {
     this.erreurUpload = '';
-    if (!this.formUpload.nom) { this.erreurUpload = 'Le nom du fichier est requis.'; return; }
+    if (!this.selectedFile)           { this.erreurUpload = 'Sélectionnez un fichier.'; return; }
     if (!this.formUpload.chantier_id) { this.erreurUpload = 'Sélectionnez un chantier.'; return; }
 
-    const chantierId = Number(this.formUpload.chantier_id);
-    const chantierNom = this.chantiers.find(c => c.id === chantierId)?.nom || '—';
-    const ext = this.formUpload.nom.includes('.') ? this.formUpload.nom.split('.').pop()! : 'pdf';
-
-    this.docService.ajouter({
-      id_chantier:  chantierId,
-      nom_chantier: chantierNom,
-      nom_fichier:  this.formUpload.nom,
-      extension:    ext.toLowerCase(),
-      categorie:    this.formUpload.categorie as DocVue['categorie'],
-      taille_ko:    0,
-      ajoute_par:   '',
-      date_upload:  new Date().toISOString(),
-    }).subscribe({
+    this.isUploading = true;
+    this.docService.uploadFichier(
+      this.selectedFile,
+      Number(this.formUpload.chantier_id),
+      this.formUpload.categorie,
+    ).subscribe({
       next: (doc) => {
-        this.documents = [...this.documents, this.mapDoc(doc)];
+        this.documents   = [...this.documents, this.mapDoc(doc)];
+        this.isUploading  = false;
         this.successUpload = true;
-        setTimeout(() => { this.showUpload = false; this.successUpload = false; }, 1500);
+        setTimeout(() => { this.showUpload = false; this.successUpload = false; }, 1800);
       },
       error: (err: any) => {
-        this.erreurUpload = err?.error?.message || 'Erreur lors de l\'enregistrement.';
+        this.isUploading  = false;
+        this.erreurUpload = err?.error?.message || 'Erreur lors de l\'envoi.';
       },
     });
   }

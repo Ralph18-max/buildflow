@@ -151,6 +151,20 @@ export class BudgetS0Component implements OnInit {
     });
   }
 
+  fmt(n: number): string {
+    if (!n && n !== 0) return '—';
+    const abs = Math.abs(n);
+    const sign = n < 0 ? '-' : '';
+    if (abs >= 1_000_000_000) return sign + (abs / 1_000_000_000).toFixed(2).replace('.', ',') + ' Mds';
+    if (abs >= 1_000_000)     return sign + (abs / 1_000_000).toFixed(1).replace('.', ',') + ' M';
+    if (abs >= 1_000)         return sign + Math.round(abs / 1_000) + ' K';
+    return sign + new Intl.NumberFormat('fr-FR').format(abs);
+  }
+
+  fmtFull(n: number): string {
+    return new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
+  }
+
   isEnDepassement(): boolean {
     if (!this.budget) return false;
     return this.budget.cout_reel_a_date > this.budget.debourse_sec_estime * (1 + this.SEUIL_DEPASSEMENT);

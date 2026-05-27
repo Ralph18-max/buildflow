@@ -1,0 +1,47 @@
+@if (visible) {
+  <div class="tutorial-overlay">
+    <div class="tutorial-backdrop" (click)="terminer()"></div>
+
+    <div class="tutorial-card">
+
+      <button class="tuto-close" (click)="terminer()" title="Passer le tutoriel">
+        <span class="material-icons">close</span>
+      </button>
+
+      <div class="tuto-step">
+        <div class="tuto-emoji">{{ step.emoji }}</div>
+        <h2 class="tuto-titre">{{ step.titre }}</h2>
+        <p class="tuto-desc">{{ step.description }}</p>
+      </div>
+
+      <div class="tuto-dots">
+        @for (s of steps; track $index) {
+          <span
+            class="dot"
+            [class.active]="$index === stepIndex"
+            (click)="stepIndex = $index">
+          </span>
+        }
+      </div>
+
+      <p class="tuto-counter">{{ stepIndex + 1 }} / {{ steps.length }}</p>
+
+      <div class="tuto-actions">
+        <button class="btn-skip" (click)="terminer()">Passer</button>
+        <div class="btn-nav">
+          @if (!isFirst) {
+            <button class="btn-prev" (click)="precedent()">
+              <span class="material-icons">arrow_back</span>
+              Précédent
+            </button>
+          }
+          <button class="btn-next" (click)="suivant()">
+            {{ isLast ? 'Commencer' : 'Suivant' }}
+            <span class="material-icons">{{ isLast ? 'rocket_launch' : 'arrow_forward' }}</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+}

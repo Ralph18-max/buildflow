@@ -1,29 +1,48 @@
-import { Component } from '@angular/core';
-import { NgIf } from '@angular/common';
+import { Component, OnInit, HostListener } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { ToastComponent } from '../toast/toast';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [NgIf, RouterModule, ToastComponent],
+  imports: [NgClass, RouterModule, ToastComponent],
   templateUrl: './layout.html',
   styleUrl: './layout.scss'
 })
-export class LayoutComponent {
+export class LayoutComponent implements OnInit {
 
   sidebarOpen = false;
-
-  // Sprint 8 : brancher un vrai NotificationService
-  readonly notifCount = 0;
+  notifPanelOpen = false;
 
   get user() { return this.auth.getUser(); }
+  get hasUnread(): boolean { return this.notifService.unreadCount() > 0; }
 
-  constructor(public auth: AuthService, private router: Router) {}
+  constructor(
+    public auth: AuthService,
+    private router: Router,
+    public notifService: NotificationService,
+  ) {}
+
+  ngOnInit(): void {
+    this.notifService.charger();
+  }
 
   toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; }
   closeSidebar()  { this.sidebarOpen = false; }
+
+  toggleNotifPanel(): void { this.notifPanelOpen = !this.notifPanelOpen; }
+  closeNotifPanel(): void  { this.notifPanelOpen = false; }
+
+  naviguerNotif(lien?: string): void {
+    this.notifPanelOpen = false;
+    if (lien) this.router.navigate([lien]);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEsc(): void { this.notifPanelOpen = false; }
 
   logout() {
     this.auth.logout();
@@ -43,5 +62,9 @@ export class LayoutComponent {
       comptable:     'Comptable',
     };
     return labels[role ?? ''] || (role ?? '');
+  }
+
+  getNotifClass(type: string): string {
+    return { danger: 'notif-danger', warning: 'notif-warning', info: 'notif-info' }[type] ?? '';
   }
 }
