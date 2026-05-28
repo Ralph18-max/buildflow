@@ -29,6 +29,16 @@ export class DocumentService {
     );
   }
 
+  uploadFichier(file: File, idChantier: number, categorie: string): Observable<Document> {
+    const formData = new FormData();
+    formData.append('fichier',      file);
+    formData.append('id_chantier',  String(idChantier));
+    formData.append('categorie',    categorie);
+    return this.http.post<any>(`${API_URL}/documents/upload`, formData).pipe(
+      map(d => this._map(d))
+    );
+  }
+
   ajouter(doc: Omit<Document, 'id'>): Observable<Document> {
     return this.http.post<any>(`${API_URL}/documents`, {
       id_chantier: doc.id_chantier,
