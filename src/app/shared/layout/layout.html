@@ -138,7 +138,28 @@
           }
         </div>
 
-        <div class="user-avatar-sm">{{ user?.avatar_initiales }}</div>
+        <!-- Avatar + dropdown profil -->
+        <div class="user-menu-wrapper">
+          <button class="user-avatar-sm" (click)="toggleUserMenu()" title="Mon profil">
+            {{ user?.avatar_initiales }}
+          </button>
+          @if (userMenuOpen) {
+            <div class="user-dropdown">
+              <div class="user-dropdown-info">
+                <span class="ud-name">{{ user?.prenom }} {{ user?.nom }}</span>
+                <span class="ud-role">{{ getRoleLabel(user?.role) }}</span>
+              </div>
+              <hr>
+              <button class="ud-item" (click)="openChangePassword()">
+                <span class="material-icons">lock_reset</span> Changer mon mot de passe
+              </button>
+              <button class="ud-item ud-logout" (click)="logout()">
+                <span class="material-icons">logout</span> Se déconnecter
+              </button>
+            </div>
+            <div class="user-menu-backdrop" (click)="closeUserMenu()"></div>
+          }
+        </div>
       </div>
     </header>
 
@@ -150,4 +171,8 @@
 </div>
 
 <app-toast></app-toast>
+
+@if (changePasswordOpen) {
+  <app-change-password (fermer)="changePasswordOpen = false"></app-change-password>
+}
 

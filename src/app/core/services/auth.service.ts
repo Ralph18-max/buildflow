@@ -75,6 +75,13 @@ export class AuthService {
     );
   }
 
+  changerMotDePasse(ancien: string, nouveau: string): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(`${API_URL}/auth/change-password`, {
+      ancien_mot_de_passe: ancien,
+      nouveau_mot_de_passe: nouveau,
+    });
+  }
+
   logout(): void {
     this._loggedIn = false;
     this.currentUser = null;

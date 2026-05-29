@@ -4,11 +4,12 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { ToastComponent } from '../toast/toast';
+import { ChangePasswordComponent } from '../change-password/change-password';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [NgClass, RouterModule, ToastComponent],
+  imports: [NgClass, RouterModule, ToastComponent, ChangePasswordComponent],
   templateUrl: './layout.html',
   styleUrl: './layout.scss'
 })
@@ -16,6 +17,8 @@ export class LayoutComponent implements OnInit {
 
   sidebarOpen = false;
   notifPanelOpen = false;
+  userMenuOpen = false;
+  changePasswordOpen = false;
 
   get user() { return this.auth.getUser(); }
   get hasUnread(): boolean { return this.notifService.unreadCount() > 0; }
@@ -41,8 +44,12 @@ export class LayoutComponent implements OnInit {
     if (lien) this.router.navigate([lien]);
   }
 
+  toggleUserMenu(): void { this.userMenuOpen = !this.userMenuOpen; }
+  closeUserMenu(): void  { this.userMenuOpen = false; }
+  openChangePassword(): void { this.changePasswordOpen = true; this.userMenuOpen = false; }
+
   @HostListener('document:keydown.escape')
-  onEsc(): void { this.notifPanelOpen = false; }
+  onEsc(): void { this.notifPanelOpen = false; this.userMenuOpen = false; this.changePasswordOpen = false; }
 
   logout() {
     this.auth.logout();
