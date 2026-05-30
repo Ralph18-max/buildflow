@@ -28,7 +28,7 @@ export class LandingComponent {
   features = [
     { icon: 'account_balance_wallet', color: '#E8520A', title: 'Budget S0 & Marges',    desc: 'Déboursé sec figé au démarrage. RAD, RAF et marge calculés automatiquement.' },
     { icon: 'calendar_month',         color: '#2563EB', title: 'Planning & Jalons',       desc: 'Jalons, corps d\'état, chemin critique. Détection automatique des retards.' },
-    { icon: 'contract',               color: '#059669', title: 'Clients & Contrats',      desc: 'Numéros de marché, pénalités, avenants signés — tout centralisé et traçable.' },
+    { icon: 'handshake',               color: '#059669', title: 'Clients & Contrats',      desc: 'Numéros de marché, pénalités, avenants signés — tout centralisé et traçable.' },
     { icon: 'assignment',             color: '#7C3AED', title: 'Rapports terrain',        desc: 'Rapports journaliers, pointage MO, météo, incidents. Avancement pondéré en temps réel.' },
     { icon: 'dashboard',              color: '#D97706', title: 'Tableau de bord',         desc: 'Avancement global, écart budget, délais — vision instantanée sans surprise.' },
     { icon: 'receipt_long',           color: '#0891B2', title: 'Situations & Clôture',    desc: 'Facturation progressive avec retenue de garantie. Clôture en deux étapes.' },
