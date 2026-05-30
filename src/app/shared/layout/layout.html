@@ -116,17 +116,41 @@
                   <div
                     class="notif-item"
                     [class.unread]="!n.lu"
+                    [class.expanded]="notifExpandedId === n.id"
                     [ngClass]="getNotifClass(n.type)"
-                    (click)="naviguerNotif(n.lien); notifService.marquerLu(n.id)">
-                    <div class="notif-icon">
-                      <span class="material-icons">{{ n.icon }}</span>
+                    (click)="toggleNotifDetail(n.id)">
+
+                    <div class="notif-item-header">
+                      <div class="notif-icon">
+                        <span class="material-icons">{{ n.icon }}</span>
+                      </div>
+                      <div class="notif-content">
+                        <p class="notif-titre">{{ n.titre }}</p>
+                        <p class="notif-msg">{{ n.message }}</p>
+                        @if (n.horodatage) {
+                          <p class="notif-time">Aujourd'hui à {{ n.horodatage }}</p>
+                        }
+                      </div>
+                      <div class="notif-chevron">
+                        <span class="material-icons">
+                          {{ notifExpandedId === n.id ? 'expand_less' : 'expand_more' }}
+                        </span>
+                      </div>
+                      @if (!n.lu) {
+                        <div class="notif-unread-dot"></div>
+                      }
                     </div>
-                    <div class="notif-content">
-                      <p class="notif-titre">{{ n.titre }}</p>
-                      <p class="notif-msg">{{ n.message }}</p>
-                    </div>
-                    @if (!n.lu) {
-                      <div class="notif-unread-dot"></div>
+
+                    @if (notifExpandedId === n.id && n.detail) {
+                      <div class="notif-detail" (click)="$event.stopPropagation()">
+                        <pre class="notif-detail-text">{{ n.detail }}</pre>
+                        @if (n.lien) {
+                          <button class="notif-detail-btn" (click)="naviguerNotif(n.lien)">
+                            <span class="material-icons">open_in_new</span>
+                            Accéder
+                          </button>
+                        }
+                      </div>
                     }
                   </div>
                 }

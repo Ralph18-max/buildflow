@@ -17,6 +17,7 @@ export class LayoutComponent implements OnInit {
 
   sidebarOpen = false;
   notifPanelOpen = false;
+  notifExpandedId: string | null = null;
   userMenuOpen = false;
   changePasswordOpen = false;
 
@@ -36,11 +37,20 @@ export class LayoutComponent implements OnInit {
   toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; }
   closeSidebar()  { this.sidebarOpen = false; }
 
-  toggleNotifPanel(): void { this.notifPanelOpen = !this.notifPanelOpen; }
-  closeNotifPanel(): void  { this.notifPanelOpen = false; }
+  toggleNotifPanel(): void {
+    this.notifPanelOpen = !this.notifPanelOpen;
+    if (!this.notifPanelOpen) this.notifExpandedId = null;
+  }
+  closeNotifPanel(): void { this.notifPanelOpen = false; this.notifExpandedId = null; }
+
+  toggleNotifDetail(id: string): void {
+    this.notifExpandedId = this.notifExpandedId === id ? null : id;
+    this.notifService.marquerLu(id);
+  }
 
   naviguerNotif(lien?: string): void {
     this.notifPanelOpen = false;
+    this.notifExpandedId = null;
     if (lien) this.router.navigate([lien]);
   }
 
