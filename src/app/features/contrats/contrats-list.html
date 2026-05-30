@@ -214,6 +214,13 @@
           </div>
         </div>
 
+        @if (contratForm.errors?.['dateOrder']) {
+          <div class="error-msg" style="margin-bottom:12px;">
+            <span class="material-icons" style="font-size:16px;vertical-align:middle;">error_outline</span>
+            {{ contratForm.errors?.['dateOrder'] }}
+          </div>
+        }
+
         <div class="modal-info">
           <span class="material-icons">info_outline</span>
           <p>Après création du contrat, vous pourrez définir le <strong>Budget S0</strong> et créer le chantier associé.</p>

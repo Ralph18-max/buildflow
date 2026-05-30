@@ -151,10 +151,24 @@ export class TerrainRapport implements OnInit, OnDestroy {
     return this.meteoOptions.find(m => m.valeur === valeur)?.label || '';
   }
 
+  erreurRapport = '';
+
   soumettre() {
+    this.erreurRapport = '';
     if (this.rapportForm.invalid) {
       this.rapportForm.markAllAsTouched();
       return;
+    }
+    const date = this.rapportForm.value.date;
+    if (date && date > this.dateAujourdhui) {
+      this.erreurRapport = 'La date du rapport ne peut pas être dans le futur.'; return;
+    }
+    const effectif = this.rapportForm.value.effectif;
+    if (effectif < 0) { this.erreurRapport = 'L\'effectif ne peut pas être négatif.'; return; }
+    const avancementsInvalides = this.getCorpsEtatSelectionnes()
+      .filter(c => c.avancementJour < 0 || c.avancementJour > 100);
+    if (avancementsInvalides.length) {
+      this.erreurRapport = 'L\'avancement journalier doit être compris entre 0 et 100%.'; return;
     }
     this.loading = true;
     const val = this.rapportForm.value;

@@ -39,6 +39,10 @@ export class ChangePasswordComponent {
       this.erreur = 'Le nouveau mot de passe doit contenir au moins 8 caractères.';
       return;
     }
+    if (!/[A-Z]/.test(this.nouveau) || !/[0-9]/.test(this.nouveau)) {
+      this.erreur = 'Le mot de passe doit contenir au moins une majuscule et un chiffre.';
+      return;
+    }
     this.loading = true;
     this.erreur = '';
     this.succes = '';

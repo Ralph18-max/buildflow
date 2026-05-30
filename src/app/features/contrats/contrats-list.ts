@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgFor, NgIf, NgClass } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { contratsDateOrderValidator } from '../../core/validators/bf-validators';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -44,14 +45,14 @@ export class ContratsList implements OnInit, OnDestroy {
     private clientService: ClientService,
   ) {
     this.contratForm = this.fb.group({
-      id_client: ['', Validators.required],
-      type_construction: ['', Validators.required],
-      montant_marche: ['', [Validators.required, Validators.min(1)]],
-      date_signature: ['', Validators.required],
+      id_client:             ['', Validators.required],
+      type_construction:     ['', [Validators.required, Validators.minLength(3), Validators.maxLength(150)]],
+      montant_marche:        ['', [Validators.required, Validators.min(1)]],
+      date_signature:        ['', Validators.required],
       date_demarrage_prevue: ['', Validators.required],
       date_livraison_prevue: ['', Validators.required],
-      penalites_retard: ['', Validators.required],
-    });
+      penalites_retard:      ['', [Validators.required, Validators.min(0)]],
+    }, { validators: contratsDateOrderValidator });
   }
 
   ngOnInit(): void {

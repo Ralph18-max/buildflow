@@ -135,8 +135,13 @@ export class FacturationList implements OnInit, OnDestroy {
     return Math.round(this.formFacture.montant_ht * (1 + this.formFacture.tva / 100));
   }
 
+  erreurFacture = '';
+
   validerFacture(): void {
-    if (!this.formFacture.montant_ht || !this.formFacture.id_chantier) return;
+    this.erreurFacture = '';
+    if (!this.formFacture.id_chantier) { this.erreurFacture = 'Veuillez sélectionner un chantier.'; return; }
+    if (!this.formFacture.montant_ht || this.formFacture.montant_ht <= 0) { this.erreurFacture = 'Le montant HT doit être supérieur à 0.'; return; }
+    if (this.formFacture.tva < 0 || this.formFacture.tva > 100) { this.erreurFacture = 'La TVA doit être comprise entre 0 et 100.'; return; }
     this.factureService.creerSituation({
       id_chantier:       Number(this.formFacture.id_chantier),
       montant_ht:        this.formFacture.montant_ht,

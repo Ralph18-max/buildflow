@@ -154,9 +154,12 @@
               <input type="tel" formControlName="telephone" placeholder="+225 07 00 00 00"
                 [class.error]="telephone?.invalid && telephone?.touched" />
             </div>
-            <span class="error-msg" *ngIf="telephone?.invalid && telephone?.touched">
-              Téléphone requis
-            </span>
+            @if (telephone?.invalid && telephone?.touched) {
+              <span class="error-msg">
+                @if (telephone?.errors?.['required']) { Téléphone requis }
+                @else { Format invalide (ex&nbsp;: +225 07 00 00 00, 8 à 15 chiffres) }
+              </span>
+            }
           </div>
           <div class="form-group">
             <label>Email</label>

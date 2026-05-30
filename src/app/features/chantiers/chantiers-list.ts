@@ -145,9 +145,21 @@ export class ChantiersList implements OnInit, OnDestroy {
     };
   }
 
+  erreurChantier = '';
+
   creerChantier(): void {
     if (!this.perm.can('chantiers:create')) return;
-    if (!this.nouveauChantier.nom || !this.nouveauChantier.localisation) return;
+    this.erreurChantier = '';
+    if (!this.nouveauChantier.nom.trim() || !this.nouveauChantier.localisation.trim()) {
+      this.erreurChantier = 'Le nom et la localisation sont obligatoires.'; return;
+    }
+    if (this.nouveauChantier.nom.trim().length < 2) {
+      this.erreurChantier = 'Le nom doit contenir au moins 2 caractères.'; return;
+    }
+    if (this.nouveauChantier.date_debut && this.nouveauChantier.date_fin_prevue &&
+        this.nouveauChantier.date_debut >= this.nouveauChantier.date_fin_prevue) {
+      this.erreurChantier = 'La date de fin doit être après la date de début.'; return;
+    }
 
     this.subs.add(
       this.chantierService.ajouter({

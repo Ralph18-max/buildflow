@@ -416,7 +416,11 @@ export class ComptabiliteComponent implements OnInit {
 
   enregistrerFactureST(): void {
     const m = this.modalFactureST;
-    if (!m.chantierId || !m.montantHT) return;
+    if (!m.chantierId) { this.afficherErreur('Veuillez sélectionner un chantier.'); return; }
+    if (!m.intervenant.trim()) { this.afficherErreur('Le nom de l\'intervenant est obligatoire.'); return; }
+    if (!m.montantHT || m.montantHT <= 0) { this.afficherErreur('Le montant HT doit être supérieur à 0.'); return; }
+    if (m.tauxTVA < 0 || m.tauxTVA > 100) { this.afficherErreur('Le taux de TVA doit être compris entre 0 et 100.'); return; }
+    if (m.reference.trim() && m.reference.trim().length < 3) { this.afficherErreur('La référence doit contenir au moins 3 caractères.'); return; }
 
     this.http.post<any>(`${API_URL}/facturation/factures-st`, {
       id_chantier:  m.chantierId,

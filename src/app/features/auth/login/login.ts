@@ -69,8 +69,16 @@ export class LoginComponent {
       this.error = 'Tous les champs sont obligatoires.';
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      this.error = 'Adresse email invalide.';
+      return;
+    }
     if (password.length < 8) {
       this.error = 'Le mot de passe doit contenir au moins 8 caractères.';
+      return;
+    }
+    if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      this.error = 'Le mot de passe doit contenir au moins une majuscule et un chiffre.';
       return;
     }
     this.loading = true;

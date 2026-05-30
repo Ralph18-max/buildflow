@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { NgFor, NgIf, NgClass } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
+import { phoneValidator, isEmailValide, isTelValide } from '../../core/validators/bf-validators';
 import { CanPipe } from '../../core/pipes/can.pipe';
 import { PermissionService } from '../../core/services/permission.service';
 import { ClientService } from '../../core/services/client.service';
@@ -46,13 +47,13 @@ export class ClientsList implements OnInit {
     private clientService: ClientService,
   ) {
     this.clientForm = this.fb.group({
-      type:          ['particulier', Validators.required],
-      nom:           ['', Validators.required],
-      prenom:        ['', Validators.required],
-      raison_sociale: [''],
-      telephone:     ['', Validators.required],
-      email:         ['', [Validators.required, Validators.email]],
-      adresse:       ['', Validators.required],
+      type:           ['particulier', Validators.required],
+      nom:            ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+      prenom:         ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+      raison_sociale: ['', [Validators.minLength(2), Validators.maxLength(150)]],
+      telephone:      ['', [Validators.required, phoneValidator]],
+      email:          ['', [Validators.required, Validators.email]],
+      adresse:        ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200)]],
     });
     this.clientForm.get('type')!.valueChanges.subscribe(t => this.updateValidateurs(t));
   }
@@ -71,10 +72,10 @@ export class ClientsList implements OnInit {
     const rs     = this.clientForm.get('raison_sociale')!;
     if (type === 'societe') {
       nom.clearValidators(); prenom.clearValidators();
-      rs.setValidators(Validators.required);
+      rs.setValidators([Validators.required, Validators.minLength(2), Validators.maxLength(150)]);
     } else {
-      nom.setValidators(Validators.required);
-      prenom.setValidators(Validators.required);
+      nom.setValidators([Validators.required, Validators.minLength(2), Validators.maxLength(100)]);
+      prenom.setValidators([Validators.required, Validators.minLength(2), Validators.maxLength(100)]);
       rs.clearValidators();
     }
     [nom, prenom, rs].forEach(c => c.updateValueAndValidity());
@@ -186,6 +187,12 @@ export class ClientsList implements OnInit {
     if (!this.selectedClient) return;
     if (!this.formModifier.telephone || !this.formModifier.email) {
       this.errorModifier = 'Téléphone et email sont obligatoires.'; return;
+    }
+    if (!isTelValide(this.formModifier.telephone)) {
+      this.errorModifier = 'Numéro de téléphone invalide (8 à 15 chiffres).'; return;
+    }
+    if (!isEmailValide(this.formModifier.email)) {
+      this.errorModifier = 'Adresse email invalide.'; return;
     }
     this.isLoadingModifier = true;
     this.errorModifier     = '';

@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgFor, NgIf, NgClass, SlicePipe } from '@angular/common';
+import { isEmailValide, isTelValide } from '../../../core/validators/bf-validators';
 import { FormsModule } from '@angular/forms';
 import { CanPipe } from '../../../core/pipes/can.pipe';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -338,11 +339,18 @@ export class ChantierDetail implements OnInit, OnDestroy {
   validerCorpsEtat(): void {
     if (!this.chantier) return;
     if (!this.formCorpsEtat.nom.trim()) { this.erreurCorpsEtat = 'Le nom est obligatoire.'; return; }
+    if (this.formCorpsEtat.nom.trim().length < 2) { this.erreurCorpsEtat = 'Le nom doit contenir au moins 2 caractères.'; return; }
     if (!this.formCorpsEtat.part_chantier || this.formCorpsEtat.part_chantier <= 0) {
       this.erreurCorpsEtat = 'La part doit être supérieure à 0%.'; return;
     }
+    if (this.formCorpsEtat.part_chantier > 100) {
+      this.erreurCorpsEtat = 'La part ne peut pas dépasser 100%.'; return;
+    }
+    if (this.formCorpsEtat.budget_alloue < 0) {
+      this.erreurCorpsEtat = 'Le budget alloué ne peut pas être négatif.'; return;
+    }
     if (this.formCorpsEtat.date_debut_prevue && this.formCorpsEtat.date_fin_prevue &&
-        this.formCorpsEtat.date_debut_prevue > this.formCorpsEtat.date_fin_prevue) {
+        this.formCorpsEtat.date_debut_prevue >= this.formCorpsEtat.date_fin_prevue) {
       this.erreurCorpsEtat = 'La date de début doit être avant la date de fin.'; return;
     }
     this.isLoadingCorpsEtat = true;
@@ -416,7 +424,11 @@ export class ChantierDetail implements OnInit, OnDestroy {
   validerIntervenant(): void {
     if (!this.chantier) return;
     if (!this.formIntervenant.raison_sociale.trim()) { this.erreurIntervenant = 'La raison sociale est obligatoire.'; return; }
+    if (this.formIntervenant.raison_sociale.trim().length < 2) { this.erreurIntervenant = 'La raison sociale doit contenir au moins 2 caractères.'; return; }
     if (!this.formIntervenant.telephone.trim()) { this.erreurIntervenant = 'Le téléphone est obligatoire.'; return; }
+    if (!isTelValide(this.formIntervenant.telephone)) { this.erreurIntervenant = 'Numéro de téléphone invalide (8 à 15 chiffres).'; return; }
+    if (this.formIntervenant.email && !isEmailValide(this.formIntervenant.email)) { this.erreurIntervenant = 'Adresse email invalide.'; return; }
+    if (this.formIntervenant.montant_contrat < 0) { this.erreurIntervenant = 'Le montant du contrat ne peut pas être négatif.'; return; }
     if (!this.formIntervenant.corps_etat_id) { this.erreurIntervenant = 'Veuillez sélectionner un corps d\'état.'; return; }
     this.isLoadingIntervenant = true;
     this.erreurIntervenant    = '';

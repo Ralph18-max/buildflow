@@ -147,10 +147,26 @@ export class DocumentsList implements OnInit, OnDestroy {
     if (file) this.setFile(file);
   }
 
+  private static readonly TYPES_AUTORISES = [
+    'application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+    'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/zip', 'text/plain',
+  ];
+  private static readonly TAILLE_MAX_OCTETS = 10 * 1024 * 1024; // 10 Mo
+
   private setFile(file: File): void {
-    this.selectedFile     = file;
-    this.formUpload.nom   = file.name;
-    this.erreurUpload     = '';
+    this.erreurUpload = '';
+    if (file.size > DocumentsList.TAILLE_MAX_OCTETS) {
+      this.erreurUpload = `Fichier trop volumineux (max 10 Mo). Taille actuelle : ${(file.size / 1024 / 1024).toFixed(1)} Mo.`;
+      return;
+    }
+    if (!DocumentsList.TYPES_AUTORISES.includes(file.type)) {
+      this.erreurUpload = 'Type de fichier non autorisé. Formats acceptés : PDF, images (JPG/PNG), Word, Excel, ZIP, texte.';
+      return;
+    }
+    this.selectedFile   = file;
+    this.formUpload.nom = file.name;
   }
 
   validerUpload(): void {
