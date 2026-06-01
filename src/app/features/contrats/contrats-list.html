@@ -83,11 +83,11 @@
             <span class="material-icons">visibility</span>
             Voir le contrat
           </button>
-          <button class="action-btn" *ngIf="perm.can('contrats:edit')" disabled title="Fonctionnalité à venir">
+          <button class="action-btn" *ngIf="perm.can('contrats:edit')" (click)="ouvrirModifier(c.id)">
             <span class="material-icons">edit</span>
             Modifier
           </button>
-          <button class="action-btn" *ngIf="perm.can('contrats:avenants:create')" disabled title="Fonctionnalité à venir">
+          <button class="action-btn" *ngIf="perm.can('contrats:avenants:create')" (click)="ouvrirAvenant(c.id)">
             <span class="material-icons">add_circle_outline</span>
             Avenant
           </button>

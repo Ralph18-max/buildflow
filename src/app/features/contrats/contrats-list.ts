@@ -135,6 +135,14 @@ export class ContratsList implements OnInit, OnDestroy {
     this.router.navigate(['/contrats', id]);
   }
 
+  ouvrirModifier(id: number): void {
+    this.router.navigate(['/contrats', id], { queryParams: { action: 'modifier' } });
+  }
+
+  ouvrirAvenant(id: number): void {
+    this.router.navigate(['/contrats', id], { queryParams: { action: 'avenant' } });
+  }
+
   // ── Modal ─────────────────────────────────────────────
 
   openModal(): void {

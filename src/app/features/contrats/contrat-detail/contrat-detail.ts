@@ -52,10 +52,15 @@ export class ContratDetail implements OnInit, OnDestroy {
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
 
+    const action = this.route.snapshot.queryParamMap.get('action');
+
     this.subs.add(
       this.contratService.getById(id).subscribe(contrat => {
         if (!contrat) { this.contrat = null; return; }
         this.contrat = contrat;
+
+        if (action === 'modifier') { this.ouvrirModifier(); }
+        if (action === 'avenant')  { this.ouvrirAvenant(); }
 
         // Charge le chantier associé
         if (contrat.id_chantier) {
