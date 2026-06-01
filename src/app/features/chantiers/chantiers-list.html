@@ -158,7 +158,12 @@
         </div>
         <div class="form-group">
           <label>Chef de chantier</label>
-          <input type="text" [(ngModel)]="nouveauChantier.chef_chantier" placeholder="Nom du chef de chantier" />
+          <select [(ngModel)]="nouveauChantier.chef_chantier">
+            <option value="">— Sélectionner un responsable —</option>
+            <option *ngFor="let u of utilisateurs" [value]="u.prenom + ' ' + u.nom">
+              {{ u.prenom }} {{ u.nom }} ({{ getRoleLabel(u.role) }})
+            </option>
+          </select>
         </div>
         <div class="form-group">
           <label>Description</label>

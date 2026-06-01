@@ -6,8 +6,9 @@ import { Subscription } from 'rxjs';
 import { PermissionService } from '../../core/services/permission.service';
 import { CanPipe } from '../../core/pipes/can.pipe';
 import { ChantierService } from '../../core/services/chantier.service';
-import { Chantier } from '../../core/models';
+import { Chantier, Utilisateur } from '../../core/models';
 import { ContratService } from '../../core/services/contrat.service';
+import { UtilisateurService } from '../../core/services/utilisateur.service';
 import { PaginationComponent } from '../../shared/pagination/pagination';
 
 @Component({
@@ -30,6 +31,7 @@ export class ChantiersList implements OnInit, OnDestroy {
 
   chantiers: Chantier[] = [];
   contratsOptions: { id: number; label: string }[] = [];
+  utilisateurs: Utilisateur[] = [];
 
   private subs = new Subscription();
 
@@ -47,7 +49,8 @@ export class ChantiersList implements OnInit, OnDestroy {
     private router: Router,
     public perm: PermissionService,
     private chantierService: ChantierService,
-    private contratService: ContratService
+    private contratService: ContratService,
+    private utilisateurService: UtilisateurService,
   ) {}
 
   ngOnInit(): void {
@@ -57,6 +60,21 @@ export class ChantiersList implements OnInit, OnDestroy {
         this.contratsOptions = options;
       })
     );
+    this.subs.add(
+      this.utilisateurService.getAll().subscribe(users => {
+        this.utilisateurs = users.filter(u => u.actif);
+      })
+    );
+  }
+
+  getRoleLabel(role: string): string {
+    const labels: Record<string, string> = {
+      admin:         'Admin',
+      conducteur:    'Conducteur',
+      chef_chantier: 'Chef de chantier',
+      comptable:     'Comptable',
+    };
+    return labels[role] || role;
   }
 
   private _chargerChantiers(): void {
