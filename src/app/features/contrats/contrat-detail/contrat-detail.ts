@@ -1,16 +1,17 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgFor, NgIf, NgClass } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ContratService } from '../../../core/services/contrat.service';
 import { ChantierService } from '../../../core/services/chantier.service';
-import { Contrat, Chantier } from '../../../core/models';
+import { Contrat, Chantier, StatutContrat } from '../../../core/models';
 import { CanPipe } from '../../../core/pipes/can.pipe';
 
 @Component({
   selector: 'app-contrat-detail',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, CanPipe],
+  imports: [NgFor, NgIf, NgClass, FormsModule, CanPipe],
   templateUrl: './contrat-detail.html',
   styleUrl: './contrat-detail.scss'
 })
@@ -19,6 +20,25 @@ export class ContratDetail implements OnInit, OnDestroy {
   activeTab = 'informations';
   contrat: Contrat | null = null;
   chantier: Chantier | null = null;
+
+  // ── Modal Modifier ─────────────────────────────────────
+  modifierOpen = false;
+  formModifier = {
+    type_construction: '',
+    date_signature: '',
+    date_demarrage_prevue: '',
+    date_livraison_prevue: '',
+    penalites_retard: 0,
+    statut: 'en_cours' as StatutContrat,
+  };
+  erreurModifier = '';
+  enregistrementModifier = false;
+
+  // ── Modal Avenant ──────────────────────────────────────
+  avenantOpen = false;
+  formAvenant = { motif: '', montant_supplementaire: 0, delai_supplementaire: 0 };
+  erreurAvenant = '';
+  enregistrementAvenant = false;
 
   private subs = new Subscription();
 
@@ -131,6 +151,95 @@ export class ContratDetail implements OnInit, OnDestroy {
 
   get chantierNom(): string {
     return this.chantier?.nom_chantier || '—';
+  }
+
+  // ── Modal Modifier ────────────────────────────────────
+
+  ouvrirModifier(): void {
+    if (!this.contrat) return;
+    this.formModifier = {
+      type_construction:     this.contrat.type_construction,
+      date_signature:        this.contrat.date_signature,
+      date_demarrage_prevue: this.contrat.date_demarrage_prevue,
+      date_livraison_prevue: this.contrat.date_livraison_prevue,
+      penalites_retard:      this.contrat.penalites_retard,
+      statut:                this.contrat.statut,
+    };
+    this.erreurModifier = '';
+    this.modifierOpen = true;
+  }
+
+  fermerModifier(): void { this.modifierOpen = false; }
+
+  sauvegarderModifier(): void {
+    this.erreurModifier = '';
+    if (!this.contrat) return;
+    const f = this.formModifier;
+    if (!f.type_construction.trim()) {
+      this.erreurModifier = 'Le type de construction est obligatoire.'; return;
+    }
+    if (!f.date_signature || !f.date_demarrage_prevue || !f.date_livraison_prevue) {
+      this.erreurModifier = 'Toutes les dates sont obligatoires.'; return;
+    }
+    if (f.date_signature > f.date_demarrage_prevue) {
+      this.erreurModifier = 'La date de démarrage doit être après la signature.'; return;
+    }
+    if (f.date_demarrage_prevue >= f.date_livraison_prevue) {
+      this.erreurModifier = 'La date de livraison doit être après le démarrage.'; return;
+    }
+    if (f.penalites_retard < 0) {
+      this.erreurModifier = 'Les pénalités ne peuvent pas être négatives.'; return;
+    }
+    this.enregistrementModifier = true;
+    this.contratService.modifier(this.contrat.id, f).subscribe({
+      next: contratMaj => {
+        Object.assign(this.contrat!, contratMaj);
+        this.enregistrementModifier = false;
+        this.modifierOpen = false;
+      },
+      error: () => {
+        this.erreurModifier = 'Erreur lors de la mise à jour.';
+        this.enregistrementModifier = false;
+      },
+    });
+  }
+
+  // ── Modal Avenant ─────────────────────────────────────
+
+  ouvrirAvenant(): void {
+    this.formAvenant = { motif: '', montant_supplementaire: 0, delai_supplementaire: 0 };
+    this.erreurAvenant = '';
+    this.avenantOpen = true;
+  }
+
+  fermerAvenant(): void { this.avenantOpen = false; }
+
+  soumettreAvenant(): void {
+    this.erreurAvenant = '';
+    if (!this.contrat) return;
+    const f = this.formAvenant;
+    if (!f.motif.trim()) {
+      this.erreurAvenant = "L'objet de l'avenant est obligatoire."; return;
+    }
+    if (f.montant_supplementaire < 0) {
+      this.erreurAvenant = 'Le montant supplémentaire ne peut pas être négatif.'; return;
+    }
+    if (f.delai_supplementaire < 0) {
+      this.erreurAvenant = 'Le délai supplémentaire ne peut pas être négatif.'; return;
+    }
+    this.enregistrementAvenant = true;
+    this.contratService.ajouterAvenant(this.contrat.id, f).subscribe({
+      next: avenant => {
+        this.contrat!.avenants.push(avenant);
+        this.enregistrementAvenant = false;
+        this.avenantOpen = false;
+        this.activeTab = 'avenants';
+      },
+      error: () => {
+        this.erreurAvenant = "Erreur lors de la création de l'avenant.";
+        this.enregistrementAvenant = false;
+      },
+    });
   }
 
   // ── Actions avenants ──────────────────────────────────

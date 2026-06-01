@@ -88,6 +88,37 @@ export class ContratService {
     );
   }
 
+  modifier(id: number, data: {
+    type_construction?: string;
+    date_signature?: string;
+    date_demarrage_prevue?: string;
+    date_livraison_prevue?: string;
+    penalites_retard?: number;
+    statut?: string;
+  }): Observable<Contrat> {
+    return this.http.patch<any>(`${API_URL}/contrats/${id}`, data).pipe(
+      map(c => this._mapContrat(c))
+    );
+  }
+
+  ajouterAvenant(idContrat: number, data: {
+    motif: string;
+    montant_supplementaire: number;
+    delai_supplementaire: number;
+  }): Observable<Avenant> {
+    return this.http.post<any>(`${API_URL}/contrats/${idContrat}/avenants`, data).pipe(
+      map((m: any) => ({
+        id:          m.id,
+        numero:      `AVN-${String(m.numero_modification).padStart(3, '0')}`,
+        objet:       m.motif,
+        date:        m.date_modification?.split('T')[0] || new Date().toISOString().split('T')[0],
+        montant:     m.montant_supplementaire,
+        delai_jours: m.delai_supplementaire,
+        statut:      m.statut || 'en_attente',
+      } as Avenant))
+    );
+  }
+
   signerAvenant(idContrat: number, idAvenant: number): Observable<{ avenant: Avenant; montant_marche_revise: number }> {
     return this.http.patch<any>(`${API_URL}/contrats/${idContrat}/avenants/${idAvenant}/signer`, {});
   }

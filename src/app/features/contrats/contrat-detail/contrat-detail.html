@@ -26,7 +26,7 @@
       <span class="statut-badge" [ngClass]="contrat.statut">
         {{ getStatutLabel(contrat.statut) }}
       </span>
-      <button class="btn-edit" disabled title="Fonctionnalité à venir">
+      <button class="btn-edit" *ngIf="'contrats:edit' | can" (click)="ouvrirModifier()">
         <span class="material-icons">edit</span>
         Modifier
       </button>
@@ -212,7 +212,7 @@
         <h2>Avenants ({{ contrat.avenants.length }})</h2>
         <p class="section-sub">Modifications officielles du contrat initial</p>
       </div>
-      <button class="btn-add" disabled title="Fonctionnalité à venir">
+      <button class="btn-add" *ngIf="'contrats:avenants:create' | can" (click)="ouvrirAvenant()">
         <span class="material-icons">add</span> Nouvel avenant
       </button>
     </div>
@@ -383,6 +383,166 @@
     </div>
   </div>
 
+</div>
+
+<!-- ═══════════ MODAL MODIFIER CONTRAT ═══════════ -->
+<div class="modal-overlay" *ngIf="modifierOpen" (click)="fermerModifier()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <h2>Modifier le contrat</h2>
+        <p>{{ contrat?.numero_marche }} — {{ contrat?.nom_client }}</p>
+      </div>
+      <button class="modal-close" (click)="fermerModifier()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <form (ngSubmit)="sauvegarderModifier()">
+      <div class="form-group">
+        <label>Type de construction *</label>
+        <div class="input-wrapper">
+          <span class="material-icons input-icon">domain</span>
+          <input type="text" [(ngModel)]="formModifier.type_construction" name="type_construction"
+            placeholder="Ex : Immeuble R+3, Villa, Entrepôt…" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Statut</label>
+        <div class="input-wrapper">
+          <span class="material-icons input-icon">flag</span>
+          <select [(ngModel)]="formModifier.statut" name="statut">
+            <option value="en_negociation">En négociation</option>
+            <option value="signe">Signé</option>
+            <option value="en_cours">En cours</option>
+            <option value="suspendu">Suspendu</option>
+            <option value="termine">Terminé</option>
+            <option value="resilie">Résilié</option>
+            <option value="cloture">Clôturé</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date de signature *</label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon">event</span>
+            <input type="date" [(ngModel)]="formModifier.date_signature" name="date_signature" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Démarrage prévu *</label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon">play_arrow</span>
+            <input type="date" [(ngModel)]="formModifier.date_demarrage_prevue" name="date_demarrage_prevue" required />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Livraison prévue *</label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon">flag</span>
+            <input type="date" [(ngModel)]="formModifier.date_livraison_prevue" name="date_livraison_prevue" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Pénalités de retard (FCFA/jour)</label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon">gavel</span>
+            <input type="number" [(ngModel)]="formModifier.penalites_retard" name="penalites_retard" min="0" />
+          </div>
+        </div>
+      </div>
+
+      <div class="error-msg" *ngIf="erreurModifier">
+        <span class="material-icons" style="font-size:15px;vertical-align:middle;">error_outline</span>
+        {{ erreurModifier }}
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="fermerModifier()">Annuler</button>
+        <button type="submit" class="btn-submit" [disabled]="enregistrementModifier">
+          <ng-container *ngIf="!enregistrementModifier">
+            <span class="material-icons">save</span> Enregistrer
+          </ng-container>
+          <ng-container *ngIf="enregistrementModifier">
+            <span class="material-icons spinning">sync</span> Enregistrement…
+          </ng-container>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════ MODAL NOUVEL AVENANT ═══════════ -->
+<div class="modal-overlay" *ngIf="avenantOpen" (click)="fermerAvenant()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <h2>Nouvel avenant</h2>
+        <p>{{ contrat?.numero_marche }} — Montant initial : {{ formatFCFA(contrat?.montant_marche || 0) }}</p>
+      </div>
+      <button class="modal-close" (click)="fermerAvenant()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <form (ngSubmit)="soumettreAvenant()">
+      <div class="form-group">
+        <label>Objet de l'avenant *</label>
+        <div class="input-wrapper">
+          <span class="material-icons input-icon">edit_document</span>
+          <input type="text" [(ngModel)]="formAvenant.motif" name="motif"
+            placeholder="Ex : Travaux supplémentaires de fondation…" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Montant supplémentaire (FCFA)</label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon">payments</span>
+            <input type="number" [(ngModel)]="formAvenant.montant_supplementaire"
+              name="montant_supplementaire" min="0" placeholder="0" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Délai supplémentaire (jours)</label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon">schedule</span>
+            <input type="number" [(ngModel)]="formAvenant.delai_supplementaire"
+              name="delai_supplementaire" min="0" placeholder="0" />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-info">
+        <span class="material-icons">info</span>
+        <p>L'avenant sera créé en statut <strong>En attente</strong> et devra être signé ou refusé par l'administrateur.</p>
+      </div>
+
+      <div class="error-msg" *ngIf="erreurAvenant">
+        <span class="material-icons" style="font-size:15px;vertical-align:middle;">error_outline</span>
+        {{ erreurAvenant }}
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="fermerAvenant()">Annuler</button>
+        <button type="submit" class="btn-submit" [disabled]="enregistrementAvenant">
+          <ng-container *ngIf="!enregistrementAvenant">
+            <span class="material-icons">add</span> Créer l'avenant
+          </ng-container>
+          <ng-container *ngIf="enregistrementAvenant">
+            <span class="material-icons spinning">sync</span> Création…
+          </ng-container>
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <ng-template #notFound>
