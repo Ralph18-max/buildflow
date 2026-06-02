@@ -178,11 +178,11 @@
           @if (!selectedFile) {
             <span class="material-icons drop-icon">cloud_upload</span>
             <p class="drop-text">Glissez un fichier ici ou <span class="drop-link">parcourez</span></p>
-            <p class="drop-hint">PDF, images, Word, Excel — max 20 Mo</p>
+            <p class="drop-hint">PDF, images, Word, Excel (max 20 Mo)</p>
           } @else {
             <span class="material-icons drop-icon selected">insert_drive_file</span>
             <p class="drop-text selected">{{ selectedFile.name }}</p>
-            <p class="drop-hint">{{ (selectedFile.size / 1024).toFixed(0) }} Ko — cliquer pour changer</p>
+            <p class="drop-hint">{{ (selectedFile.size / 1024).toFixed(0) }} Ko · cliquer pour changer</p>
           }
         </div>
 

@@ -31,7 +31,7 @@
       <h2>
         <!-- Titre adapté selon le rôle -->
         <ng-container *ngIf="perms.isChef">Mes chantiers</ng-container>
-        <ng-container *ngIf="perms.isComptable">Chantiers — Vue financière</ng-container>
+        <ng-container *ngIf="perms.isComptable">Chantiers : Vue financière</ng-container>
         <ng-container *ngIf="!perms.isChef && !perms.isComptable">Chantiers actifs</ng-container>
       </h2>
       <a routerLink="/chantiers">Voir tout →</a>
@@ -74,7 +74,7 @@
 
             <!-- Client -->
             <td>
-              <span class="cell-client">{{ c.nom_client || '—' }}</span>
+              <span class="cell-client">{{ c.nom_client || '' }}</span>
             </td>
 
             <!-- Budget — masqué pour le Chef -->
@@ -85,7 +85,7 @@
             <!-- RAF — uniquement pour le Comptable -->
             <td *ngIf="perms.isComptable">
               <span class="cell-budget orange">
-                {{ c.budget ? formatBudget(c.budget.reste_a_depenser) : '—' }}
+                {{ c.budget ? formatBudget(c.budget.reste_a_depenser) : '' }}
               </span>
             </td>
 

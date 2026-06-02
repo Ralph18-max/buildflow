@@ -79,7 +79,7 @@
     <!-- ▼ TABLE DASHBOARD — CORRECTIF SCROLL ▼ -->
     <div class="section-block">
       <div class="section-header">
-        <h2>Situations de travaux — Vue d'ensemble</h2>
+        <h2>Situations de travaux</h2>
         <button class="btn-link" (click)="setTab('encaissements')">Voir tout →</button>
       </div>
 
@@ -311,7 +311,7 @@
 
         <div class="bilan-alerte" *ngIf="b.depassement">
           <span class="material-icons">warning</span>
-          Dépassement budgétaire détecté — coût réel &gt; S0 × 1,05
+          Dépassement budgétaire détecté : coût réel &gt; S0 × 1,05
         </div>
 
         <div class="bilan-avancement">
@@ -365,7 +365,7 @@
 
           <span *ngIf="b.statut_bilan === 'bilan_valide'" class="bilan-valide-label">
             <span class="material-icons">check_circle</span>
-            Bilan validé — En attente de clôture Admin
+            Bilan validé : En attente de clôture Admin
           </span>
 
           <span *ngIf="b.statut_bilan === 'cloture'" class="bilan-cloture-label">

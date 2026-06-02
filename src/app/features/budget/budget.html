@@ -7,7 +7,7 @@
     <div class="section-title">
       <span class="material-icons">account_balance_wallet</span>
       <div>
-        <h3>Budget S0 — Situation initiale</h3>
+        <h3>Budget S0 : Situation initiale</h3>
         <p class="section-subtitle" *ngIf="budget?.s0_fige">
           <span class="material-icons icon-small">lock</span>
           Figé le {{ budget?.date_creation }} par {{ budget?.cree_par }}
@@ -34,7 +34,7 @@
     <span class="material-icons">warning</span>
     <div>
       <strong>Alerte dépassement budgétaire</strong>
-      — Le coût réel dépasse le S0 de {{ getDepassementPct() }}%
+      Le coût réel dépasse le S0 de {{ getDepassementPct() }}%
       ({{ getDepassementMontant() | number:'1.0-0' }} FCFA)
     </div>
   </div>
@@ -131,7 +131,7 @@
 
     <!-- Récapitulatif dynamique -->
     <div class="recap-calcul">
-      <h4>Récapitulatif — Formule prix de vente</h4>
+      <h4>Récapitulatif : Formule prix de vente</h4>
       <div class="formule-visuelle">
         <div class="formule-item">
           <span class="formule-label">Déboursé sec</span>
@@ -162,7 +162,7 @@
 
     <div class="avertissement-fige">
       <span class="material-icons">lock</span>
-      <strong>Attention</strong> — Une fois validé, ce budget S0 sera figé définitivement.
+      <strong>Attention :</strong> Une fois validé, ce budget S0 sera figé définitivement.
       Il ne pourra plus être modifié.
     </div>
 
@@ -204,7 +204,7 @@
            [title]="fmtFull(budget.cout_reel_a_date)">
         <span class="kpi-label">Coût réel à date</span>
         <span class="kpi-value">{{ fmt(budget.cout_reel_a_date) }}</span>
-        <span class="kpi-unit">FCFA — {{ getConsommationPct() }}% consommé</span>
+        <span class="kpi-unit">FCFA · {{ getConsommationPct() }}% consommé</span>
       </div>
 
       <div class="kpi-card"
@@ -298,7 +298,7 @@
     <!-- Note S0 figé -->
     <div class="note-fige">
       <span class="material-icons">lock</span>
-      Budget S0 figé le {{ budget.date_creation }} — Aucune modification possible.
+      Budget S0 figé le {{ budget.date_creation }}. Aucune modification possible.
     </div>
 
   </div>

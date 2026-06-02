@@ -109,11 +109,11 @@
         <div class="info-list">
           <div class="info-row">
             <span class="info-label">Client</span>
-            <span class="info-val">{{ chantier.nom_client || '—' }}</span>
+            <span class="info-val">{{ chantier.nom_client || '' }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">N° Marché</span>
-            <span class="info-val">{{ chantier.numero_marche || '—' }}</span>
+            <span class="info-val">{{ chantier.numero_marche || '' }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">Localisation</span>
@@ -121,7 +121,7 @@
           </div>
           <div class="info-row">
             <span class="info-label">Démarrage</span>
-            <span class="info-val">{{ chantier.date_demarrage_reelle || '—' }}</span>
+            <span class="info-val">{{ chantier.date_demarrage_reelle || '' }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">Livraison prévue</span>
@@ -129,7 +129,7 @@
           </div>
           <div class="info-row">
             <span class="info-label">Description</span>
-            <span class="info-val">{{ chantier.description || '—' }}</span>
+            <span class="info-val">{{ chantier.description || '' }}</span>
           </div>
         </div>
       </div>
@@ -370,10 +370,10 @@
         </div>
         <div class="intervenant-info">
           <h4>{{ i.raison_sociale || i.nom_responsable }}</h4>
-          <p class="intervenant-role">{{ i.corps_etat_nom || '—' }}</p>
+          <p class="intervenant-role">{{ i.corps_etat_nom || '' }}</p>
           <p class="intervenant-entreprise">
             <span class="material-icons">business</span>
-            {{ i.raison_sociale || '—' }}
+            {{ i.raison_sociale || '' }}
           </p>
           <p class="intervenant-tel">
             <span class="material-icons">phone</span>
@@ -488,7 +488,7 @@
         <input type="text" [(ngModel)]="formCorpsEtat.nom" placeholder="Ex: Gros œuvre, Plomberie, Électricité…" />
       </div>
       <div class="form-group">
-        <label>Part dans le chantier (%) * — Reste disponible : {{ partRestante }}%</label>
+        <label>Part dans le chantier (%) * (Disponible : {{ partRestante }}%)</label>
         <input type="number" [(ngModel)]="formCorpsEtat.part_chantier" min="1" [max]="partRestante" placeholder="Ex: 30" />
       </div>
       <div class="form-row">
@@ -538,7 +538,7 @@
       <div class="form-group">
         <label>Corps d'état *</label>
         <select [(ngModel)]="formIntervenant.corps_etat_id">
-          <option [value]="0">— Sélectionner un corps d'état —</option>
+          <option [value]="0">Sélectionner un corps d'état</option>
           <option *ngFor="let ce of corpsEtatList" [value]="ce.id">{{ ce.nom }}</option>
         </select>
       </div>

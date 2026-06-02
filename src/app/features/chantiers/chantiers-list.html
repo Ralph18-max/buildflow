@@ -16,7 +16,7 @@
       </button>
       <div *ngIf="perm.isComptable" class="role-info">
         <span class="material-icons">info</span>
-        Mode lecture — Comptable
+        Mode lecture : Comptable
       </div>
     </div>
   </div>
@@ -70,7 +70,7 @@
       <div class="card-body">
         <div class="info-row">
           <span class="label">Client</span>
-          <span class="value">{{ chantier.nom_client || '—' }}</span>
+          <span class="value">{{ chantier.nom_client || '' }}</span>
         </div>
         <div class="info-row">
           <span class="label">Chef de chantier</span>
@@ -134,7 +134,7 @@
         <div class="form-group">
           <label>Contrat associé</label>
           <select [(ngModel)]="nouveauChantier.contrat_id">
-            <option [ngValue]="null">— Sélectionner un contrat —</option>
+            <option [ngValue]="null">Sélectionner un contrat</option>
             <option *ngFor="let c of contratsOptions" [ngValue]="c.id">{{ c.label }}</option>
           </select>
         </div>
@@ -159,7 +159,7 @@
         <div class="form-group">
           <label>Chef de chantier</label>
           <select [(ngModel)]="nouveauChantier.chef_chantier">
-            <option value="">— Sélectionner un responsable —</option>
+            <option value="">Sélectionner un responsable</option>
             <option *ngFor="let u of utilisateurs" [value]="u.prenom + ' ' + u.nom">
               {{ u.prenom }} {{ u.nom }} ({{ getRoleLabel(u.role) }})
             </option>

@@ -66,7 +66,7 @@
             <label>Chantier <span class="required">*</span></label>
             <!-- Seuls les chantiers assignés au chef apparaissent -->
             <select formControlName="chantierId" [class.error]="rapportForm.get('chantierId')?.invalid && rapportForm.get('chantierId')?.touched">
-              <option value="">— Sélectionner un chantier —</option>
+              <option value="">Sélectionner un chantier</option>
               <option *ngFor="let c of chantiers" [value]="c.id">{{ c.nom }}</option>
             </select>
             <span class="error-msg" *ngIf="rapportForm.get('chantierId')?.invalid && rapportForm.get('chantierId')?.touched">Chantier requis</span>

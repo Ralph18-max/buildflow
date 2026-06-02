@@ -138,7 +138,7 @@
                 [disabled]="!i.present || i.heures === 0">
                 <span class="material-icons">remove</span>
               </button>
-              <span class="heures-val">{{ i.present ? i.heures + 'h' : '—' }}</span>
+              <span class="heures-val">{{ i.present ? i.heures + 'h' : '' }}</span>
               <button class="heures-btn"
                 (click)="incrementerHeures(i)"
                 [disabled]="!i.present || i.heures >= 12">

@@ -55,7 +55,7 @@
     <div class="kpi-card">
       <span class="material-icons kpi-icon blue">receipt_long</span>
       <div>
-        <p class="kpi-label">RAF — Reste à facturer</p>
+        <p class="kpi-label">RAF : Reste à facturer</p>
         <p class="kpi-value">{{ formatFCFA(raf) }}</p>
       </div>
     </div>
@@ -376,7 +376,7 @@
           <span class="total-val green">{{ formatFCFA(totalEncaisse) }}</span>
         </div>
         <div class="total-block orange-block">
-          <span class="total-label">RAF — Reste à facturer</span>
+          <span class="total-label">RAF : Reste à facturer</span>
           <span class="total-val orange">{{ formatFCFA(raf) }}</span>
         </div>
       </div>
@@ -391,7 +391,7 @@
     <div class="modal-header">
       <div>
         <h2>Modifier le contrat</h2>
-        <p>{{ contrat?.numero_marche }} — {{ contrat?.nom_client }}</p>
+        <p>{{ contrat?.numero_marche }} · {{ contrat?.nom_client }}</p>
       </div>
       <button class="modal-close" (click)="fermerModifier()">
         <span class="material-icons">close</span>
@@ -484,7 +484,7 @@
     <div class="modal-header">
       <div>
         <h2>Nouvel avenant</h2>
-        <p>{{ contrat?.numero_marche }} — Montant initial : {{ formatFCFA(contrat?.montant_marche || 0) }}</p>
+        <p>{{ contrat?.numero_marche }} · Montant initial : {{ formatFCFA(contrat?.montant_marche || 0) }}</p>
       </div>
       <button class="modal-close" (click)="fermerAvenant()">
         <span class="material-icons">close</span>
