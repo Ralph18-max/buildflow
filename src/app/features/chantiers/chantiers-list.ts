@@ -62,7 +62,7 @@ export class ChantiersList implements OnInit, OnDestroy {
     );
     this.subs.add(
       this.utilisateurService.getAll().subscribe(users => {
-        this.utilisateurs = users.filter(u => u.actif);
+        this.utilisateurs = users.filter(u => u.actif && u.role === 'chef_chantier');
       })
     );
   }
