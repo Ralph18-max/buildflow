@@ -204,11 +204,7 @@ export class ChantiersList implements OnInit, OnDestroy {
         },
         error: (err) => {
           const msg = err?.error?.message || '';
-          if (msg.includes('Unique') || msg.includes('unique')) {
-            this.erreurChantier = 'Ce contrat a déjà un chantier associé.';
-          } else {
-            this.erreurChantier = 'Erreur lors de la création. Vérifiez les champs et réessayez.';
-          }
+          this.erreurChantier = msg || 'Erreur lors de la création. Vérifiez les champs et réessayez.';
         },
       })
     );
