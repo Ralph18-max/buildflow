@@ -173,6 +173,11 @@
           <label>Description</label>
           <textarea [(ngModel)]="nouveauChantier.description" rows="3" placeholder="Superficie, nombre de niveaux, remarques..."></textarea>
         </div>
+
+        <div class="form-error" *ngIf="erreurChantier">
+          <span class="material-icons">error_outline</span>
+          {{ erreurChantier }}
+        </div>
       </div>
 
       <div class="modal-footer">
@@ -180,7 +185,7 @@
         <button
           class="btn-primary"
           (click)="creerChantier()"
-          [disabled]="!nouveauChantier.nom || !nouveauChantier.localisation">
+          [disabled]="!nouveauChantier.nom || !nouveauChantier.localisation || !nouveauChantier.contrat_id || !nouveauChantier.date_fin_prevue">
           Créer le chantier
         </button>
       </div>

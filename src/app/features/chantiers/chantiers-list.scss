@@ -998,3 +998,19 @@
 
   .material-icons { font-size: 16px; }
 }
+
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  margin-top: 12px;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #ef4444;
+  font-weight: 500;
+
+  .material-icons { font-size: 16px; }
+}

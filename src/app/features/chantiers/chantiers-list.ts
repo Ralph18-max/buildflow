@@ -179,8 +179,13 @@ export class ChantiersList implements OnInit, OnDestroy {
     if (this.nouveauChantier.nom.trim().length < 2) {
       this.erreurChantier = 'Le nom doit contenir au moins 2 caractères.'; return;
     }
-    if (this.nouveauChantier.date_debut && this.nouveauChantier.date_fin_prevue &&
-        this.nouveauChantier.date_debut >= this.nouveauChantier.date_fin_prevue) {
+    if (!this.nouveauChantier.contrat_id) {
+      this.erreurChantier = 'Veuillez sélectionner un contrat.'; return;
+    }
+    if (!this.nouveauChantier.date_fin_prevue) {
+      this.erreurChantier = 'La date de livraison prévue est obligatoire.'; return;
+    }
+    if (this.nouveauChantier.date_debut && this.nouveauChantier.date_debut >= this.nouveauChantier.date_fin_prevue) {
       this.erreurChantier = 'La date de fin doit être après la date de début.'; return;
     }
 
@@ -191,11 +196,19 @@ export class ChantiersList implements OnInit, OnDestroy {
         chef_chantier:         this.nouveauChantier.chef_chantier || 'Non assigné',
         date_livraison_prevue: this.nouveauChantier.date_fin_prevue,
         description:           this.nouveauChantier.description,
-        id_contrat:            this.nouveauChantier.contrat_id || 0,
+        id_contrat:            this.nouveauChantier.contrat_id,
       }).subscribe({
         next: () => {
           this.fermerModal();
           this._chargerChantiers();
+        },
+        error: (err) => {
+          const msg = err?.error?.message || '';
+          if (msg.includes('Unique') || msg.includes('unique')) {
+            this.erreurChantier = 'Ce contrat a déjà un chantier associé.';
+          } else {
+            this.erreurChantier = 'Erreur lors de la création. Vérifiez les champs et réessayez.';
+          }
         },
       })
     );
