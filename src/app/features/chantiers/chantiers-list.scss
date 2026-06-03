@@ -983,3 +983,18 @@
   .filter-tabs { flex-wrap: wrap; }
   .form-row { grid-template-columns: 1fr; }
 }
+.client-preview {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  background: rgba(232, 82, 10, 0.06);
+  border: 1px solid rgba(232, 82, 10, 0.2);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--orange);
+  font-weight: 500;
+
+  .material-icons { font-size: 16px; }
+}

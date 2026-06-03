@@ -79,11 +79,12 @@ export class ContratService {
     );
   }
 
-  getOptions(): Observable<{ id: number; label: string }[]> {
+  getOptions(): Observable<{ id: number; label: string; nom_client: string }[]> {
     return this.http.get<Contrat[]>(`${API_URL}/contrats`).pipe(
       map(contrats => contrats.map(c => ({
-        id:    c.id,
-        label: `${c.numero_marche} — ${c.nom_client || ''}`,
+        id:        c.id,
+        label:     `${c.numero_marche} — ${c.nom_client || ''}`,
+        nom_client: c.nom_client || '',
       })))
     );
   }

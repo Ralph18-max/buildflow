@@ -30,7 +30,7 @@ export class ChantiersList implements OnInit, OnDestroy {
   set searchQuery(v: string) { this._searchQuery = v; this.currentPage = 1; }
 
   chantiers: Chantier[] = [];
-  contratsOptions: { id: number; label: string }[] = [];
+  contratsOptions: { id: number; label: string; nom_client: string }[] = [];
   utilisateurs: Utilisateur[] = [];
 
   private subs = new Subscription();
@@ -145,6 +145,11 @@ export class ChantiersList implements OnInit, OnDestroy {
   }
 
   // ── Modal création ────────────────────────────────────────
+
+  get clientDuContratSelectionne(): string {
+    if (!this.nouveauChantier.contrat_id) return '';
+    return this.contratsOptions.find(c => c.id === this.nouveauChantier.contrat_id)?.nom_client || '';
+  }
 
   ouvrirModal(): void {
     if (!this.perm.can('chantiers:create')) return;
