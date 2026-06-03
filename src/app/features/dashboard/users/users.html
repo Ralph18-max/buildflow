@@ -63,7 +63,7 @@
               {{ u.avatar_initiales }}
             </div>
             <div>
-              <p class="user-nom">{{ u.nom }}</p>
+              <p class="user-nom">{{ u.prenom }} {{ u.nom }}</p>
               <p class="user-role-sub">{{ getRoleLabel(u.role) }}</p>
             </div>
           </div>
@@ -239,7 +239,7 @@
     <div class="modal-header">
       <div>
         <h2>Modifier le compte</h2>
-        <p>{{ userEdite?.nom }}</p>
+        <p>{{ userEdite?.prenom }} {{ userEdite?.nom }}</p>
       </div>
       <button class="modal-close" (click)="fermerEditer()">
         <span class="material-icons">close</span>
