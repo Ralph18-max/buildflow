@@ -90,6 +90,13 @@
                 {{ u.actif ? 'block' : 'check_circle' }}
               </span>
             </button>
+            <button
+              class="action-btn action-btn--danger"
+              title="Supprimer"
+              (click)="supprimerUser(u)"
+            >
+              <span class="material-icons">delete</span>
+            </button>
           </div>
         </div>
       </ng-container>

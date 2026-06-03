@@ -66,6 +66,15 @@ export class UsersComponent implements OnInit, OnDestroy {
     });
   }
 
+  supprimerUser(user: Utilisateur): void {
+    if (!confirm(`Supprimer définitivement ${user.prenom} ${user.nom} ?`)) return;
+    this.utilisateurService.supprimer(user.id).subscribe({
+      next: () => {
+        this.users = this.users.filter(u => u.id !== user.id);
+      },
+    });
+  }
+
   openModal(): void {
     this.showModal = true;
     this.userForm.reset();

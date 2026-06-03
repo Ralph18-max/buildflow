@@ -66,6 +66,10 @@ export class UtilisateurService {
     );
   }
 
+  supprimer(id: number): Observable<void> {
+    return this.http.delete<void>(`${API_URL}/utilisateurs/${id}`);
+  }
+
   getStats(): Observable<{ total: number; actifs: number; par_role: Record<Role, number> }> {
     return this.getAll().pipe(
       map(users => {

@@ -304,3 +304,7 @@ form { display: flex; flex-direction: column; gap: 18px; }
   .form-row { grid-template-columns: 1fr; }
   .roles-grid { grid-template-columns: 1fr; }
 }
+.action-btn--danger {
+  color: #ef4444;
+  &:hover { background: rgba(239, 68, 68, 0.1); }
+}
