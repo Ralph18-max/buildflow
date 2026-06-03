@@ -58,7 +58,12 @@ export class UsersComponent implements OnInit, OnDestroy {
   }
 
   toggleActif(user: Utilisateur): void {
-    this.utilisateurService.toggleActif(user.id).subscribe();
+    this.utilisateurService.toggleActif(user.id).subscribe({
+      next: (actif) => {
+        const found = this.users.find(u => u.id === user.id);
+        if (found) found.actif = actif;
+      },
+    });
   }
 
   openModal(): void {
