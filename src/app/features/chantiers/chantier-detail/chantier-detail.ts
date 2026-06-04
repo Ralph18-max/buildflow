@@ -253,6 +253,12 @@ export class ChantierDetail implements OnInit, OnDestroy {
     return new Intl.NumberFormat('fr-FR').format(montant) + ' FCFA';
   }
 
+  private _fmt(dateStr: string): string {
+    if (!dateStr) return '';
+    const [y, m, d] = dateStr.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
   getRetardJours(): number {
     if (!this.chantier?.date_livraison_prevue) return 0;
     const prevue = new Date(this.chantier.date_livraison_prevue).getTime();
@@ -336,6 +342,13 @@ export class ChantierDetail implements OnInit, OnDestroy {
 
   fermerCorpsEtat(): void { this.showModalCorpsEtat = false; }
 
+  get dateMinChantier(): string {
+    return (this.chantier?.date_demarrage_reelle || '').slice(0, 10);
+  }
+  get dateMaxChantier(): string {
+    return (this.chantier?.date_livraison_prevue || '').slice(0, 10);
+  }
+
   validerCorpsEtat(): void {
     if (!this.chantier) return;
     if (!this.formCorpsEtat.nom.trim()) { this.erreurCorpsEtat = 'Le nom est obligatoire.'; return; }
@@ -352,6 +365,14 @@ export class ChantierDetail implements OnInit, OnDestroy {
     if (this.formCorpsEtat.date_debut_prevue && this.formCorpsEtat.date_fin_prevue &&
         this.formCorpsEtat.date_debut_prevue >= this.formCorpsEtat.date_fin_prevue) {
       this.erreurCorpsEtat = 'La date de début doit être avant la date de fin.'; return;
+    }
+    const min = this.dateMinChantier;
+    const max = this.dateMaxChantier;
+    if (min && this.formCorpsEtat.date_debut_prevue && this.formCorpsEtat.date_debut_prevue < min) {
+      this.erreurCorpsEtat = `La date de début ne peut pas être avant le démarrage du chantier (${this._fmt(min)}).`; return;
+    }
+    if (max && this.formCorpsEtat.date_fin_prevue && this.formCorpsEtat.date_fin_prevue > max) {
+      this.erreurCorpsEtat = `La date de fin ne peut pas dépasser la livraison prévue (${this._fmt(max)}).`; return;
     }
     this.isLoadingCorpsEtat = true;
     this.erreurCorpsEtat    = '';
