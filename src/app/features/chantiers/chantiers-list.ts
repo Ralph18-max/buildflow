@@ -191,12 +191,13 @@ export class ChantiersList implements OnInit, OnDestroy {
 
     this.subs.add(
       this.chantierService.ajouter({
-        nom_chantier:          this.nouveauChantier.nom,
-        localisation:          this.nouveauChantier.localisation,
-        chef_chantier:         this.nouveauChantier.chef_chantier || 'Non assigné',
-        date_livraison_prevue: this.nouveauChantier.date_fin_prevue,
-        description:           this.nouveauChantier.description,
-        id_contrat:            this.nouveauChantier.contrat_id,
+        nom_chantier:           this.nouveauChantier.nom,
+        localisation:           this.nouveauChantier.localisation,
+        chef_chantier:          this.nouveauChantier.chef_chantier || 'Non assigné',
+        date_livraison_prevue:  this.nouveauChantier.date_fin_prevue,
+        date_demarrage_reelle:  this.nouveauChantier.date_debut || undefined,
+        description:            this.nouveauChantier.description,
+        id_contrat:             this.nouveauChantier.contrat_id,
       }).subscribe({
         next: () => {
           this.fermerModal();

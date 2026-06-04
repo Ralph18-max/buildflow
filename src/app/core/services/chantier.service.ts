@@ -52,12 +52,13 @@ export class ChantierService {
 
   ajouter(data: Partial<Chantier>): Observable<Chantier> {
     return this.http.post<Chantier>(`${API_URL}/chantiers`, {
-      id_contrat:           data.id_contrat,
-      nom_chantier:         data.nom_chantier,
-      localisation:         data.localisation,
-      description:          data.description,
+      id_contrat:            data.id_contrat,
+      nom_chantier:          data.nom_chantier,
+      localisation:          data.localisation,
+      description:           data.description,
       date_livraison_prevue: data.date_livraison_prevue,
-      chef_chantier:        data.chef_chantier,
+      date_demarrage_reelle: data.date_demarrage_reelle || null,
+      chef_chantier:         data.chef_chantier,
     });
   }
 
