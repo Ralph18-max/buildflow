@@ -162,7 +162,6 @@
       <div>
         <div class="section-title-group">
           <h2>Corps d'état</h2>
-          <span class="count-badge">{{ corpsEtatList.length }}</span>
         </div>
         <p class="section-sub">La somme des parts doit toujours faire 100 %</p>
       </div>
@@ -177,9 +176,6 @@
       </div>
       <p class="empty-title">Aucun corps d'état défini</p>
       <p class="empty-desc">Décomposez votre chantier en lots de travaux pour suivre l'avancement et le budget par discipline.</p>
-      <button class="btn-add" *ngIf="peutAjouterCorpsEtat" (click)="ouvrirAjoutCorpsEtat()">
-        <span class="material-icons">add</span> Ajouter le premier corps d'état
-      </button>
     </div>
 
     <div class="corps-grid">
