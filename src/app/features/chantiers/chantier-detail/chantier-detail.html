@@ -160,22 +160,30 @@
   <div class="tab-content" *ngIf="activeTab === 'corps'">
     <div class="section-header">
       <div>
-        <h2>Corps d'état ({{ corpsEtatList.length }})</h2>
-        <p class="section-sub">La somme des parts doit toujours faire 100%</p>
+        <div class="section-title-group">
+          <h2>Corps d'état</h2>
+          <span class="count-badge">{{ corpsEtatList.length }}</span>
+        </div>
+        <p class="section-sub">La somme des parts doit toujours faire 100 %</p>
       </div>
       <button class="btn-add" *ngIf="peutAjouterCorpsEtat" (click)="ouvrirAjoutCorpsEtat()">
         <span class="material-icons">add</span> Ajouter un corps d'état
       </button>
     </div>
+
     <div class="corps-empty" *ngIf="corpsEtatList.length === 0">
-      <span class="material-icons">layers</span>
-      <p>Aucun corps d'état défini pour ce chantier.</p>
+      <div class="empty-icon-wrap">
+        <span class="material-icons">layers</span>
+      </div>
+      <p class="empty-title">Aucun corps d'état défini</p>
+      <p class="empty-desc">Décomposez votre chantier en lots de travaux pour suivre l'avancement et le budget par discipline.</p>
       <button class="btn-add" *ngIf="peutAjouterCorpsEtat" (click)="ouvrirAjoutCorpsEtat()">
         <span class="material-icons">add</span> Ajouter le premier corps d'état
       </button>
     </div>
+
     <div class="corps-grid">
-      <div class="corps-card" *ngFor="let ce of corpsEtatList">
+      <div class="corps-card" [ngClass]="ce.statut" *ngFor="let ce of corpsEtatList">
         <div class="corps-header">
           <div class="corps-icon">
             <span class="material-icons">layers</span>
