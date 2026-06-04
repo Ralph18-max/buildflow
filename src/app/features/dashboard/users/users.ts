@@ -66,11 +66,25 @@ export class UsersComponent implements OnInit, OnDestroy {
     });
   }
 
+  showModalSupprimer = false;
+  userASupprimer: Utilisateur | null = null;
+
   supprimerUser(user: Utilisateur): void {
-    if (!confirm(`Supprimer définitivement ${user.prenom} ${user.nom} ?`)) return;
-    this.utilisateurService.supprimer(user.id).subscribe({
+    this.userASupprimer = user;
+    this.showModalSupprimer = true;
+  }
+
+  annulerSupprimer(): void {
+    this.showModalSupprimer = false;
+    this.userASupprimer = null;
+  }
+
+  confirmerSupprimer(): void {
+    if (!this.userASupprimer) return;
+    this.utilisateurService.supprimer(this.userASupprimer.id).subscribe({
       next: () => {
-        this.users = this.users.filter(u => u.id !== user.id);
+        this.users = this.users.filter(u => u.id !== this.userASupprimer!.id);
+        this.annulerSupprimer();
       },
     });
   }
