@@ -121,11 +121,11 @@
           </div>
           <div class="info-row">
             <span class="info-label">Démarrage</span>
-            <span class="info-val">{{ chantier.date_demarrage_reelle || '' }}</span>
+            <span class="info-val">{{ chantier.date_demarrage_reelle ? (chantier.date_demarrage_reelle | date:'dd/MM/yyyy') : '' }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">Livraison prévue</span>
-            <span class="info-val">{{ chantier.date_livraison_prevue }}</span>
+            <span class="info-val">{{ chantier.date_livraison_prevue | date:'dd/MM/yyyy' }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">Description</span>

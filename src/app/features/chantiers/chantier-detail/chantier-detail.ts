@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { NgFor, NgIf, NgClass, SlicePipe } from '@angular/common';
+import { NgFor, NgIf, NgClass, SlicePipe, DatePipe } from '@angular/common';
 import { isEmailValide, isTelValide } from '../../../core/validators/bf-validators';
 import { FormsModule } from '@angular/forms';
 import { CanPipe } from '../../../core/pipes/can.pipe';
@@ -25,7 +25,7 @@ interface JalonGantt {
 @Component({
   selector: 'app-chantier-detail',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, FormsModule, SlicePipe, CanPipe, BudgetS0Component],
+  imports: [NgFor, NgIf, NgClass, FormsModule, SlicePipe, DatePipe, CanPipe, BudgetS0Component],
   templateUrl: './chantier-detail.html',
   styleUrl: './chantier-detail.scss'
 })
