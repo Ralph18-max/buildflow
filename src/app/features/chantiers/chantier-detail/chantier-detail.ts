@@ -435,17 +435,39 @@ export class ChantierDetail implements OnInit, OnDestroy {
     });
   }
 
-  supprimerCorpsEtat(ce: CorpsEtat): void {
-    if (!this.chantier) return;
-    if (!confirm(`Supprimer le corps d'état "${ce.nom}" ? Cette action est irréversible.`)) return;
-    this.chantierService.supprimerCorpsEtat(this.chantier.id, ce.id).subscribe({
+  showModalConfirmSuppr = false;
+  isDeletingCorpsEtat   = false;
+  ceASupprimer: CorpsEtat | null = null;
+
+  demanderConfirmSuppr(ce: CorpsEtat): void {
+    this.ceASupprimer = ce;
+    this.showModalConfirmSuppr = true;
+  }
+
+  annulerSuppr(): void {
+    this.showModalConfirmSuppr = false;
+    this.ceASupprimer = null;
+  }
+
+  confirmerSuppr(): void {
+    if (!this.chantier || !this.ceASupprimer) return;
+    this.isDeletingCorpsEtat = true;
+    this.chantierService.supprimerCorpsEtat(this.chantier.id, this.ceASupprimer.id).subscribe({
       next: () => {
-        this.corpsEtatList = this.corpsEtatList.filter(c => c.id !== ce.id);
+        this.corpsEtatList = this.corpsEtatList.filter(c => c.id !== this.ceASupprimer!.id);
+        this.isDeletingCorpsEtat   = false;
+        this.showModalConfirmSuppr = false;
+        this.ceASupprimer = null;
         this.toast.success('Corps d\'état supprimé.');
       },
-      error: () => this.toast.error('Impossible de supprimer le corps d\'état.'),
+      error: () => {
+        this.isDeletingCorpsEtat = false;
+        this.toast.error('Impossible de supprimer le corps d\'état.');
+      },
     });
   }
+
+  supprimerCorpsEtat(ce: CorpsEtat): void { this.demanderConfirmSuppr(ce); }
 
   validerIntervenant(): void {
     if (!this.chantier) return;

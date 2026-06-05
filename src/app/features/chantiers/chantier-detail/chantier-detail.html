@@ -264,7 +264,7 @@
             </button>
             <button class="btn-link-intervenant danger"
               *ngIf="peutSupprimerCorpsEtat"
-              (click)="supprimerCorpsEtat(ce)">
+              (click)="demanderConfirmSuppr(ce)">
               <span class="material-icons">delete_outline</span>
               Supprimer
             </button>
@@ -580,6 +580,29 @@
         [disabled]="isLoadingIntervenant || !formIntervenant.raison_sociale || !formIntervenant.telephone">
         <span class="material-icons">{{ isLoadingIntervenant ? 'hourglass_top' : 'add' }}</span>
         {{ isLoadingIntervenant ? 'Enregistrement…' : 'Ajouter' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL CONFIRMATION SUPPRESSION CORPS D'ÉTAT ===== -->
+<div class="modal-overlay" *ngIf="showModalConfirmSuppr" (click)="annulerSuppr()">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2><span class="material-icons" style="color:#e53935">delete_outline</span> Supprimer le corps d'état</h2>
+      <button class="btn-close" (click)="annulerSuppr()"><span class="material-icons">close</span></button>
+    </div>
+    <div class="modal-body">
+      <p style="margin:0;line-height:1.6">
+        Supprimer <strong>{{ ceASupprimer?.nom }}</strong> ?
+        <br><span style="font-size:13px;color:#999">Cette action est irréversible.</span>
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="annulerSuppr()">Annuler</button>
+      <button class="btn-danger" (click)="confirmerSuppr()" [disabled]="isDeletingCorpsEtat">
+        <span class="material-icons">{{ isDeletingCorpsEtat ? 'hourglass_top' : 'delete_outline' }}</span>
+        {{ isDeletingCorpsEtat ? 'Suppression…' : 'Supprimer' }}
       </button>
     </div>
   </div>
