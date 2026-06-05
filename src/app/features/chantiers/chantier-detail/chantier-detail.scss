@@ -482,6 +482,15 @@ h1 {
   display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
 }
 
+.date-hint {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--gray-mid);
+  background: #f8f8f8; border-radius: 8px;
+  padding: 8px 12px; margin-top: -4px;
+  .material-icons { color: var(--orange); }
+  strong { color: var(--dark); }
+}
+
 .erreur-banner {
   display: flex; align-items: center; gap: 8px;
   padding: 12px 16px; border-radius: 10px;

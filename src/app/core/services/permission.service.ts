@@ -39,7 +39,7 @@ const PERMISSIONS: Record<string, Role[]> = {
 
   'corps_etat:create':        ['admin', 'conducteur'],
   'corps_etat:edit':          ['admin', 'conducteur'],
-  'corps_etat:delete':        ['admin'],
+  'corps_etat:delete':        ['admin', 'conducteur'],
   'corps_etat:avancement':    ['admin', 'conducteur', 'chef_chantier'],
 
   'intervenants:delete':      ['admin'],

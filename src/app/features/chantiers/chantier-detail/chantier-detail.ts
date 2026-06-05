@@ -65,10 +65,11 @@ export class ChantierDetail implements OnInit, OnDestroy {
   }
 
   // Permissions
-  get peutModifier(): boolean { return this.perms.can('chantier:edit'); }
+  get peutModifier(): boolean { return this.perms.can('chantiers:edit'); }
   get peutAjouterCorpsEtat(): boolean { return this.perms.can('corps_etat:create'); }
-  get peutAjouterIntervenant(): boolean { return this.perms.can('chantier:edit'); }
+  get peutAjouterIntervenant(): boolean { return this.perms.can('chantiers:edit'); }
   get peutMettreAJourAvancement(): boolean { return this.perms.can('corps_etat:avancement'); }
+  get peutSupprimerCorpsEtat(): boolean { return this.perms.can('corps_etat:delete'); }
 
   // ── Avancement inline ─────────────────────────────────────────────────────
   editingAvancementId: number | null = null;
@@ -253,7 +254,7 @@ export class ChantierDetail implements OnInit, OnDestroy {
     return new Intl.NumberFormat('fr-FR').format(montant) + ' FCFA';
   }
 
-  private _fmt(dateStr: string): string {
+  fmtDate(dateStr: string): string {
     if (!dateStr) return '';
     const [y, m, d] = dateStr.split('-');
     return `${d}/${m}/${y}`;
@@ -369,10 +370,10 @@ export class ChantierDetail implements OnInit, OnDestroy {
     const min = this.dateMinChantier;
     const max = this.dateMaxChantier;
     if (min && this.formCorpsEtat.date_debut_prevue && this.formCorpsEtat.date_debut_prevue < min) {
-      this.erreurCorpsEtat = `La date de début ne peut pas être avant le démarrage du chantier (${this._fmt(min)}).`; return;
+      this.erreurCorpsEtat = `La date de début ne peut pas être avant le démarrage du chantier (${this.fmtDate(min)}).`; return;
     }
     if (max && this.formCorpsEtat.date_fin_prevue && this.formCorpsEtat.date_fin_prevue > max) {
-      this.erreurCorpsEtat = `La date de fin ne peut pas dépasser la livraison prévue (${this._fmt(max)}).`; return;
+      this.erreurCorpsEtat = `La date de fin ne peut pas dépasser la livraison prévue (${this.fmtDate(max)}).`; return;
     }
     this.isLoadingCorpsEtat = true;
     this.erreurCorpsEtat    = '';
