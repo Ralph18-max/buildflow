@@ -466,9 +466,15 @@
         <label>Localisation *</label>
         <input type="text" [(ngModel)]="formModifier.localisation" placeholder="Localisation" />
       </div>
-      <div class="form-group">
-        <label>Démarrage réel</label>
-        <input type="date" [(ngModel)]="formModifier.date_demarrage_reelle" />
+      <div class="form-row">
+        <div class="form-group">
+          <label>Démarrage réel</label>
+          <input type="date" [(ngModel)]="formModifier.date_demarrage_reelle" />
+        </div>
+        <div class="form-group">
+          <label>Livraison prévue</label>
+          <input type="date" [(ngModel)]="formModifier.date_livraison_prevue" />
+        </div>
       </div>
     </div>
     <div class="modal-footer" *ngIf="!successModifier">
