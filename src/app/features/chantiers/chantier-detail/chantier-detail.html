@@ -30,7 +30,7 @@
         <span class="material-icons">folder</span>
         Documents
       </button>
-      <button class="btn-edit" (click)="ouvrirModifier()">
+      <button class="btn-edit" (click)="ouvrirModifier()" *ngIf="peutModifier">
         <span class="material-icons">edit</span>
         Modifier
       </button>
