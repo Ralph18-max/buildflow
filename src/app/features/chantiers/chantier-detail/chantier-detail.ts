@@ -347,7 +347,8 @@ export class ChantierDetail implements OnInit, OnDestroy {
   fermerCorpsEtat(): void { this.showModalCorpsEtat = false; }
 
   get dateMinChantier(): string {
-    return (this.chantier?.date_demarrage_reelle || '').slice(0, 10);
+    const d = this.chantier?.date_demarrage_reelle || this.chantier?.contrat?.date_demarrage_prevue || '';
+    return d.slice(0, 10);
   }
   get dateMaxChantier(): string {
     return (this.chantier?.date_livraison_prevue || '').slice(0, 10);

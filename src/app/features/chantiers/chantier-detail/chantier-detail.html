@@ -301,7 +301,7 @@
       <div class="gantt-row" *ngFor="let j of jalons">
         <div class="gantt-label">
           <span class="gantt-nom">{{ j.nom }}</span>
-          <span class="gantt-dates">{{ j.date_debut }} → {{ j.date_fin }}</span>
+          <span class="gantt-dates">{{ j.date_debut | date:'dd/MM/yy' }} → {{ j.date_fin | date:'dd/MM/yy' }}</span>
         </div>
         <div class="gantt-track">
           <div class="gantt-bar"
