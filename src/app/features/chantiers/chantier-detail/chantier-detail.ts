@@ -290,14 +290,16 @@ export class ChantierDetail implements OnInit, OnDestroy {
   showModalModifier  = false;
   isLoadingModifier  = false;
   successModifier    = false;
-  formModifier = { nom_chantier: '', localisation: '', chef_chantier: '' };
+  formModifier = { nom_chantier: '', localisation: '', chef_chantier: '', date_demarrage_reelle: '', date_livraison_prevue: '' };
 
   ouvrirModifier(): void {
     if (!this.chantier) return;
     this.formModifier = {
-      nom_chantier:  this.chantier.nom_chantier,
-      localisation:  this.chantier.localisation,
-      chef_chantier: this.chantier.chef_chantier,
+      nom_chantier:          this.chantier.nom_chantier,
+      localisation:          this.chantier.localisation,
+      chef_chantier:         this.chantier.chef_chantier,
+      date_demarrage_reelle: (this.chantier.date_demarrage_reelle || '').slice(0, 10),
+      date_livraison_prevue: (this.chantier.date_livraison_prevue  || '').slice(0, 10),
     };
     this.showModalModifier = true;
     this.successModifier   = false;
@@ -307,6 +309,7 @@ export class ChantierDetail implements OnInit, OnDestroy {
 
   validerModifier(): void {
     if (!this.chantier || !this.formModifier.nom_chantier || !this.formModifier.localisation) return;
+    if (!this.formModifier.date_livraison_prevue) { this.toast.error('La date de livraison prévue est obligatoire.'); return; }
     this.isLoadingModifier = true;
     this.chantierService.modifier(this.chantier.id, this.formModifier).subscribe({
       next: () => {
@@ -314,7 +317,7 @@ export class ChantierDetail implements OnInit, OnDestroy {
         this.successModifier   = true;
         this.chantier = { ...this.chantier!, ...this.formModifier };
         this.toast.success('Chantier mis à jour.');
-        setTimeout(() => { this.showModalModifier = false; this.successModifier = false; }, 1200);
+        setTimeout(() => { this.showModalModifier = false; this.successModifier = false; this._charger(this.chantier!.id); }, 1200);
       },
       error: () => {
         this.isLoadingModifier = false;

@@ -70,7 +70,7 @@ export class ChantierService {
     });
   }
 
-  modifier(id: number, data: { nom_chantier?: string; localisation?: string; description?: string; chef_chantier?: string }): Observable<unknown> {
+  modifier(id: number, data: { nom_chantier?: string; localisation?: string; description?: string; chef_chantier?: string; date_demarrage_reelle?: string; date_livraison_prevue?: string }): Observable<unknown> {
     return this.http.patch(`${API_URL}/chantiers/${id}`, data);
   }
 
