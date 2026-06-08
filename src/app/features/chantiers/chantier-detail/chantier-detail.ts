@@ -38,28 +38,43 @@ export class ChantierDetail implements OnInit, OnDestroy {
 
   private subs = new Subscription();
 
-  // Gantt
+  // Gantt — la timeline est rendue comme une grille de mois de largeur égale
+  // (voir gantt-months / [grid-template-columns]) ; toute position (barres, "Auj.")
+  // doit donc être exprimée dans la même unité — une fraction de mois depuis le
+  // 1er jour du mois de départ — sinon les barres se décalent par rapport à l'en-tête.
+  //
+  // On travaille uniquement sur la chaîne "YYYY-MM-DD" (jamais via `new Date(iso).getDate()`) :
+  // un ISO sans heure est interprété en UTC par `Date`, et les accesseurs locaux
+  // (getDate/getMonth) peuvent alors renvoyer le jour précédent selon le fuseau du
+  // navigateur — un décalage classique qui fausserait le positionnement des barres.
   jalons: JalonGantt[] = [];
-  private ganttDebut = 0;
-  private ganttFin = 0;
+  private ganttOriginYear  = 0;  // année du premier mois affiché
+  private ganttOriginMonth = 0;  // mois du premier mois affiché (1 = janvier)
+  private ganttTotalMonths = 0;  // nombre de colonnes-mois affichées
+
+  private monthPosition(dateStr: string): number {
+    const [y, m, d] = dateStr.slice(0, 10).split('-').map(Number);
+    const joursDansLeMois = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    return (y - this.ganttOriginYear) * 12 + (m - this.ganttOriginMonth) + (d - 1) / joursDansLeMois;
+  }
 
   get todayOffset(): number {
-    if (!this.ganttDebut || !this.ganttFin || this.ganttDebut >= this.ganttFin) return -1;
-    const today = Date.now();
-    if (today < this.ganttDebut || today > this.ganttFin) return -1;
-    return Math.round(((today - this.ganttDebut) / (this.ganttFin - this.ganttDebut)) * 100);
+    if (!this.ganttOriginYear || !this.ganttTotalMonths) return -1;
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const pos = this.monthPosition(todayStr);
+    if (pos < 0 || pos > this.ganttTotalMonths) return -1;
+    return Math.round((pos / this.ganttTotalMonths) * 100);
   }
 
   get ganttMonths(): string[] {
-    if (!this.ganttDebut || !this.ganttFin) return [];
+    if (!this.ganttOriginYear || !this.ganttTotalMonths) return [];
     const months: string[] = [];
-    const cursor = new Date(this.ganttDebut);
-    cursor.setDate(1);
-    const end = new Date(this.ganttFin);
-    end.setDate(1);
-    while (cursor <= end) {
-      months.push(cursor.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }));
-      cursor.setMonth(cursor.getMonth() + 1);
+    for (let i = 0; i < this.ganttTotalMonths; i++) {
+      const idx   = (this.ganttOriginMonth - 1) + i;  // index 0 = janvier
+      const year  = this.ganttOriginYear + Math.floor(idx / 12);
+      const month = ((idx % 12) + 12) % 12;           // 0-indexé pour Date.UTC
+      months.push(new Date(Date.UTC(year, month, 1)).toLocaleDateString('fr-FR', { month: 'short', year: '2-digit', timeZone: 'UTC' }));
     }
     return months;
   }
@@ -137,24 +152,32 @@ export class ChantierDetail implements OnInit, OnDestroy {
   private buildJalonsGantt(corps: CorpsEtat[]): JalonGantt[] {
     if (!corps.length) return [];
 
-    const dates = corps.filter(ce => ce.date_debut_prevue).map(ce => new Date(ce.date_debut_prevue).getTime());
-    const fins  = corps.filter(ce => ce.date_fin_prevue).map(ce => new Date(ce.date_fin_prevue).getTime());
+    const debuts = corps.filter(ce => ce.date_debut_prevue).map(ce => ce.date_debut_prevue.slice(0, 10));
+    const fins   = corps.filter(ce => ce.date_fin_prevue).map(ce => ce.date_fin_prevue.slice(0, 10));
 
-    if (!dates.length || !fins.length) return [];
+    if (!debuts.length || !fins.length) return [];
 
-    const debut_global  = Math.min(...dates);
-    const fin_globale   = Math.max(...fins);
-    const duree_totale  = fin_globale - debut_global;
-    this.ganttDebut = debut_global;
-    this.ganttFin   = fin_globale;
+    // Comparaison lexicographique valide sur des chaînes ISO "YYYY-MM-DD"
+    const debut_global = debuts.reduce((a, b) => (a < b ? a : b));
+    const fin_globale  = fins.reduce((a, b) => (a > b ? a : b));
+
+    // Origine de la grille = 1er jour du mois de la date de début la plus ancienne
+    // (c'est aussi le 1er mois affiché par ganttMonths — les deux DOIVENT partager
+    // la même origine, sinon les barres se décalent par rapport à l'en-tête).
+    const [originYear, originMonth] = debut_global.split('-').map(Number);
+    const [finYear, finMonth]       = fin_globale.split('-').map(Number);
+
+    this.ganttOriginYear  = originYear;
+    this.ganttOriginMonth = originMonth;
+    this.ganttTotalMonths = (finYear - originYear) * 12 + (finMonth - originMonth) + 1;
 
     return corps
       .filter(ce => ce.date_debut_prevue && ce.date_fin_prevue)
       .map(ce => {
-        const debut  = new Date(ce.date_debut_prevue).getTime();
-        const fin    = new Date(ce.date_fin_prevue).getTime();
-        const offset = Math.round(((debut - debut_global) / duree_totale) * 100);
-        const duree  = Math.max(2, Math.round(((fin - debut) / duree_totale) * 100));
+        const posDebut = this.monthPosition(ce.date_debut_prevue);
+        const posFin   = this.monthPosition(ce.date_fin_prevue);
+        const offset = (posDebut / this.ganttTotalMonths) * 100;
+        const duree  = Math.max(2, ((posFin - posDebut) / this.ganttTotalMonths) * 100);
         const couleur = ce.avancement === 100 ? '#48bb78'
                       : ce.statut === 'en_cours' ? '#E8520A'
                       : '#e53e3e';
@@ -364,9 +387,11 @@ export class ChantierDetail implements OnInit, OnDestroy {
     if (this.formCorpsEtat.part_chantier > 100) {
       this.erreurCorpsEtat = 'La part ne peut pas dépasser 100%.'; return;
     }
-    if (this.formCorpsEtat.budget_alloue < 0) {
-      this.erreurCorpsEtat = 'Le budget alloué ne peut pas être négatif.'; return;
+    if (!this.formCorpsEtat.budget_alloue || this.formCorpsEtat.budget_alloue <= 0) {
+      this.erreurCorpsEtat = 'Le budget alloué est obligatoire et doit être supérieur à 0.'; return;
     }
+    if (!this.formCorpsEtat.date_debut_prevue) { this.erreurCorpsEtat = 'La date de début prévue est obligatoire.'; return; }
+    if (!this.formCorpsEtat.date_fin_prevue)   { this.erreurCorpsEtat = 'La date de fin prévue est obligatoire.'; return; }
     if (this.formCorpsEtat.date_debut_prevue && this.formCorpsEtat.date_fin_prevue &&
         this.formCorpsEtat.date_debut_prevue >= this.formCorpsEtat.date_fin_prevue) {
       this.erreurCorpsEtat = 'La date de début doit être avant la date de fin.'; return;
