@@ -461,10 +461,12 @@ h1 {
   z-index: 10;
   &::before {
     content: 'Auj.';
-    position: absolute; top: -20px; left: 50%;
+    position: absolute; top: -18px; left: 50%;
     transform: translateX(-50%);
     font-size: 10px; color: #e53e3e; font-weight: 600;
     white-space: nowrap;
+    background: white; padding: 1px 5px; border-radius: 3px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.18);
   }
 }
 
