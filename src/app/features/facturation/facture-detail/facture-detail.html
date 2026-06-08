@@ -262,7 +262,7 @@
     <div class="modal-body" *ngIf="!successPaiement">
       <div class="form-group">
         <label>Montant (FCFA) *</label>
-        <input type="number" [(ngModel)]="formPaiement.montant" min="1" placeholder="Ex: 500000" />
+        <input type="number" [(ngModel)]="formPaiement.montant" min="1" placeholder="Ex: 500000" appDigitsOnly />
       </div>
       <div class="form-group">
         <label>Mode de paiement</label>

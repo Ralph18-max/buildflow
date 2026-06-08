@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgFor, NgIf, NgClass, SlicePipe, DatePipe } from '@angular/common';
 import { isEmailValide, isTelValide } from '../../../core/validators/bf-validators';
+import { DigitsOnlyDirective } from '../../../core/directives/digits-only.directive';
 import { FormsModule } from '@angular/forms';
 import { CanPipe } from '../../../core/pipes/can.pipe';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -25,7 +26,7 @@ interface JalonGantt {
 @Component({
   selector: 'app-chantier-detail',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, FormsModule, SlicePipe, DatePipe, CanPipe, BudgetS0Component],
+  imports: [NgFor, NgIf, NgClass, FormsModule, SlicePipe, DatePipe, CanPipe, BudgetS0Component, DigitsOnlyDirective],
   templateUrl: './chantier-detail.html',
   styleUrl: './chantier-detail.scss'
 })
@@ -433,10 +434,10 @@ export class ChantierDetail implements OnInit, OnDestroy {
   isLoadingIntervenant  = false;
   successIntervenant    = false;
   erreurIntervenant     = '';
-  formIntervenant = { raison_sociale: '', corps_etat_id: 0, telephone: '', email: '', montant_contrat: 0 };
+  formIntervenant = { raison_sociale: '', nom_responsable: '', corps_etat_id: 0, telephone: '', email: '', montant_contrat: 0 };
 
   ouvrirAjoutIntervenant(corpsEtatId = 0): void {
-    this.formIntervenant = { raison_sociale: '', corps_etat_id: corpsEtatId, telephone: '', email: '', montant_contrat: 0 };
+    this.formIntervenant = { raison_sociale: '', nom_responsable: '', corps_etat_id: corpsEtatId, telephone: '', email: '', montant_contrat: 0 };
     this.erreurIntervenant = '';
     this.showModalIntervenant = true;
     this.successIntervenant   = false;
@@ -499,7 +500,7 @@ export class ChantierDetail implements OnInit, OnDestroy {
     if (!this.formIntervenant.raison_sociale.trim()) { this.erreurIntervenant = 'La raison sociale est obligatoire.'; return; }
     if (this.formIntervenant.raison_sociale.trim().length < 2) { this.erreurIntervenant = 'La raison sociale doit contenir au moins 2 caractères.'; return; }
     if (!this.formIntervenant.telephone.trim()) { this.erreurIntervenant = 'Le téléphone est obligatoire.'; return; }
-    if (!isTelValide(this.formIntervenant.telephone)) { this.erreurIntervenant = 'Numéro de téléphone invalide (8 à 15 chiffres).'; return; }
+    if (!isTelValide(this.formIntervenant.telephone)) { this.erreurIntervenant = 'Numéro de téléphone invalide (10 chiffres).'; return; }
     if (this.formIntervenant.email && !isEmailValide(this.formIntervenant.email)) { this.erreurIntervenant = 'Adresse email invalide.'; return; }
     if (this.formIntervenant.montant_contrat < 0) { this.erreurIntervenant = 'Le montant du contrat ne peut pas être négatif.'; return; }
     if (!this.formIntervenant.corps_etat_id) { this.erreurIntervenant = 'Veuillez sélectionner un corps d\'état.'; return; }
@@ -510,6 +511,7 @@ export class ChantierDetail implements OnInit, OnDestroy {
       id_corps_etat:    this.formIntervenant.corps_etat_id,
       type_intervenant: 'entreprise',
       raison_sociale:   this.formIntervenant.raison_sociale.trim(),
+      nom_responsable:  this.formIntervenant.nom_responsable.trim() || undefined,
       telephone:        this.formIntervenant.telephone.trim(),
       email:            this.formIntervenant.email.trim() || undefined,
       montant_contrat:  this.formIntervenant.montant_contrat || 0,

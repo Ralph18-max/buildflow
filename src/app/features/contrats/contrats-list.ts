@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgFor, NgIf, NgClass } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { contratsDateOrderValidator } from '../../core/validators/bf-validators';
+import { DigitsOnlyDirective } from '../../core/directives/digits-only.directive';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -14,7 +15,7 @@ import { PaginationComponent } from '../../shared/pagination/pagination';
 @Component({
   selector: 'app-contrats-list',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, ReactiveFormsModule, FormsModule, PaginationComponent],
+  imports: [NgFor, NgIf, NgClass, ReactiveFormsModule, FormsModule, PaginationComponent, DigitsOnlyDirective],
   templateUrl: './contrats-list.html',
   styleUrl: './contrats-list.scss'
 })

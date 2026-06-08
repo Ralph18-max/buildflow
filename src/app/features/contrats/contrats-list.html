@@ -169,6 +169,7 @@
                 type="number"
                 formControlName="montant_marche"
                 placeholder="450000000"
+                appDigitsOnly
                 [class.error]="montant_marche?.invalid && montant_marche?.touched"
               />
             </div>
@@ -182,6 +183,7 @@
                 type="number"
                 formControlName="penalites_retard"
                 placeholder="500000"
+                appDigitsOnly
                 [class.error]="penalites_retard?.invalid && penalites_retard?.touched"
               />
             </div>

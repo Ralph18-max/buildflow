@@ -227,11 +227,11 @@
           <div class="avancement-edit" *ngIf="editingAvancementId === ce.id">
             <div class="avancement-edit-row">
               <label>Avancement %</label>
-              <input type="number" [(ngModel)]="newAvancement" min="0" max="100" />
+              <input type="number" [(ngModel)]="newAvancement" min="0" max="100" appDigitsOnly />
             </div>
             <div class="avancement-edit-row">
               <label>Coût réel (FCFA)</label>
-              <input type="number" [(ngModel)]="newCoutReel" min="0" />
+              <input type="number" [(ngModel)]="newCoutReel" min="0" appDigitsOnly />
             </div>
             <div class="avancement-edit-actions">
               <button class="btn-save-av" (click)="sauvegarderAvancement(ce)" [disabled]="savingAvancement">
@@ -506,7 +506,7 @@
       </div>
       <div class="form-group">
         <label>Part dans le chantier (%) * (Disponible : {{ partRestante }}%)</label>
-        <input type="number" [(ngModel)]="formCorpsEtat.part_chantier" min="1" [max]="partRestante" placeholder="Ex: 30" />
+        <input type="number" [(ngModel)]="formCorpsEtat.part_chantier" min="1" [max]="partRestante" placeholder="Ex: 30" appDigitsOnly />
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -529,7 +529,7 @@
       </p>
       <div class="form-group">
         <label>Budget alloué (FCFA) *</label>
-        <input type="number" required [(ngModel)]="formCorpsEtat.budget_alloue" min="0" placeholder="Ex: 5000000" />
+        <input type="number" required [(ngModel)]="formCorpsEtat.budget_alloue" min="0" placeholder="Ex: 5000000" appDigitsOnly />
       </div>
     </div>
     <div class="modal-footer">
@@ -562,6 +562,10 @@
         <input type="text" [(ngModel)]="formIntervenant.raison_sociale" placeholder="Ex: SOBECI SARL" />
       </div>
       <div class="form-group">
+        <label>Nom du responsable</label>
+        <input type="text" [(ngModel)]="formIntervenant.nom_responsable" placeholder="Ex: Koffi Yao" />
+      </div>
+      <div class="form-group">
         <label>Corps d'état *</label>
         <select [(ngModel)]="formIntervenant.corps_etat_id">
           <option [value]="0">Sélectionner un corps d'état</option>
@@ -570,7 +574,8 @@
       </div>
       <div class="form-group">
         <label>Téléphone *</label>
-        <input type="tel" [(ngModel)]="formIntervenant.telephone" placeholder="+225 07 00 00 00" />
+        <input type="tel" [(ngModel)]="formIntervenant.telephone" placeholder="+225 07 00 00 00 00"
+          appDigitsOnly appDigitsOnlyExtra="+ -()" />
       </div>
       <div class="form-group">
         <label>Email</label>
@@ -578,7 +583,7 @@
       </div>
       <div class="form-group">
         <label>Montant contrat (FCFA)</label>
-        <input type="number" [(ngModel)]="formIntervenant.montant_contrat" placeholder="0" min="0" />
+        <input type="number" [(ngModel)]="formIntervenant.montant_contrat" placeholder="0" min="0" appDigitsOnly />
       </div>
     </div>
     <div class="modal-footer" *ngIf="!successIntervenant">

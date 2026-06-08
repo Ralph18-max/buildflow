@@ -6,6 +6,7 @@ import { PermissionService } from '../../core/services/permission.service';
 import { CanPipe } from '../../core/pipes/can.pipe';
 import { ToastService } from '../../core/services/toast.service';
 import { environment } from '../../../environments/environment';
+import { DigitsOnlyDirective } from '../../core/directives/digits-only.directive';
 
 const API_URL = environment.apiUrl;
 
@@ -28,7 +29,7 @@ interface BudgetS0 {
 @Component({
   selector: 'app-budget-s0',
   standalone: true,
-  imports: [NgIf, NgClass, DecimalPipe, FormsModule, CanPipe],
+  imports: [NgIf, NgClass, DecimalPipe, FormsModule, CanPipe, DigitsOnlyDirective],
   templateUrl: './budget.html',
   styleUrl: './budget.scss'
 })

@@ -8,11 +8,12 @@ import { FactureService } from '../../../core/services/facture.service';
 import { Facture, PaiementHistorique, SituationTravaux } from '../../../core/models';
 import { ContratService } from '../../../core/services/contrat.service';
 import { environment } from '../../../../environments/environment';
+import { DigitsOnlyDirective } from '../../../core/directives/digits-only.directive';
 
 @Component({
   selector: 'app-facture-detail',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, FormsModule],
+  imports: [NgFor, NgIf, NgClass, FormsModule, DigitsOnlyDirective],
   templateUrl: './facture-detail.html',
   styleUrl: './facture-detail.scss'
 })

@@ -7,11 +7,12 @@ import { CanPipe } from '../../core/pipes/can.pipe';
 import { FactureService } from '../../core/services/facture.service';
 import { ChantierService } from '../../core/services/chantier.service';
 import { Facture } from '../../core/models';
+import { DigitsOnlyDirective } from '../../core/directives/digits-only.directive';
 
 @Component({
   selector: 'app-facturation-list',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, FormsModule, CanPipe, DecimalPipe],
+  imports: [NgFor, NgIf, NgClass, FormsModule, CanPipe, DecimalPipe, DigitsOnlyDirective],
   templateUrl: './facturation-list.html',
   styleUrl: './facturation-list.scss'
 })

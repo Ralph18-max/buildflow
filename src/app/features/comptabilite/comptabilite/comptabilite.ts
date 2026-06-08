@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { PermissionService } from '../../../core/services/permission.service';
 import { environment } from '../../../../environments/environment';
+import { DigitsOnlyDirective } from '../../../core/directives/digits-only.directive';
 
 const API_URL = environment.apiUrl;
 
@@ -91,7 +92,7 @@ interface ModalFactureST {
 @Component({
   selector: 'app-comptabilite',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, DecimalPipe, DatePipe, SlicePipe, FormsModule],
+  imports: [NgFor, NgIf, NgClass, DecimalPipe, DatePipe, SlicePipe, FormsModule, DigitsOnlyDirective],
   templateUrl: './comptabilite.html',
   styleUrl: './comptabilite.scss'
 })

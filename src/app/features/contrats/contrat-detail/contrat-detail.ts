@@ -7,11 +7,12 @@ import { ContratService } from '../../../core/services/contrat.service';
 import { ChantierService } from '../../../core/services/chantier.service';
 import { Contrat, Chantier, StatutContrat } from '../../../core/models';
 import { CanPipe } from '../../../core/pipes/can.pipe';
+import { DigitsOnlyDirective } from '../../../core/directives/digits-only.directive';
 
 @Component({
   selector: 'app-contrat-detail',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, FormsModule, CanPipe],
+  imports: [NgFor, NgIf, NgClass, FormsModule, CanPipe, DigitsOnlyDirective],
   templateUrl: './contrat-detail.html',
   styleUrl: './contrat-detail.scss'
 })

@@ -3,6 +3,7 @@ import { NgFor, NgIf, NgClass } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { phoneValidator, isEmailValide, isTelValide } from '../../core/validators/bf-validators';
+import { DigitsOnlyDirective } from '../../core/directives/digits-only.directive';
 import { CanPipe } from '../../core/pipes/can.pipe';
 import { PermissionService } from '../../core/services/permission.service';
 import { ClientService } from '../../core/services/client.service';
@@ -12,7 +13,7 @@ import { PaginationComponent } from '../../shared/pagination/pagination';
 @Component({
   selector: 'app-clients-list',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, ReactiveFormsModule, FormsModule, CanPipe, PaginationComponent],
+  imports: [NgFor, NgIf, NgClass, ReactiveFormsModule, FormsModule, CanPipe, PaginationComponent, DigitsOnlyDirective],
   templateUrl: './clients-list.html',
   styleUrl: './clients-list.scss'
 })
@@ -189,7 +190,7 @@ export class ClientsList implements OnInit {
       this.errorModifier = 'Téléphone et email sont obligatoires.'; return;
     }
     if (!isTelValide(this.formModifier.telephone)) {
-      this.errorModifier = 'Numéro de téléphone invalide (8 à 15 chiffres).'; return;
+      this.errorModifier = 'Numéro de téléphone invalide (10 chiffres).'; return;
     }
     if (!isEmailValide(this.formModifier.email)) {
       this.errorModifier = 'Adresse email invalide.'; return;

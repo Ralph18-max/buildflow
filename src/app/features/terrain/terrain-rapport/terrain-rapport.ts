@@ -8,6 +8,7 @@ import { PermissionService } from '../../../core/services/permission.service';
 import { ChantierService } from '../../../core/services/chantier.service';
 import { TerrainService } from '../../../core/services/terrain.service';
 import { RapportTerrain } from '../../../core/models';
+import { DigitsOnlyDirective } from '../../../core/directives/digits-only.directive';
 
 interface CorpsEtatLocal {
   id: number;
@@ -20,7 +21,7 @@ interface CorpsEtatLocal {
 @Component({
   selector: 'app-terrain-rapport',
   standalone: true,
-  imports: [NgFor, NgIf, ReactiveFormsModule, FormsModule, RouterModule, DatePipe],
+  imports: [NgFor, NgIf, ReactiveFormsModule, FormsModule, RouterModule, DatePipe, DigitsOnlyDirective],
   templateUrl: './terrain-rapport.html',
   styleUrl: './terrain-rapport.scss'
 })

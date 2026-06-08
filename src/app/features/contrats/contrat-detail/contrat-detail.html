@@ -453,7 +453,7 @@
           <label>Pénalités de retard (FCFA/jour)</label>
           <div class="input-wrapper">
             <span class="material-icons input-icon">gavel</span>
-            <input type="number" [(ngModel)]="formModifier.penalites_retard" name="penalites_retard" min="0" />
+            <input type="number" [(ngModel)]="formModifier.penalites_retard" name="penalites_retard" min="0" appDigitsOnly />
           </div>
         </div>
       </div>
@@ -507,7 +507,7 @@
           <div class="input-wrapper">
             <span class="material-icons input-icon">payments</span>
             <input type="number" [(ngModel)]="formAvenant.montant_supplementaire"
-              name="montant_supplementaire" min="0" placeholder="0" />
+              name="montant_supplementaire" min="0" placeholder="0" appDigitsOnly />
           </div>
         </div>
         <div class="form-group">
@@ -515,7 +515,7 @@
           <div class="input-wrapper">
             <span class="material-icons input-icon">schedule</span>
             <input type="number" [(ngModel)]="formAvenant.delai_supplementaire"
-              name="delai_supplementaire" min="0" placeholder="0" />
+              name="delai_supplementaire" min="0" placeholder="0" appDigitsOnly />
           </div>
         </div>
       </div>
