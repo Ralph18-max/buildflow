@@ -1,10 +1,10 @@
 import { AbstractControl, ValidatorFn, ValidationErrors } from '@angular/forms';
 
-/** Valide un numéro de téléphone : 10 chiffres (format ivoirien), espaces/+/-/() autorisés */
+/** Valide un numéro de téléphone : 5 chiffres (format ivoirien), espaces/+/-/() autorisés */
 export const phoneValidator: ValidatorFn = (ctrl: AbstractControl): ValidationErrors | null => {
   if (!ctrl.value) return null;
   const digits = String(ctrl.value).replace(/[\s\+\-\(\)\.]/g, '');
-  if (!/^\d{10}$/.test(digits)) {
+  if (!/^\d{5}$/.test(digits)) {
     return { phone: true };
   }
   return null;
@@ -46,8 +46,8 @@ export function isEmailValide(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 }
 
-/** Vérifie qu'un téléphone est valide (10 chiffres, format ivoirien) — utilisable dans le code TS */
+/** Vérifie qu'un téléphone est valide (5 chiffres, format ivoirien) — utilisable dans le code TS */
 export function isTelValide(tel: string): boolean {
   const digits = tel.replace(/[\s\+\-\(\)\.]/g, '');
-  return /^\d{10}$/.test(digits);
+  return /^\d{5}$/.test(digits);
 }

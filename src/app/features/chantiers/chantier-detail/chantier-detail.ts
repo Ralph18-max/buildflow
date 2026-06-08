@@ -500,7 +500,7 @@ export class ChantierDetail implements OnInit, OnDestroy {
     if (!this.formIntervenant.raison_sociale.trim()) { this.erreurIntervenant = 'La raison sociale est obligatoire.'; return; }
     if (this.formIntervenant.raison_sociale.trim().length < 2) { this.erreurIntervenant = 'La raison sociale doit contenir au moins 2 caractères.'; return; }
     if (!this.formIntervenant.telephone.trim()) { this.erreurIntervenant = 'Le téléphone est obligatoire.'; return; }
-    if (!isTelValide(this.formIntervenant.telephone)) { this.erreurIntervenant = 'Numéro de téléphone invalide (10 chiffres).'; return; }
+    if (!isTelValide(this.formIntervenant.telephone)) { this.erreurIntervenant = 'Numéro de téléphone invalide (5 chiffres).'; return; }
     if (this.formIntervenant.email && !isEmailValide(this.formIntervenant.email)) { this.erreurIntervenant = 'Adresse email invalide.'; return; }
     if (this.formIntervenant.montant_contrat < 0) { this.erreurIntervenant = 'Le montant du contrat ne peut pas être négatif.'; return; }
     if (!this.formIntervenant.corps_etat_id) { this.erreurIntervenant = 'Veuillez sélectionner un corps d\'état.'; return; }
