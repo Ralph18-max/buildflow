@@ -190,7 +190,7 @@ export class ClientsList implements OnInit {
       this.errorModifier = 'Téléphone et email sont obligatoires.'; return;
     }
     if (!isTelValide(this.formModifier.telephone)) {
-      this.errorModifier = 'Numéro de téléphone invalide (5 chiffres).'; return;
+      this.errorModifier = 'Numéro de téléphone invalide (10 chiffres).'; return;
     }
     if (!isEmailValide(this.formModifier.email)) {
       this.errorModifier = 'Adresse email invalide.'; return;
