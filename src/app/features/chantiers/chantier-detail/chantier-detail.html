@@ -317,7 +317,8 @@
         </div>
       </div>
 
-      <div class="gantt-today" *ngIf="todayOffset >= 0" [style.left.%]="todayOffset"></div>
+      <div class="gantt-today" *ngIf="todayOffset >= 0"
+        [style.left]="'calc(200px + (100% - 200px) * ' + todayOffset + ' / 100)'"></div>
     </div>
 
     <!-- ── Jalons ── -->
