@@ -112,7 +112,7 @@ export class ChantierService {
 
   ajouterIntervenant(idChantier: number, data: {
     id_corps_etat: number; type_intervenant: string;
-    nom?: string; raison_sociale?: string; telephone: string;
+    nom?: string; raison_sociale?: string; nom_responsable?: string; telephone: string;
     email?: string; montant_contrat?: number; assurance?: boolean;
   }): Observable<Intervenant> {
     return this.http.post<Intervenant>(`${API_URL}/chantiers/${idChantier}/intervenants`, data);
