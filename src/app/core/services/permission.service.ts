@@ -48,8 +48,8 @@ const PERMISSIONS: Record<string, Role[]> = {
   'terrain:pointage:create':  ['chef_chantier', 'conducteur'],
   'terrain:read':             ['admin', 'conducteur', 'chef_chantier'],
 
-  'facturation:create':       ['admin', 'comptable'],
-  'facturation:edit':         ['admin', 'comptable'],
+  'facturation:create':       ['admin', 'conducteur'],
+  'facturation:edit':         ['admin', 'conducteur'],
   'facturation:read':         ['admin', 'conducteur', 'comptable'],
   'facturation:encaissement': ['comptable'],
 
