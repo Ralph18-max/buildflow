@@ -211,7 +211,7 @@
   <div class="tab-content" *ngIf="activeTab === 'paiements'">
     <div class="section-header">
       <h2>Historique des paiements</h2>
-      <button class="btn-add" *ngIf="facture.statut !== 'payee'" (click)="ouvrirModalPaiement()">
+      <button class="btn-add" *ngIf="facture.statut !== 'payee' && ('facturation:encaissement' | can)" (click)="ouvrirModalPaiement()">
         <span class="material-icons">add</span>
         Enregistrer un paiement
       </button>
@@ -250,7 +250,7 @@
 </ng-template>
 
 <!-- ===== MODAL ENREGISTRER UN PAIEMENT ===== -->
-<div class="modal-overlay" *ngIf="showModalPaiement" (click)="fermerModalPaiement()">
+<div class="modal-overlay" *ngIf="showModalPaiement && ('facturation:encaissement' | can)" (click)="fermerModalPaiement()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2><span class="material-icons">payments</span> Enregistrer un paiement</h2>
@@ -258,6 +258,9 @@
     </div>
     <div class="success-banner" *ngIf="successPaiement">
       <span class="material-icons">check_circle</span> Paiement enregistré !
+    </div>
+    <div class="error-banner" *ngIf="errorPaiement">
+      <span class="material-icons">error_outline</span> {{ errorPaiement }}
     </div>
     <div class="modal-body" *ngIf="!successPaiement">
       <div class="form-group">

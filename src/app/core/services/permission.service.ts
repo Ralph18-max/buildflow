@@ -51,7 +51,7 @@ const PERMISSIONS: Record<string, Role[]> = {
   'facturation:create':       ['admin', 'conducteur'],
   'facturation:edit':         ['admin', 'conducteur'],
   'facturation:read':         ['admin', 'conducteur', 'comptable'],
-  'facturation:encaissement': ['comptable'],
+  'facturation:encaissement': ['comptable', 'admin'],
 
   'cloture:bilan_valider':    ['comptable'],
   'cloture:cloturer':         ['admin'],

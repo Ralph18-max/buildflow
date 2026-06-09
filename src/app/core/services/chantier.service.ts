@@ -38,7 +38,15 @@ export class ChantierService {
   }
 
   getEnCours(): Observable<Chantier[]> {
-    return this.http.get<Chantier[]>(`${API_URL}/chantiers/en-cours`);
+    return this.http.get<any[]>(`${API_URL}/chantiers/en-cours`).pipe(
+      map(chantiers => chantiers.map(c => ({
+        ...c,
+        nom_client:     c.contrat?.client?.raison_sociale ||
+                        [c.contrat?.client?.prenom, c.contrat?.client?.nom].filter(Boolean).join(' '),
+        montant_marche: c.contrat?.montant_marche,
+        numero_marche:  c.contrat?.numero_marche,
+      })))
+    );
   }
 
   getOptions(): Observable<{ id: number; nom: string }[]> {

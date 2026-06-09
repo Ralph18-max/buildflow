@@ -9,11 +9,12 @@ import { Facture, PaiementHistorique, SituationTravaux } from '../../../core/mod
 import { ContratService } from '../../../core/services/contrat.service';
 import { environment } from '../../../../environments/environment';
 import { DigitsOnlyDirective } from '../../../core/directives/digits-only.directive';
+import { CanPipe } from '../../../core/pipes/can.pipe';
 
 @Component({
   selector: 'app-facture-detail',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, FormsModule, DigitsOnlyDirective],
+  imports: [NgFor, NgIf, NgClass, FormsModule, DigitsOnlyDirective, CanPipe],
   templateUrl: './facture-detail.html',
   styleUrl: './facture-detail.scss'
 })
@@ -100,18 +101,21 @@ export class FactureDetail implements OnInit, OnDestroy {
 
   showModalPaiement = false;
   successPaiement = false;
+  errorPaiement = '';
   formPaiement = { montant: 0, mode: 'Virement', reference: '' };
 
   ouvrirModalPaiement(): void {
     this.formPaiement = { montant: this.facture?.reste_a_payer || 0, mode: 'Virement', reference: '' };
     this.showModalPaiement = true;
     this.successPaiement = false;
+    this.errorPaiement = '';
   }
 
   fermerModalPaiement(): void { this.showModalPaiement = false; }
 
   validerPaiement(): void {
     if (!this.facture || !this.formPaiement.montant) return;
+    this.errorPaiement = '';
     const today = new Date().toISOString().split('T')[0];
     this.http.post<any>(`${environment.apiUrl}/facturation/encaissements`, {
       id_situation:   this.facture.id,
@@ -138,7 +142,11 @@ export class FactureDetail implements OnInit, OnDestroy {
         this.successPaiement = true;
         setTimeout(() => { this.showModalPaiement = false; this.successPaiement = false; }, 1500);
       },
-      error: () => alert('Erreur lors de l\'enregistrement du paiement'),
+      error: (err) => {
+        this.errorPaiement = err?.status === 403
+          ? 'Vous n\'avez pas la permission d\'enregistrer un paiement (réservé au comptable).'
+          : err?.error?.message || 'Erreur lors de l\'enregistrement du paiement.';
+      },
     });
   }
 }

@@ -290,3 +290,21 @@ html {
 
   .material-icons { font-size: 20px; flex-shrink: 0; }
 }
+
+// ─── Bannière erreur ─────────────────────────────────────────────────────────
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #FBEAEA;
+  border: 1px solid #E5A0A0;
+  border-radius: 10px;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #C53030;
+  margin: 0 28px 4px;
+
+  .material-icons { font-size: 20px; flex-shrink: 0; }
+}
