@@ -438,4 +438,5 @@
   .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .filter-row { flex-direction: column; align-items: stretch; }
+  .filter-tabs { flex-wrap: wrap; }
 }
