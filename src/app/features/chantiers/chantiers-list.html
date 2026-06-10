@@ -133,7 +133,7 @@
       <div class="modal-body">
         <div class="form-group">
           <label>Contrat associé</label>
-          <select [(ngModel)]="nouveauChantier.contrat_id">
+          <select [(ngModel)]="nouveauChantier.contrat_id" (change)="onContratChange()">
             <option [ngValue]="null">Sélectionner un contrat</option>
             <option *ngFor="let c of contratsOptions" [ngValue]="c.id">{{ c.label }}</option>
           </select>

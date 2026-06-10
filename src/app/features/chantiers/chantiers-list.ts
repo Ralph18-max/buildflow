@@ -30,7 +30,7 @@ export class ChantiersList implements OnInit, OnDestroy {
   set searchQuery(v: string) { this._searchQuery = v; this.currentPage = 1; }
 
   chantiers: Chantier[] = [];
-  contratsOptions: { id: number; label: string; nom_client: string }[] = [];
+  contratsOptions: { id: number; label: string; nom_client: string; date_demarrage_prevue: string; date_livraison_prevue: string }[] = [];
   utilisateurs: Pick<Utilisateur, 'id' | 'nom' | 'prenom' | 'role'>[] = [];
 
   private subs = new Subscription();
@@ -152,6 +152,14 @@ export class ChantiersList implements OnInit, OnDestroy {
   get clientDuContratSelectionne(): string {
     if (!this.nouveauChantier.contrat_id) return '';
     return this.contratsOptions.find(c => c.id === this.nouveauChantier.contrat_id)?.nom_client || '';
+  }
+
+  /** Pré-remplit les dates du chantier avec celles du contrat sélectionné */
+  onContratChange(): void {
+    const contrat = this.contratsOptions.find(c => c.id === this.nouveauChantier.contrat_id);
+    if (!contrat) return;
+    this.nouveauChantier.date_debut = contrat.date_demarrage_prevue;
+    this.nouveauChantier.date_fin_prevue = contrat.date_livraison_prevue;
   }
 
   ouvrirModal(): void {
