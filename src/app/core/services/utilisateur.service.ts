@@ -18,6 +18,11 @@ export class UtilisateurService {
     );
   }
 
+  /** Liste légère des chefs de chantier actifs (accessible admin + conducteur) */
+  getChefsChantier(): Observable<Pick<Utilisateur, 'id' | 'nom' | 'prenom' | 'role'>[]> {
+    return this.http.get<Pick<Utilisateur, 'id' | 'nom' | 'prenom' | 'role'>[]>(`${API_URL}/utilisateurs/chefs-chantier`);
+  }
+
   getById(id: number): Observable<Utilisateur | undefined> {
     return this.getAll().pipe(
       map(users => users.find(u => u.id === id))

@@ -31,7 +31,7 @@ export class ChantiersList implements OnInit, OnDestroy {
 
   chantiers: Chantier[] = [];
   contratsOptions: { id: number; label: string; nom_client: string }[] = [];
-  utilisateurs: Utilisateur[] = [];
+  utilisateurs: Pick<Utilisateur, 'id' | 'nom' | 'prenom' | 'role'>[] = [];
 
   private subs = new Subscription();
 
@@ -60,11 +60,14 @@ export class ChantiersList implements OnInit, OnDestroy {
         this.contratsOptions = options;
       })
     );
-    this.subs.add(
-      this.utilisateurService.getAll().subscribe(users => {
-        this.utilisateurs = users.filter(u => u.actif && u.role === 'chef_chantier');
-      })
-    );
+    if (this.perm.hasRole('admin', 'conducteur')) {
+      this.subs.add(
+        this.utilisateurService.getChefsChantier().subscribe({
+          next: chefs => this.utilisateurs = chefs,
+          error: () => this.utilisateurs = [],
+        })
+      );
+    }
   }
 
   getRoleLabel(role: string): string {
