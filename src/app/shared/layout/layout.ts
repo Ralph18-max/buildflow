@@ -68,6 +68,7 @@ export class LayoutComponent implements OnInit {
 
   isAdmin()             { return this.auth.hasRole(['admin']); }
   isAdminOrConducteur() { return this.auth.hasRole(['admin', 'conducteur']); }
+  canSeeClients()       { return this.auth.hasRole(['admin', 'conducteur', 'comptable']); }
   isComptable()         { return this.auth.hasRole(['comptable']); }
   isTerrain()           { return this.auth.hasRole(['admin', 'conducteur', 'chef_chantier']); }
 

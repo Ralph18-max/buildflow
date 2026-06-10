@@ -12,8 +12,8 @@
       </div>
     </div>
     <div class="header-actions">
-      <!-- Pointage MO : uniquement pour le chef de chantier -->
-      <button class="btn-secondary" *ngIf="isChef" (click)="allerPointage()">
+      <!-- Pointage MO : chef de chantier et conducteur -->
+      <button class="btn-secondary" *ngIf="peutPointer" (click)="allerPointage()">
         <span class="material-icons">people</span>
         Pointage MO
       </button>

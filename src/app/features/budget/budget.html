@@ -283,8 +283,8 @@
 
     </div>
 
-    <!-- Mise à jour coût réel — Admin + Conducteur -->
-    <div class="update-reel" *ngIf="('budget:edit' | can)">
+    <!-- Mise à jour coût réel — Admin, Conducteur, Comptable -->
+    <div class="update-reel" *ngIf="('budget:cout_reel:edit' | can)">
       <button class="btn-secondary btn-sm" (click)="showUpdateReel = !showUpdateReel">
         <span class="material-icons">update</span>
         Mettre à jour le coût réel

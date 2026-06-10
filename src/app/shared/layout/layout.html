@@ -22,10 +22,12 @@
           <span class="material-icons">dashboard</span> Tableau de bord
         </a>
       }
-      @if (isAdminOrConducteur()) {
+      @if (canSeeClients()) {
         <a routerLink="/clients" routerLinkActive="active">
           <span class="material-icons">people</span> Clients
         </a>
+      }
+      @if (isAdminOrConducteur()) {
         <a routerLink="/contrats" routerLinkActive="active">
           <span class="material-icons">description</span> Contrats
         </a>

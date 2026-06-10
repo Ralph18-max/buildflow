@@ -6,7 +6,7 @@
       <h1>Documents</h1>
       <p>{{ filteredDocuments.length }} document(s) trouvé(s)</p>
     </div>
-    <button class="btn-primary" (click)="openUpload()">
+    <button class="btn-primary" *ngIf="'documents:upload' | can" (click)="openUpload()">
       <span class="material-icons">upload_file</span>
       Ajouter un document
     </button>
@@ -116,7 +116,7 @@
               <button class="btn-action" title="Télécharger" (click)="telecharger(doc)">
                 <span class="material-icons">download</span>
               </button>
-              <button class="btn-action danger" title="Supprimer" (click)="supprimer(doc)">
+              <button class="btn-action danger" *ngIf="'documents:delete' | can" title="Supprimer" (click)="supprimer(doc)">
                 <span class="material-icons">delete_outline</span>
               </button>
             </div>

@@ -46,6 +46,10 @@ export class TerrainRapport implements OnInit, OnDestroy {
     return this.perms.can('terrain:rapport:create');
   }
 
+  get peutPointer(): boolean {
+    return this.perms.can('terrain:pointage:create');
+  }
+
   setOnglet(onglet: 'nouveau' | 'historique') {
     if (onglet === 'nouveau' && !this.peutCreerRapport) return;
     this.ongletActif = onglet;

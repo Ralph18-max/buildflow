@@ -306,6 +306,7 @@ export class ChantierDetail implements OnInit, OnDestroy {
 
   get peutCloturerChantier(): boolean {
     if (!this.chantier) return false;
+    if (!(this.perms.can('cloture:cloturer') || this.perms.can('cloture:bilan_valider'))) return false;
     return this.chantier.avancement_global >= 100 || this.chantier.statut === 'termine';
   }
 

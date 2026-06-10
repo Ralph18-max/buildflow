@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { DocumentService } from '../../core/services/document.service';
 import { ChantierService } from '../../core/services/chantier.service';
 import { Document as ServiceDoc } from '../../core/models';
+import { CanPipe } from '../../core/pipes/can.pipe';
 
 interface DocVue {
   id: number;
@@ -23,7 +24,7 @@ interface DocVue {
 @Component({
   selector: 'app-documents-list',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass, FormsModule],
+  imports: [NgFor, NgIf, NgClass, FormsModule, CanPipe],
   templateUrl: './documents-list.html',
   styleUrl: './documents-list.scss'
 })

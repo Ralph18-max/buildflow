@@ -274,11 +274,11 @@
             </span>
           </div>
         </div>
-        <div class="avenant-actions" *ngIf="av.statut === 'en_attente' && ('avenants:signer' | can)">
-          <button class="btn-signer" (click)="signerAvenant(av.id)" title="Signer">
+        <div class="avenant-actions" *ngIf="av.statut === 'en_attente' && (('avenants:signer' | can) || ('avenants:refuser' | can))">
+          <button class="btn-signer" *ngIf="'avenants:signer' | can" (click)="signerAvenant(av.id)" title="Signer">
             <span class="material-icons">check_circle</span> Signer
           </button>
-          <button class="btn-refuser" (click)="refuserAvenant(av.id)" title="Refuser">
+          <button class="btn-refuser" *ngIf="'avenants:refuser' | can" (click)="refuserAvenant(av.id)" title="Refuser">
             <span class="material-icons">cancel</span> Refuser
           </button>
         </div>

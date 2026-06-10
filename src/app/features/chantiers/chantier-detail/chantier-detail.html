@@ -369,7 +369,7 @@
   <div class="tab-content" *ngIf="activeTab === 'intervenants'">
     <div class="section-header">
       <h2>Intervenants ({{ intervenants.length }})</h2>
-      <button class="btn-add" (click)="ouvrirAjoutIntervenant()">
+      <button class="btn-add" *ngIf="peutAjouterIntervenant" (click)="ouvrirAjoutIntervenant()">
         <span class="material-icons">add</span>
         Ajouter
       </button>

@@ -49,7 +49,7 @@ export const routes: Routes = [
         path: 'clients',
         component: ClientsList,
         canActivate: [roleGuard],
-        data: { roles: ['admin', 'conducteur'] }
+        data: { roles: ['admin', 'conducteur', 'comptable'] }
       },
       {
         path: 'chantiers',

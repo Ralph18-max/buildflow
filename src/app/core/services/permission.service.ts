@@ -31,6 +31,7 @@ const PERMISSIONS: Record<string, Role[]> = {
 
   'budget:create':            ['admin'],
   'budget:edit':              ['admin'],
+  'budget:cout_reel:edit':    ['admin', 'conducteur', 'comptable'],
   'budget:read':              ['admin', 'conducteur', 'comptable'],
 
   'planning:create':          ['admin', 'conducteur'],
