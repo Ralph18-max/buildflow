@@ -140,7 +140,7 @@ export class ClientsList implements OnInit {
     }).subscribe({
       next: () => {
         this.isLoading     = false;
-        this.successMessage = `Client "${this.getClientNom(v)}" créé avec succès.`;
+        this.successMessage = `Client "${this.getClientNom({ ...v, type_client: v.type })}" créé avec succès.`;
         this.chargerClients();
       },
       error: (err) => {
