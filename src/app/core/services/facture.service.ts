@@ -60,7 +60,7 @@ export class FactureService {
       numero:           `SIT-${s.id_chantier}-${String(s.numero_situation).padStart(3, '0')}`,
       id_chantier:      s.id_chantier,
       id_contrat:       s.chantier?.contrat?.id || 0,
-      nom_chantier:     s.chantier?.nom_chantier || '',
+      nom_chantier:     s.chantier?.nom_chantier || `Chantier #${s.id_chantier} (supprimé)`,
       nom_client:       nomClient,
       date_emission:    dateEmission.toISOString().split('T')[0],
       date_echeance:    dateEcheance.toISOString().split('T')[0],
