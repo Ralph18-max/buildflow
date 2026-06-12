@@ -71,6 +71,13 @@ export class ContratDetail implements OnInit, OnDestroy {
             })
           );
         }
+
+        // Charge les situations de travaux réelles (facturation)
+        this.subs.add(
+          this.contratService.getSituations(id).subscribe(situations => {
+            if (this.contrat) this.contrat.situations = situations;
+          })
+        );
       })
     );
   }

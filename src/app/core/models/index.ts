@@ -44,7 +44,7 @@ export interface Client {
 // CONTRAT
 // ─────────────────────────────────────────
 
-export type StatutContrat = 'en_negociation' | 'signe' | 'en_cours' | 'suspendu' | 'termine' | 'resilie' | 'cloture';
+export type StatutContrat = 'en_cours' | 'suspendu' | 'termine' | 'resilie';
 
 export interface Avenant {
   id: number;
