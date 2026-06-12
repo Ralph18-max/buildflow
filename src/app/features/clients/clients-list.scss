@@ -100,6 +100,11 @@
   .material-icons { font-size: 17px; color: var(--gray-mid); }
   &:hover { background: var(--cream);
     .material-icons { color: var(--dark); } }
+
+  &.danger:hover {
+    background: rgba(229,62,62,0.08);
+    .material-icons { color: #e53e3e; }
+  }
 }
 
 .empty-state {

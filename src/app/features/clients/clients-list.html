@@ -58,6 +58,9 @@
           <button class="action-btn" (click)="ouvrirModifier(c)" title="Modifier" *ngIf="'clients:edit' | can">
             <span class="material-icons">edit</span>
           </button>
+          <button class="action-btn danger" (click)="supprimerClient(c)" title="Supprimer" *ngIf="'clients:delete' | can">
+            <span class="material-icons">delete</span>
+          </button>
         </div>
       </div>
     </ng-container>

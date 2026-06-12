@@ -32,4 +32,8 @@ export class ClientService {
   modifier(id: number, data: Partial<Omit<Client, 'id' | 'date_creation' | 'nb_contrats'>>): Observable<unknown> {
     return this.http.put(`${API_URL}/clients/${id}`, data);
   }
+
+  supprimer(id: number): Observable<unknown> {
+    return this.http.delete(`${API_URL}/clients/${id}`);
+  }
 }

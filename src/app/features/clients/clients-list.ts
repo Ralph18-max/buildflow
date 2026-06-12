@@ -7,6 +7,7 @@ import { DigitsOnlyDirective } from '../../core/directives/digits-only.directive
 import { CanPipe } from '../../core/pipes/can.pipe';
 import { PermissionService } from '../../core/services/permission.service';
 import { ClientService } from '../../core/services/client.service';
+import { ToastService } from '../../core/services/toast.service';
 import { Client } from '../../core/models';
 import { PaginationComponent } from '../../shared/pagination/pagination';
 
@@ -46,6 +47,7 @@ export class ClientsList implements OnInit {
     private fb:            FormBuilder,
     public  perm:          PermissionService,
     private clientService: ClientService,
+    private toast:         ToastService,
   ) {
     this.clientForm = this.fb.group({
       type:           ['particulier', Validators.required],
@@ -183,6 +185,25 @@ export class ClientsList implements OnInit {
   }
 
   fermerModifier(): void { this.showModalModifier = false; this.selectedClient = null; }
+
+  // ── Supprimer ─────────────────────────────────────────────
+  supprimerClient(c: Client): void {
+    if ((c.nb_contrats ?? 0) > 0) {
+      this.toast.error('Impossible de supprimer un client ayant des contrats associés.');
+      return;
+    }
+    if (!confirm(`Supprimer "${this.getClientNom(c)}" ? Cette action est irréversible.`)) return;
+
+    this.clientService.supprimer(c.id).subscribe({
+      next: () => {
+        this.toast.success('Client supprimé.');
+        this.chargerClients();
+      },
+      error: (err) => {
+        this.toast.error(err?.error?.message || 'Erreur lors de la suppression du client.');
+      },
+    });
+  }
 
   validerModifier(): void {
     if (!this.selectedClient) return;
