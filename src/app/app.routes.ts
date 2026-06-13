@@ -4,6 +4,7 @@ import { roleGuard } from './core/guards/role.guard';
 import { LandingComponent } from './features/auth/landing/landing';
 import { LoginComponent } from './features/auth/login/login';
 import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password';
+import { ResetPasswordComponent } from './features/auth/reset-password/reset-password';
 import { LayoutComponent } from './shared/layout/layout';
 import { DashboardComponent } from './features/dashboard/dashboard/dashboard';
 import { UsersComponent } from './features/dashboard/users/users';
@@ -28,6 +29,7 @@ export const routes: Routes = [
   { path: '', component: LandingComponent, pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
   {
     path: '',
     component: LayoutComponent,

@@ -82,6 +82,17 @@ export class AuthService {
     });
   }
 
+  motDePasseOublie(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${API_URL}/auth/forgot-password`, { email });
+  }
+
+  reinitialiserMotDePasse(token: string, motDePasse: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${API_URL}/auth/reset-password`, {
+      token,
+      mot_de_passe: motDePasse,
+    });
+  }
+
   logout(): void {
     this._loggedIn = false;
     this.currentUser = null;

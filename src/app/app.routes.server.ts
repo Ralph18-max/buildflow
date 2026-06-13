@@ -4,6 +4,7 @@ export const serverRoutes: ServerRoute[] = [
   { path: '', renderMode: RenderMode.Prerender },
   { path: 'login', renderMode: RenderMode.Prerender },
   { path: 'forgot-password', renderMode: RenderMode.Prerender },
+  { path: 'reset-password', renderMode: RenderMode.Client },
   { path: 'dashboard', renderMode: RenderMode.Client },
   { path: 'users', renderMode: RenderMode.Client },
   { path: 'clients', renderMode: RenderMode.Client },
