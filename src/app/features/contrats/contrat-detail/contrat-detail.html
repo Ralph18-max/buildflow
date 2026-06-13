@@ -293,7 +293,7 @@
         <h2>Situations de travaux ({{ contrat.situations.length }})</h2>
         <p class="section-sub">Factures d'avancement progressif</p>
       </div>
-      <button class="btn-add" disabled title="Fonctionnalité à venir">
+      <button class="btn-add" *ngIf="('facturation:create' | can) && contrat.id_chantier" (click)="creerSituation()" title="Créer une situation pour ce chantier">
         <span class="material-icons">add</span> Nouvelle situation
       </button>
     </div>

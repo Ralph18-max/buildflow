@@ -98,6 +98,13 @@ export class ContratDetail implements OnInit, OnDestroy {
     }
   }
 
+  creerSituation(): void {
+    if (!this.contrat?.id_chantier) return;
+    this.router.navigate(['/facturation'], {
+      queryParams: { chantier: this.contrat.id_chantier, action: 'nouvelle' },
+    });
+  }
+
   // ── Labels ────────────────────────────────────────────
 
   getStatutLabel(statut: string): string {

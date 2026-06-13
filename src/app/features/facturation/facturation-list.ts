@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgFor, NgIf, NgClass, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { CanPipe } from '../../core/pipes/can.pipe';
 import { FactureService } from '../../core/services/facture.service';
@@ -38,6 +38,7 @@ export class FacturationList implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private factureService: FactureService,
     private chantierService: ChantierService,
   ) {}
@@ -51,6 +52,16 @@ export class FacturationList implements OnInit, OnDestroy {
     this.subs.add(
       this.chantierService.getEnCours().subscribe(list => {
         this.chantiers = list.map(c => ({ id: c.id, nom: c.nom_chantier }));
+
+        // Arrivée depuis la fiche contrat avec un chantier pré-sélectionné
+        const params = this.route.snapshot.queryParamMap;
+        if (params.get('action') === 'nouvelle') {
+          const idChantier = Number(params.get('chantier'));
+          this.openModal();
+          if (idChantier && this.chantiers.some(c => c.id === idChantier)) {
+            this.formFacture.id_chantier = idChantier;
+          }
+        }
       })
     );
   }
