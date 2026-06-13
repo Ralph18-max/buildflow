@@ -21,6 +21,7 @@ export class UsersComponent implements OnInit, OnDestroy {
   userForm: FormGroup;
 
   roles = [
+    { value: 'admin',         label: 'Administrateur',        icon: 'admin_panel_settings' },
     { value: 'conducteur',    label: 'Conducteur de travaux', icon: 'engineering' },
     { value: 'chef_chantier', label: 'Chef de chantier',      icon: 'construction' },
     { value: 'comptable',     label: 'Comptable',             icon: 'account_balance' },
