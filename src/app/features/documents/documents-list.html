@@ -230,3 +230,24 @@
   </div>
 </div>
 }
+
+<!-- ===== MODAL SUPPRIMER DOCUMENT ===== -->
+@if (showModalSupprimer) {
+<div class="modal-overlay modal-overlay--danger" (click)="annulerSupprimer()">
+  <div class="modal modal--confirm" (click)="$event.stopPropagation()">
+    <div class="confirm-icon">
+      <span class="material-icons">delete_forever</span>
+    </div>
+    <h2>Supprimer ce document ?</h2>
+    <p class="confirm-name">{{ docASupprimer?.nom }}</p>
+    <p class="confirm-desc">Cette action est irréversible. Le fichier sera définitivement supprimé.</p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" (click)="annulerSupprimer()">Annuler</button>
+      <button class="btn-danger" (click)="confirmerSupprimer()">
+        <span class="material-icons">delete</span>
+        Supprimer
+      </button>
+    </div>
+  </div>
+</div>
+}

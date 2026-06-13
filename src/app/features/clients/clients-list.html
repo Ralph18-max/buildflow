@@ -345,3 +345,22 @@
     </div>
   </div>
 </div>
+
+<!-- ===== MODAL SUPPRIMER CLIENT ===== -->
+<div class="modal-overlay modal-overlay--danger" *ngIf="showModalSupprimer" (click)="annulerSupprimer()">
+  <div class="modal modal--confirm" (click)="$event.stopPropagation()">
+    <div class="confirm-icon">
+      <span class="material-icons">delete_forever</span>
+    </div>
+    <h2>Supprimer ce client ?</h2>
+    <p class="confirm-name">{{ clientASupprimer ? getClientNom(clientASupprimer) : '' }}</p>
+    <p class="confirm-desc">Cette action est irréversible. Le client sera définitivement supprimé.</p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" (click)="annulerSupprimer()">Annuler</button>
+      <button class="btn-danger" (click)="confirmerSupprimer()">
+        <span class="material-icons">delete</span>
+        Supprimer
+      </button>
+    </div>
+  </div>
+</div>

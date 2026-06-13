@@ -152,7 +152,7 @@ export type StatutJalon = 'atteint' | 'manque' | 'en_attente';
 export interface Jalon {
   id: number;
   id_planning: number;
-  nom: string;
+  nom_jalon: string;
   description?: string;
   date_prevue: string;
   date_reelle?: string;

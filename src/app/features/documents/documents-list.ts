@@ -198,9 +198,24 @@ export class DocumentsList implements OnInit, OnDestroy {
     if (doc.url) window.open(doc.url, '_blank');
   }
 
+  showModalSupprimer = false;
+  docASupprimer: DocVue | null = null;
+
   supprimer(doc: DocVue): void {
-    if (!confirm(`Supprimer "${doc.nom}" ? Cette action est irréversible.`)) return;
+    this.docASupprimer = doc;
+    this.showModalSupprimer = true;
+  }
+
+  annulerSupprimer(): void {
+    this.showModalSupprimer = false;
+    this.docASupprimer = null;
+  }
+
+  confirmerSupprimer(): void {
+    if (!this.docASupprimer) return;
+    const doc = this.docASupprimer;
     this.documents = this.documents.filter(d => d.id !== doc.id);
     this.docService.supprimer(doc.id).subscribe();
+    this.annulerSupprimer();
   }
 }

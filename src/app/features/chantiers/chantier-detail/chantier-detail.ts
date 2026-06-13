@@ -446,9 +446,25 @@ export class ChantierDetail implements OnInit, OnDestroy {
 
   fermerIntervenant(): void { this.showModalIntervenant = false; }
 
+  showModalConfirmSupprIntervenant = false;
+  isDeletingIntervenant = false;
+  intervenantASupprimer: Intervenant | null = null;
+
   supprimerIntervenant(id: number): void {
     if (!this.chantier) return;
-    if (!confirm('Supprimer cet intervenant ? Cette action est irréversible.')) return;
+    this.intervenantASupprimer = this.intervenants.find(i => i.id === id) || null;
+    this.showModalConfirmSupprIntervenant = true;
+  }
+
+  annulerSupprIntervenant(): void {
+    this.showModalConfirmSupprIntervenant = false;
+    this.intervenantASupprimer = null;
+  }
+
+  confirmerSupprIntervenant(): void {
+    if (!this.chantier || !this.intervenantASupprimer) return;
+    const id = this.intervenantASupprimer.id;
+    this.isDeletingIntervenant = true;
     this.chantierService.supprimerIntervenant(this.chantier.id, id).subscribe({
       next: () => {
         this.intervenants = this.intervenants.filter(i => i.id !== id);
@@ -456,9 +472,15 @@ export class ChantierDetail implements OnInit, OnDestroy {
           ...ce,
           intervenants: ce.intervenants?.filter(i => i.id !== id),
         }));
+        this.isDeletingIntervenant = false;
+        this.showModalConfirmSupprIntervenant = false;
+        this.intervenantASupprimer = null;
         this.toast.success('Intervenant supprimé.');
       },
-      error: () => this.toast.error('Impossible de supprimer l\'intervenant.'),
+      error: () => {
+        this.isDeletingIntervenant = false;
+        this.toast.error('Impossible de supprimer l\'intervenant.');
+      },
     });
   }
 

@@ -341,7 +341,7 @@
             {{ getJalonIcon(j.statut) }}
           </span>
           <div class="jalon-info">
-            <span class="jalon-nom">{{ j.nom }}</span>
+            <span class="jalon-nom">{{ j.nom_jalon }}</span>
             <span class="jalon-date">Prévu : {{ j.date_prevue | slice:0:10 }}</span>
             <span class="jalon-date" *ngIf="j.date_reelle">Réel : {{ j.date_reelle | slice:0:10 }}
               <span *ngIf="j.ecart_jours" [class.retard]="jalonRetard(j.ecart_jours)" [class.avance]="jalonAvance(j.ecart_jours)">
@@ -615,6 +615,29 @@
       <button class="btn-danger" (click)="confirmerSuppr()" [disabled]="isDeletingCorpsEtat">
         <span class="material-icons">{{ isDeletingCorpsEtat ? 'hourglass_top' : 'delete_outline' }}</span>
         {{ isDeletingCorpsEtat ? 'Suppression…' : 'Supprimer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL CONFIRMATION SUPPRESSION INTERVENANT ===== -->
+<div class="modal-overlay" *ngIf="showModalConfirmSupprIntervenant" (click)="annulerSupprIntervenant()">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2><span class="material-icons" style="color:#e53935">delete_outline</span> Supprimer l'intervenant</h2>
+      <button class="btn-close" (click)="annulerSupprIntervenant()"><span class="material-icons">close</span></button>
+    </div>
+    <div class="modal-body">
+      <p style="margin:0;line-height:1.6">
+        Supprimer <strong>{{ intervenantASupprimer?.raison_sociale || intervenantASupprimer?.nom_responsable }}</strong> ?
+        <br><span style="font-size:13px;color:#999">Cette action est irréversible.</span>
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="annulerSupprIntervenant()">Annuler</button>
+      <button class="btn-danger" (click)="confirmerSupprIntervenant()" [disabled]="isDeletingIntervenant">
+        <span class="material-icons">{{ isDeletingIntervenant ? 'hourglass_top' : 'delete_outline' }}</span>
+        {{ isDeletingIntervenant ? 'Suppression…' : 'Supprimer' }}
       </button>
     </div>
   </div>

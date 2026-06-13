@@ -187,13 +187,26 @@ export class ClientsList implements OnInit {
   fermerModifier(): void { this.showModalModifier = false; this.selectedClient = null; }
 
   // ── Supprimer ─────────────────────────────────────────────
+  showModalSupprimer = false;
+  clientASupprimer: Client | null = null;
+
   supprimerClient(c: Client): void {
     if ((c.nb_contrats ?? 0) > 0) {
       this.toast.error('Impossible de supprimer un client ayant des contrats associés.');
       return;
     }
-    if (!confirm(`Supprimer "${this.getClientNom(c)}" ? Cette action est irréversible.`)) return;
+    this.clientASupprimer = c;
+    this.showModalSupprimer = true;
+  }
 
+  annulerSupprimer(): void {
+    this.showModalSupprimer = false;
+    this.clientASupprimer = null;
+  }
+
+  confirmerSupprimer(): void {
+    if (!this.clientASupprimer) return;
+    const c = this.clientASupprimer;
     this.clientService.supprimer(c.id).subscribe({
       next: () => {
         this.toast.success('Client supprimé.');
@@ -203,6 +216,7 @@ export class ClientsList implements OnInit {
         this.toast.error(err?.error?.message || 'Erreur lors de la suppression du client.');
       },
     });
+    this.annulerSupprimer();
   }
 
   validerModifier(): void {
