@@ -33,7 +33,7 @@ export class TerrainService {
       observations:         rapport.observations,
       incidents:            rapport.incidents,
       a_incident:           rapport.a_incident,
-      corps_etat_travailles: rapport.corps_etat_travailles,
+      corps_travaux:        rapport.corps_etat_travailles,
     }).pipe(map(r => this._mapRapport(r)));
   }
 
@@ -94,6 +94,7 @@ export class TerrainService {
         corps_etat:     pi.corps_etat || '',
         present:        pi.present,
         heures:         pi.heures || 0,
+        observation:    pi.observation || undefined,
       })) || [],
     };
   }
