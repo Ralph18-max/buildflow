@@ -395,6 +395,13 @@
       box-shadow: 0 0 0 3px rgba(232,82,10,.10);
     }
     &::placeholder { color: #C8C3BB; }
+
+    // Masque l'icône native "afficher le mot de passe" du navigateur
+    // (Edge) qui se superpose à notre bouton .field-eye
+    &::-ms-reveal,
+    &::-ms-clear {
+      display: none;
+    }
   }
 }
 
