@@ -259,13 +259,16 @@
                 </span>
               </td>
               <td>
-                <button
-                  *ngIf="f.statut === 'en_attente'"
-                  class="btn-valider"
-                  (click)="validerFactureST(f)">
-                  <span class="material-icons">check</span>
-                  Valider
-                </button>
+                <div class="actions-fst" *ngIf="f.statut === 'en_attente'">
+                  <button class="btn-valider" (click)="validerFactureST(f)">
+                    <span class="material-icons">check</span>
+                    Valider
+                  </button>
+                  <button class="btn-contester" (click)="contesterFactureST(f)">
+                    <span class="material-icons">close</span>
+                    Contester
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -444,7 +447,7 @@
     <div class="modal-body">
       <div class="form-group">
         <label>Chantier <span class="required">*</span></label>
-        <select [(ngModel)]="modalFactureST.chantierId">
+        <select [(ngModel)]="modalFactureST.chantierId" (ngModelChange)="onChantierChangeFactureST()">
           <option [ngValue]="null" disabled>Sélectionner un chantier</option>
           <option *ngFor="let c of chantiers" [ngValue]="c.id">{{ c.nom }}</option>
         </select>
@@ -452,13 +455,19 @@
       <div class="form-row">
         <div class="form-group">
           <label>Intervenant / Sous-traitant <span class="required">*</span></label>
-          <input type="text" [(ngModel)]="modalFactureST.intervenant" placeholder="Nom entreprise ou personne" />
+          <select [(ngModel)]="modalFactureST.intervenant" (ngModelChange)="onIntervenantChange()" [disabled]="!modalFactureST.chantierId">
+            <option value="" disabled>{{ modalFactureST.chantierId ? 'Sélectionner un intervenant' : 'Choisir un chantier d\'abord' }}</option>
+            <option *ngFor="let i of intervenantsDisponibles" [value]="getNomIntervenant(i)">{{ getNomIntervenant(i) }}</option>
+          </select>
+          <small class="form-hint" *ngIf="modalFactureST.chantierId && intervenantsDisponibles.length === 0">
+            Aucun intervenant enregistré sur ce chantier.
+          </small>
         </div>
         <div class="form-group">
           <label>Corps d'état</label>
           <select [(ngModel)]="modalFactureST.corps_etat">
             <option value="">Sélectionner</option>
-            <option *ngFor="let c of corpsEtat" [value]="c">{{ c }}</option>
+            <option *ngFor="let c of corpsEtatChantier" [value]="c.nom">{{ c.nom }}</option>
           </select>
         </div>
       </div>

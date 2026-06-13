@@ -301,6 +301,7 @@ export interface Document {
 // ─────────────────────────────────────────
 
 export type StatutFacture = 'payee' | 'validee' | 'emise' | 'en_attente' | 'en_retard';
+export type StatutRetenue = 'a_liberer' | 'liberee';
 
 export interface Facture {
   id: number;
@@ -317,6 +318,10 @@ export interface Facture {
   montant_encaisse: number;
   reste_a_payer: number;
   statut: StatutFacture;
+  retenue_garantie: number;          // 5% du TTC
+  montant_net: number;               // montant_ttc - retenue_garantie
+  statut_retenue: StatutRetenue;
+  date_liberation_retenue?: string;
   situations_liees: number[];    // ids des situations
   historique_paiements: PaiementHistorique[];
 }

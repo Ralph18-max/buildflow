@@ -136,8 +136,8 @@ export class FactureDetail implements OnInit, OnDestroy {
         this.facture = {
           ...this.facture!,
           montant_encaisse: totalEncaisse,
-          reste_a_payer: Math.max(0, this.facture!.montant_ttc - totalEncaisse),
-          statut: totalEncaisse >= this.facture!.montant_ttc ? 'payee' : this.facture!.statut,
+          reste_a_payer: Math.max(0, this.facture!.montant_net - totalEncaisse),
+          statut: totalEncaisse >= this.facture!.montant_net ? 'payee' : this.facture!.statut,
         };
         this.successPaiement = true;
         setTimeout(() => { this.showModalPaiement = false; this.successPaiement = false; }, 1500);
@@ -146,6 +146,28 @@ export class FactureDetail implements OnInit, OnDestroy {
         this.errorPaiement = err?.status === 403
           ? 'Vous n\'avez pas la permission d\'enregistrer un paiement (réservé au comptable).'
           : err?.error?.message || 'Erreur lors de l\'enregistrement du paiement.';
+      },
+    });
+  }
+
+  // ── Libération de la retenue de garantie ─────────────────────────────────
+
+  errorRetenue = '';
+  successRetenue = false;
+
+  libererRetenue(): void {
+    if (!this.facture) return;
+    this.errorRetenue = '';
+    this.factureService.libererRetenue(this.facture.id).subscribe({
+      next: (facture) => {
+        this.facture = facture;
+        this.successRetenue = true;
+        setTimeout(() => { this.successRetenue = false; }, 2000);
+      },
+      error: (err) => {
+        this.errorRetenue = err?.status === 403
+          ? 'Vous n\'avez pas la permission de libérer la retenue de garantie (réservé au comptable).'
+          : err?.error?.message || 'Erreur lors de la libération de la retenue de garantie.';
       },
     });
   }

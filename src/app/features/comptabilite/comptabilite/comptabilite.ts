@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { PermissionService } from '../../../core/services/permission.service';
+import { ChantierService } from '../../../core/services/chantier.service';
+import { Intervenant, CorpsEtat } from '../../../core/models';
 import { environment } from '../../../../environments/environment';
 import { DigitsOnlyDirective } from '../../../core/directives/digits-only.directive';
 
@@ -132,15 +134,15 @@ export class ComptabiliteComponent implements OnInit {
   // Chantiers pour les selects (chargés depuis l'API)
   chantiers: { id: number; nom: string }[] = [];
 
-  corpsEtat = [
-    'Terrassement', 'Gros œuvre', 'Charpente', 'Étanchéité',
-    'Plomberie', 'Électricité', 'Menuiserie', 'Carrelage', 'Peinture', 'Autre'
-  ];
+  // Intervenants & corps d'état du chantier sélectionné dans le modal Facture ST
+  intervenantsDisponibles: Intervenant[] = [];
+  corpsEtatChantier: CorpsEtat[] = [];
 
   constructor(
     private perms: PermissionService,
     private router: Router,
     private http: HttpClient,
+    private chantierService: ChantierService,
   ) {}
 
   ngOnInit(): void {
@@ -399,10 +401,39 @@ export class ComptabiliteComponent implements OnInit {
       dateFacture: new Date().toISOString().split('T')[0],
       montantHT: null, tauxTVA: 18, reference: ''
     };
+    this.intervenantsDisponibles = [];
+    this.corpsEtatChantier = [];
   }
 
   fermerModalFactureST(): void {
     this.modalFactureST.visible = false;
+  }
+
+  onChantierChangeFactureST(): void {
+    this.modalFactureST.intervenant = '';
+    this.modalFactureST.corps_etat = '';
+    this.intervenantsDisponibles = [];
+    this.corpsEtatChantier = [];
+
+    const chantierId = this.modalFactureST.chantierId;
+    if (!chantierId) return;
+
+    this.chantierService.getIntervenants(chantierId).subscribe(list => this.intervenantsDisponibles = list);
+    this.chantierService.getCorpsEtat(chantierId).subscribe(list => this.corpsEtatChantier = list);
+  }
+
+  getNomIntervenant(i: Intervenant): string {
+    return i.raison_sociale
+      || `${i.prenom || ''} ${i.nom || ''}`.trim()
+      || i.nom_responsable
+      || '';
+  }
+
+  onIntervenantChange(): void {
+    const intervenant = this.intervenantsDisponibles.find(i => this.getNomIntervenant(i) === this.modalFactureST.intervenant);
+    if (!intervenant) return;
+    const corpsEtat = this.corpsEtatChantier.find(c => c.id === intervenant.id_corps_etat);
+    if (corpsEtat) this.modalFactureST.corps_etat = corpsEtat.nom;
   }
 
   getMontantTVA(): number {
@@ -450,6 +481,18 @@ export class ComptabiliteComponent implements OnInit {
       },
       error: (err: any) => {
         this.afficherErreur(err?.error?.message || 'Erreur lors de la validation.');
+      },
+    });
+  }
+
+  contesterFactureST(facture: FactureST): void {
+    this.http.patch(`${API_URL}/facturation/factures-st/${facture.id}/contester`, {}).subscribe({
+      next: () => {
+        facture.statut = 'contestee';
+        this.afficherSucces('Facture contestée');
+      },
+      error: (err: any) => {
+        this.afficherErreur(err?.error?.message || 'Erreur lors de la contestation.');
       },
     });
   }

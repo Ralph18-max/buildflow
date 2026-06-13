@@ -526,6 +526,28 @@ $blue-light:   #DBEAFE;
   &:hover { background: color.adjust($green-light, $lightness: -3%); }
 }
 
+.actions-fst {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-contester {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  background: $red-light;
+  color: $red;
+  border: 1px solid color.adjust($red, $lightness: 30%);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  .material-icons { font-size: 0.9rem; }
+  &:hover { background: color.adjust($red-light, $lightness: -3%); }
+}
+
 .ref-virement {
   display: inline-flex;
   align-items: center;
@@ -796,6 +818,13 @@ $blue-light:   #DBEAFE;
     box-sizing: border-box;
     &:focus       { border-color: $orange; }
     &::placeholder { color: $gray-mid; }
+    &:disabled    { background: $gray-light; cursor: not-allowed; }
+  }
+  .form-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.75rem;
+    color: $gray-mid;
   }
 }
 

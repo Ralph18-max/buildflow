@@ -186,8 +186,8 @@
         </div>
       </div>
       <div class="form-group">
-        <label>Date d'échéance *</label>
-        <input type="date" [(ngModel)]="formFacture.date_echeance" />
+        <label>Délai de paiement (jours) *</label>
+        <input type="number" [(ngModel)]="formFacture.delai_paiement_jours" min="1" placeholder="Ex: 30" appDigitsOnly />
       </div>
       <div class="recap-ttc" *ngIf="formFacture.montant_ht > 0">
         <span>Montant TTC calculé</span>
@@ -197,7 +197,7 @@
     <div class="modal-footer" *ngIf="!successModal">
       <button class="btn-secondary" (click)="fermerModal()">Annuler</button>
       <button class="btn-primary" (click)="validerFacture()"
-        [disabled]="!formFacture.montant_ht || !formFacture.date_echeance">
+        [disabled]="!formFacture.montant_ht || !formFacture.delai_paiement_jours">
         <span class="material-icons">save</span> Créer la facture
       </button>
     </div>

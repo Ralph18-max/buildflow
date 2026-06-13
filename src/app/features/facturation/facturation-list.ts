@@ -29,7 +29,7 @@ export class FacturationList implements OnInit, OnDestroy {
     id_chantier: 0,
     montant_ht:  0,
     tva:         18,
-    date_echeance: '',
+    delai_paiement_jours: 30,
   };
 
   chantiers: { id: number; nom: string }[] = [];
@@ -136,7 +136,7 @@ export class FacturationList implements OnInit, OnDestroy {
   }
 
   openModal(): void {
-    this.formFacture = { id_chantier: this.chantiers[0]?.id || 0, montant_ht: 0, tva: 18, date_echeance: '' };
+    this.formFacture = { id_chantier: this.chantiers[0]?.id || 0, montant_ht: 0, tva: 18, delai_paiement_jours: 30 };
     this.showModal    = true;
     this.successModal = false;
   }
@@ -154,11 +154,13 @@ export class FacturationList implements OnInit, OnDestroy {
     if (!this.formFacture.id_chantier) { this.erreurFacture = 'Veuillez sélectionner un chantier.'; return; }
     if (!this.formFacture.montant_ht || this.formFacture.montant_ht <= 0) { this.erreurFacture = 'Le montant HT doit être supérieur à 0.'; return; }
     if (this.formFacture.tva < 0 || this.formFacture.tva > 100) { this.erreurFacture = 'La TVA doit être comprise entre 0 et 100.'; return; }
+    if (!this.formFacture.delai_paiement_jours || this.formFacture.delai_paiement_jours <= 0) { this.erreurFacture = 'Le délai de paiement doit être supérieur à 0.'; return; }
     this.factureService.creerSituation({
       id_chantier:       Number(this.formFacture.id_chantier),
       montant_ht:        this.formFacture.montant_ht,
       taux_tva:          this.formFacture.tva,
       avancement_facture: 0,
+      delai_paiement_jours: Number(this.formFacture.delai_paiement_jours),
     }).subscribe({
       next: (nouvelle) => {
         this.factures = [nouvelle, ...this.factures];

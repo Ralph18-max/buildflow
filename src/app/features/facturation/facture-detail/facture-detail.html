@@ -157,6 +157,14 @@
             <span>Total TTC</span>
             <span>{{ formatFCFA(facture.montant_ttc) }}</span>
           </div>
+          <div class="financial-row">
+            <span>Retenue de garantie (5%)</span>
+            <span>{{ formatFCFA(facture.retenue_garantie) }}</span>
+          </div>
+          <div class="financial-row total">
+            <span>Montant net (hors retenue)</span>
+            <span>{{ formatFCFA(facture.montant_net) }}</span>
+          </div>
           <div class="financial-row" *ngIf="facture.montant_encaisse > 0">
             <span>Encaissé</span>
             <span class="green-text">{{ formatFCFA(facture.montant_encaisse) }}</span>
@@ -166,6 +174,39 @@
             <span class="red-text">{{ formatFCFA(facture.reste_a_payer) }}</span>
           </div>
         </div>
+      </div>
+
+      <!-- Retenue de garantie -->
+      <div class="card" *ngIf="facture.statut === 'payee'">
+        <h3 class="card-title">
+          <span class="material-icons">verified_user</span>
+          Retenue de garantie
+        </h3>
+        <div class="error-banner" *ngIf="errorRetenue">
+          <span class="material-icons">error_outline</span> {{ errorRetenue }}
+        </div>
+        <div class="success-banner" *ngIf="successRetenue">
+          <span class="material-icons">check_circle</span> Retenue de garantie libérée !
+        </div>
+        <div class="info-list">
+          <div class="info-row">
+            <span class="info-label">Montant de la retenue</span>
+            <span class="info-val">{{ formatFCFA(facture.retenue_garantie) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Statut</span>
+            <span class="info-val" *ngIf="facture.statut_retenue === 'a_liberer'">À libérer</span>
+            <span class="info-val green-text" *ngIf="facture.statut_retenue === 'liberee'">
+              Libérée le {{ facture.date_liberation_retenue }}
+            </span>
+          </div>
+        </div>
+        <button class="btn-add"
+          *ngIf="facture.statut_retenue === 'a_liberer' && ('facturation:encaissement' | can)"
+          (click)="libererRetenue()">
+          <span class="material-icons">lock_open</span>
+          Libérer la retenue de garantie
+        </button>
       </div>
 
     </div>

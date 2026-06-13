@@ -29,8 +29,14 @@ export class FactureService {
     );
   }
 
-  creerSituation(data: { id_chantier: number; montant_ht: number; taux_tva: number; avancement_facture: number }): Observable<Facture> {
+  creerSituation(data: { id_chantier: number; montant_ht: number; taux_tva: number; avancement_facture: number; delai_paiement_jours?: number }): Observable<Facture> {
     return this.http.post<any>(`${API_URL}/facturation/situations`, data).pipe(
+      map(s => this._map(s))
+    );
+  }
+
+  libererRetenue(id: number): Observable<Facture> {
+    return this.http.patch<any>(`${API_URL}/facturation/situations/${id}/liberer-retenue`, {}).pipe(
       map(s => this._map(s))
     );
   }
@@ -53,7 +59,9 @@ export class FactureService {
       || '';
 
     const dateEmission = s.date_emission ? new Date(s.date_emission) : new Date();
-    const dateEcheance = new Date(dateEmission.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const dateEcheance = s.date_echeance
+      ? new Date(s.date_echeance)
+      : new Date(dateEmission.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     return {
       id:               s.id,
@@ -70,6 +78,10 @@ export class FactureService {
       montant_encaisse: s.montant_encaisse,
       reste_a_payer:    s.reste_a_facturer,
       statut:           s.statut,
+      retenue_garantie: s.retenue_garantie || 0,
+      montant_net:      s.montant_net || s.montant_ttc,
+      statut_retenue:   s.statut_retenue || 'a_liberer',
+      date_liberation_retenue: s.date_liberation_retenue ? new Date(s.date_liberation_retenue).toISOString().split('T')[0] : undefined,
       situations_liees: [s.id],
       historique_paiements: (s.paiements || []).map((p: any) => ({
         date:      p.date_paiement ? new Date(p.date_paiement).toISOString().split('T')[0] : '',
