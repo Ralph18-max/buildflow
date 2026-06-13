@@ -9,12 +9,13 @@ import { TerrainService } from '../../../core/services/terrain.service';
 import { Pointage } from '../../../core/models';
 
 interface IntervenantLocal {
-  id:           number;
-  nom_complet:  string;
-  corps_etat:   string;
-  present:      boolean;
-  heures:       number;
-  observations: string;
+  id:             number;
+  nom_complet:    string;
+  corps_etat:     string;
+  raison_sociale: string;
+  present:        boolean;
+  heures:         number;
+  observations:   string;
 }
 
 @Component({
@@ -74,12 +75,13 @@ export class TerrainPointage implements OnInit, OnDestroy {
     this.intervenants = [];
     this.chantierService.getIntervenants(idChantier).subscribe(list =>
       this.intervenants = list.map(i => ({
-        id:           i.id,
-        nom_complet:  i.nom_responsable || `${i.nom || ''} ${i.prenom || ''}`.trim(),
-        corps_etat:   i.corps_etat_nom || '',
-        present:      true,
-        heures:       8,
-        observations: '',
+        id:             i.id,
+        nom_complet:    i.nom_responsable || `${i.nom || ''} ${i.prenom || ''}`.trim(),
+        corps_etat:     i.corpsEtat?.nom || i.corps_etat_nom || '',
+        raison_sociale: i.raison_sociale || '',
+        present:        true,
+        heures:         8,
+        observations:   '',
       }))
     );
   }

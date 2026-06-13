@@ -191,6 +191,7 @@ export interface Intervenant {
   numero_agrement?: string;
   date_expiration_agrement?: string;
   corps_etat_nom?: string;       // dénormalisé pour affichage
+  corpsEtat?: { nom: string };   // inclus par GET /chantiers/:id/intervenants
   actif: boolean;
 }
 
