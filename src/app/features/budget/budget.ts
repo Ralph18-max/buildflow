@@ -136,7 +136,7 @@ export class BudgetS0Component implements OnInit {
   }
 
   mettreAJourCoutReel(): void {
-    if (!this.budget || !this.perm.can('budget:edit')) return;
+    if (!this.budget || !this.perm.can('budget:cout_reel:edit')) return;
     this.isLoading = true;
     this.http.patch<any>(`${API_URL}/chantiers/${this.chantier_id}/budget/cout-reel`, {
       cout_reel_a_date: this.nouveauCoutReel,

@@ -29,7 +29,7 @@ const PERMISSIONS: Record<string, Role[]> = {
   'chantiers:read':           ['admin', 'conducteur', 'chef_chantier', 'comptable'],
   'chantiers:delete':         ['admin'],
 
-  'budget:create':            ['admin'],
+  'budget:create':            ['admin', 'comptable'],
   'budget:edit':              ['admin'],
   'budget:cout_reel:edit':    ['admin', 'conducteur', 'comptable'],
   'budget:read':              ['admin', 'conducteur', 'comptable'],
