@@ -1,9 +1,11 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { combineLatest } from 'rxjs';
+import { combineLatest, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ChantierService } from './chantier.service';
 import { FactureService } from './facture.service';
+import { AuthService } from './auth.service';
+import { Facture } from '../models';
 
 export type NotifType = 'danger' | 'warning' | 'info';
 
@@ -34,15 +36,18 @@ export class NotificationService {
     private http: HttpClient,
     private chantierService: ChantierService,
     private factureService: FactureService,
+    private auth: AuthService,
   ) {}
 
   charger(): void {
     const maintenant = new Date();
     const horodatage = maintenant.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
+    const peutVoirFactures = this.auth.hasRole(['admin', 'conducteur', 'comptable']);
+
     combineLatest([
       this.chantierService.getEnCours(),
-      this.factureService.getAll(),
+      peutVoirFactures ? this.factureService.getAll() : of<Facture[]>([]),
     ]).subscribe({
       next: ([chantiers, factures]) => {
         const notifs: AppNotification[] = [];

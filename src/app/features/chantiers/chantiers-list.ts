@@ -55,12 +55,13 @@ export class ChantiersList implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this._chargerChantiers();
-    this.subs.add(
-      this.contratService.getOptions().subscribe(options => {
-        this.contratsOptions = options;
-      })
-    );
-    if (this.perm.hasRole('admin', 'conducteur')) {
+    if (this.perm.can('chantiers:create')) {
+      this.subs.add(
+        this.contratService.getOptions().subscribe({
+          next: options => this.contratsOptions = options,
+          error: () => this.contratsOptions = [],
+        })
+      );
       this.subs.add(
         this.utilisateurService.getChefsChantier().subscribe({
           next: chefs => this.utilisateurs = chefs,
